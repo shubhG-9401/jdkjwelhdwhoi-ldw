@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CourseDRM Admin Portal | Secure Course Encryption & Licensing</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
+  
+  <!-- Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">CourseDRM</span>
+          <span class="text-xs px-2 py-0.5 ml-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full font-medium">Admin Portal</span>
+        </div>
+      </div>
+      
+      <!-- Nav Tabs & Status -->
+      <nav class="flex items-center space-x-2">
+        <div id="server-status-pill" class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mr-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Server: Online</span>
+        </div>
+
+        <button id="tab-encryptor" class="nav-tab active flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all">
+          <i data-lucide="lock" class="w-4 h-4"></i>
+          <span>Course Encryptor</span>
+        </button>
+        <button id="tab-courses" class="nav-tab flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
+          <i data-lucide="layers" class="w-4 h-4"></i>
+          <span>Courses & Content</span>
+        </button>
+        <button id="tab-licenses" class="nav-tab flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
+          <i data-lucide="key" class="w-4 h-4"></i>
+          <span>Licenses (56-Char)</span>
+        </button>
+        <button id="tab-security" class="nav-tab flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
+          <i data-lucide="activity" class="w-4 h-4"></i>
+          <span>IP Security</span>
+        </button>
+        <button id="tab-admin-auth" class="nav-tab flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
+          <i data-lucide="shield" class="w-4 h-4"></i>
+          <span>Admin 2FA / Login</span>
+        </button>
+        <a href="/student" target="_blank" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 transition-all">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>PC Player</span>
+        </a>
+
+        <!-- Admin Profile & Logout -->
+        <div id="admin-user-pill" class="flex items-center space-x-2 pl-2 border-l border-slate-800">
+          <span class="text-xs text-indigo-400 font-mono font-semibold" id="admin-username-display">admin</span>
+          <button id="btn-admin-logout" title="Sign out of Admin Portal" class="text-xs px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all flex items-center space-x-1">
+            <i data-lucide="log-out" class="w-3 h-3"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- ============================================================== -->
+    <!-- TAB 1: COURSE ENCRYPTOR STUDIO -->
+    <!-- ============================================================== -->
+    <section id="section-encryptor" class="space-y-8">
+      
+      <!-- Hero Banner -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/20 to-slate-900 border border-indigo-800/30 shadow-2xl relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl">
+          <h1 class="text-2xl font-bold text-white mb-2">Document Syllabus Parser & AES-256 Course Packaging</h1>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            Upload your Word <code class="text-indigo-400 font-mono bg-indigo-950/60 px-1.5 py-0.5 rounded">.docx</code> or paste course text containing Wistia <code class="text-indigo-400 font-mono bg-indigo-950/60 px-1.5 py-0.5 rounded">.m3u8</code> video streams, PDF links, and telegram channels. The system automatically structures your curriculum and compiles everything into a protected <code class="text-indigo-400 font-mono bg-indigo-950/60 px-1.5 py-0.5 rounded">.enc</code> file unreadable outside the PC app.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Upload & Text Input Form (Left 2 Cols) -->
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur">
+            
+            <!-- Input Mode Selector -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
+              <h2 class="text-lg font-semibold text-white flex items-center space-x-2">
+                <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-400"></i>
+                <span>Encrypt New Course</span>
+              </h2>
+              
+              <div class="flex items-center space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                <button type="button" id="btn-mode-text" class="px-3 py-1.5 rounded-lg font-medium transition-all bg-indigo-600 text-white">
+                  Paste Document Text / Links
+                </button>
+                <button type="button" id="btn-mode-upload" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all">
+                  Upload DOCX / Files
+                </button>
+              </div>
+            </div>
+
+            <form id="encrypt-form" class="space-y-5">
+              
+              <div>
+                <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Course Title</label>
+                <input type="text" id="course-title" placeholder="e.g. Sigma 12 (Auto-detected from document)" 
+                  class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+              </div>
+
+              <!-- OPTION A: DIRECT TEXT / LINKS PASTE (DEFAULT) -->
+              <div id="container-mode-text" class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Paste Course Document Text with Links (Wistia .m3u8, PDFs, Chapters)
+                  </label>
+                  <button type="button" id="btn-insert-sample" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center space-x-1">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    <span>Insert Sigma 12 Sample</span>
+                  </button>
+                </div>
+                
+                <textarea id="course-doc-text" rows="10" placeholder="Course name :- Sigma 12
+1.welcome to sigma
+https://www.pdffiller.com/s/k_zyV2H-p
+2 . Live sessions
+   1. https://embed-cloudfront.wistia.com/deliveries/45ed8874a993895cdec4c4ab62e03ed3123f94b9.m3u8
+3. telegram
+   https://t.me/+OxL7CIMC5c03MjE9
+4. introduction
+   1. https://embed-cloudfront.wistia.com/deliveries/d2dcbdabc09822bded8bfbea344db4c44595943b.m3u8"
+                  class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl p-4 text-xs font-mono text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all leading-relaxed"></textarea>
+
+                <div class="flex items-center justify-between pt-1">
+                  <button type="button" id="btn-preview-syllabus" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center space-x-1.5 transition-all">
+                    <i data-lucide="eye" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Preview Parsed Chapters & Media Count</span>
+                  </button>
+                  <span id="preview-status-pill" class="text-xs text-slate-400"></span>
+                </div>
+              </div>
+
+              <!-- OPTION B: FILE DROP ZONE (DOCX / LOCAL MEDIA) -->
+              <div id="container-mode-upload" class="hidden space-y-3">
+                <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider">Upload Word Document (.docx, .doc, .txt) or Local Media</label>
+                <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-indigo-500/60 rounded-2xl p-8 text-center bg-slate-950/40 cursor-pointer transition-all group">
+                  <input type="file" id="file-input" multiple class="hidden" accept=".docx,.doc,.txt,.md,.pdf,.mp4,.webm">
+                  <div class="w-12 h-12 mx-auto rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <i data-lucide="file-up" class="w-6 h-6"></i>
+                  </div>
+                  <p class="text-sm font-medium text-slate-200">Click to select <code class="text-indigo-400">Document.docx</code> or course files</p>
+                  <p class="text-xs text-slate-500 mt-1">Automatically extracts text, chapters, and embedded links</p>
+                </div>
+
+                <!-- Selected Files List -->
+                <div id="file-queue-container" class="hidden space-y-2">
+                  <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+                    <span>Selected Files (<span id="file-count">0</span>)</span>
+                    <button type="button" id="clear-files-btn" class="text-rose-400 hover:underline">Clear all</button>
+                  </div>
+                  <div id="file-queue" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
+                </div>
+              </div>
+
+              <!-- Parsed Syllabus Preview Modal / Accordion -->
+              <div id="parsed-preview-box" class="hidden p-4 rounded-xl bg-slate-950 border border-indigo-500/30 space-y-3">
+                <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
+                  <span class="font-semibold text-emerald-400 flex items-center space-x-1.5">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <span id="preview-title-badge">Detected Course: Sigma 12</span>
+                  </span>
+                  <span id="preview-counts-badge" class="font-mono text-slate-400">6 Modules • 19 Lessons</span>
+                </div>
+                <div id="preview-modules-list" class="space-y-2 max-h-48 overflow-y-auto text-xs pr-1 font-mono">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="pt-2">
+                <button type="submit" id="btn-encrypt-submit" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all">
+                  <i data-lucide="shield-lock" class="w-5 h-5"></i>
+                  <span>Encrypt & Generate .ENC Course File</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Encryption Progress Banner -->
+            <div id="encrypt-progress" class="mt-4 p-4 rounded-xl bg-indigo-950/40 border border-indigo-800/40 hidden">
+              <div class="flex items-center space-x-3 text-sm text-indigo-300 mb-2">
+                <div class="animate-spin rounded-full h-4 w-4 border-2 border-indigo-400 border-t-transparent"></div>
+                <span>Applying AES-256-GCM cipher and packaging syllabus...</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div class="bg-indigo-500 h-full w-2/3 animate-pulse"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Encrypted Package Inspector & Download (Right Col) -->
+        <div class="space-y-6">
+          
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur">
+            <h3 class="text-sm font-semibold text-white uppercase tracking-wider mb-4 flex items-center space-x-2">
+              <i data-lucide="package-check" class="w-4 h-4 text-emerald-400"></i>
+              <span>Encrypted Courses Ready</span>
+            </h3>
+            <div id="course-list" class="space-y-3">
+              <p class="text-xs text-slate-500 italic">Loading courses...</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i data-lucide="file-code" class="w-4 h-4 text-amber-400"></i>
+                <span>Raw .ENC File Preview (Notepad View)</span>
+              </h3>
+              <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 font-mono">100% Unreadable</span>
+            </div>
+            <p class="text-xs text-slate-400 mb-2">
+              When students open the downloaded <code class="text-indigo-300">.enc</code> file outside the player app:
+            </p>
+            <div class="bg-black/80 rounded-xl p-3 border border-slate-800 font-mono text-[11px] text-slate-400 leading-snug break-all select-none overflow-hidden h-36">
+              <span class="text-emerald-400">SECUREDRM1</span>\x00\x00\x00\x0c<span class="text-indigo-400">crs_sigma12</span>\xa4\x8f\x1c\x99\xd2\x04\xfe\xbb\x71\x32\x00\x88\x12\xe7\x0a\x54<br>
+              <span class="text-slate-600">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</span>%CIPHERTEXT_AES_GCM_PAYLOAD \xd7\x9a\xf4\x12\x3c\x89\xaa\xbc\xde\xf0\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff \xa1\xb2\xc3\xd4\xe5\xf6\x07\x18\x29\x3a\x4b\x5c\x6d\x7e\x8f\x90 \x14\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: 56-CHARACTER STUDENT LICENSE GENERATOR -->
+    <!-- ============================================================== -->
+    <section id="section-licenses" class="hidden space-y-8">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-white">56-Character Student License Management</h1>
+          <p class="text-slate-400 text-sm">Issue high-entropy 56-character license keys locked to student IPv4, IPv6, and PC Hardware ID.</p>
+        </div>
+        <button id="btn-open-create-license" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm flex items-center space-x-2 shadow-lg shadow-indigo-600/25 transition-all">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Issue 56-Character License</span>
+        </button>
+      </div>
+
+      <!-- Create License Modal -->
+      <div id="license-modal" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl max-w-xl mx-auto">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
+          <h3 class="text-lg font-semibold text-white flex items-center space-x-2">
+            <i data-lucide="key" class="w-5 h-5 text-indigo-400"></i>
+            <span>Generate 56-Character Student License</span>
+          </h3>
+          <button id="btn-close-license-modal" class="text-slate-400 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <form id="create-license-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Select Course</label>
+            <select id="lic-course-select" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="">-- Choose Course --</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Student Name</label>
+              <input type="text" id="lic-customer-name" required placeholder="e.g. Rahul Sharma" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Student Email</label>
+              <input type="email" id="lic-customer-email" placeholder="student@example.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Dual-Stack IP Lock Mode (IPv4 + IPv6)</label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex items-start p-3 rounded-xl border border-slate-700 hover:border-indigo-500 cursor-pointer bg-slate-950/60">
+                <input type="radio" name="ipLockMode" value="first_login" checked class="mt-1 text-indigo-600 focus:ring-indigo-500">
+                <div class="ml-2.5">
+                  <span class="block text-xs font-semibold text-white">Auto-Bind 1st Login</span>
+                  <span class="text-[11px] text-slate-400">Captures both student's IPv4 & IPv6 automatically on first launch.</span>
+                </div>
+              </label>
+
+              <label class="flex items-start p-3 rounded-xl border border-slate-700 hover:border-indigo-500 cursor-pointer bg-slate-950/60">
+                <input type="radio" name="ipLockMode" value="strict" class="mt-1 text-indigo-600 focus:ring-indigo-500">
+                <div class="ml-2.5">
+                  <span class="block text-xs font-semibold text-white">Strict IP Specify</span>
+                  <span class="text-[11px] text-slate-400">Admin manually enters authorized student IPv4 and/or IPv6.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div id="strict-ip-container" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Authorized IPv4</label>
+              <input type="text" id="lic-strict-ipv4" placeholder="e.g. 49.37.112.98" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Authorized IPv6</label>
+              <input type="text" id="lic-strict-ipv6" placeholder="e.g. 2409:40d0:102f:7801::1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+
+          <div class="p-3 bg-indigo-950/40 border border-indigo-800/30 rounded-xl space-y-1 text-xs text-indigo-200">
+            <div class="flex items-center space-x-2 font-semibold">
+              <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>
+              <span>Exact 56-Character License Key Guarantee:</span>
+            </div>
+            <p class="text-[11px] text-indigo-300">
+              The generated key is exactly 56 alphanumeric characters long and binds to the student's PC Hardware ID (HWID), IPv4, and IPv6 address.
+            </p>
+          </div>
+
+          <div class="pt-2 flex justify-end space-x-3">
+            <button type="button" id="btn-cancel-license" class="px-4 py-2 text-sm text-slate-400 hover:text-white">Cancel</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm flex items-center space-x-2">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+              <span>Generate 56-Char License</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Licenses Table -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white uppercase tracking-wider">Active Student Licenses</h2>
+          <span id="license-total-count" class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full">0 Licenses</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="bg-slate-950/60 text-xs uppercase text-slate-400 border-b border-slate-800 font-medium">
+              <tr>
+                <th class="px-5 py-4">Student</th>
+                <th class="px-5 py-4">Course</th>
+                <th class="px-5 py-4">License Key (56 Characters)</th>
+                <th class="px-5 py-4">Bound IPv4 / IPv6</th>
+                <th class="px-5 py-4">Bound PC (HWID)</th>
+                <th class="px-5 py-4">Status</th>
+                <th class="px-5 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="licenses-table-body" class="divide-y divide-slate-800/60 font-sans">
+              <tr>
+                <td colspan="7" class="px-6 py-8 text-center text-slate-500 italic">No licenses generated yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: IPV4 / IPV6 SECURITY MONITOR -->
+    <!-- ============================================================== -->
+    <section id="section-security" class="hidden space-y-8">
+      
+      <div>
+        <h1 class="text-2xl font-bold text-white">Security Audit & Dual IP Monitor</h1>
+        <p class="text-slate-400 text-sm">Real-time log of customer activations, dual IPv4/IPv6 verification, and blocked piracy attempts.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div id="stat-granted" class="text-2xl font-bold text-white">0</div>
+            <div class="text-xs text-slate-400">Granted Authorizations</div>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div id="stat-blocked" class="text-2xl font-bold text-rose-400">0</div>
+            <div class="text-xs text-slate-400">Blocked IP / Piracy Mismatches</div>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <i data-lucide="cpu" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div id="stat-active-devices" class="text-2xl font-bold text-indigo-400">0</div>
+            <div class="text-xs text-slate-400">Hardware Bound PCs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs Table -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white uppercase tracking-wider flex items-center space-x-2">
+            <i data-lucide="list" class="w-4 h-4 text-indigo-400"></i>
+            <span>Real-Time Security Event Feed</span>
+          </h2>
+          <button id="btn-refresh-logs" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center space-x-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="bg-slate-950/60 text-xs uppercase text-slate-400 border-b border-slate-800 font-medium">
+              <tr>
+                <th class="px-5 py-4">Timestamp</th>
+                <th class="px-5 py-4">Action</th>
+                <th class="px-5 py-4">Student / Key</th>
+                <th class="px-5 py-4">Client IPv4 / IPv6</th>
+                <th class="px-5 py-4">Status</th>
+                <th class="px-5 py-4">Event Details</th>
+              </tr>
+            </thead>
+            <tbody id="logs-table-body" class="divide-y divide-slate-800/60 font-mono text-xs">
+              <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-slate-500 font-sans italic">No security events logged yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: COURSES & CURRICULUM MANAGER -->
+    <!-- ============================================================== -->
+    <section id="section-courses" class="hidden space-y-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-white">Encrypted Courses & Curriculum Management</h1>
+          <p class="text-slate-400 text-sm">Update lesson links, add/remove modules & media streams, and manage offline .enc packages.</p>
+        </div>
+        <button id="btn-quick-new-course" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center space-x-2 shadow-lg shadow-indigo-600/30 transition-all">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Encrypt New Course</span>
+        </button>
+      </div>
+
+      <!-- Course Cards Grid -->
+      <div id="admin-courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 5: ADMIN SECURITY & AUTHENTICATOR (2FA) -->
+    <!-- ============================================================== -->
+    <section id="section-admin-auth" class="hidden space-y-8">
+      <div>
+        <h1 class="text-2xl font-bold text-white">Admin Security & 2FA Authenticator</h1>
+        <p class="text-slate-400 text-sm">Configure administrator Login ID, password, and Google Authenticator (TOTP) pairing.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Account Credentials Card -->
+        <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-5">
+          <div class="flex items-center space-x-3 pb-4 border-b border-slate-800">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+              <i data-lucide="user-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-semibold text-white">Administrator Credentials</h2>
+              <p class="text-slate-400 text-xs">Update your portal username and access password.</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Portal Login ID (Username)</label>
+              <input type="text" id="setting-login-id" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Current Password (Required for changes)</label>
+              <input type="password" id="setting-current-pass" placeholder="Enter current password..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div class="pt-2 border-t border-slate-800/60">
+              <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">New Password (Leave blank to keep current)</label>
+              <input type="password" id="setting-new-pass" placeholder="At least 6 characters..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Confirm New Password</label>
+              <input type="password" id="setting-confirm-pass" placeholder="Re-type new password..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2FA Authenticator Card -->
+        <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-5">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <i data-lucide="shield" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="text-base font-semibold text-white">Google Authenticator (TOTP)</h2>
+                <p class="text-slate-400 text-xs">RFC 6238 standard 6-digit authentication.</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">2FA ACTIVE</span>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-center space-x-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <div class="bg-white p-2 rounded-lg flex-shrink-0">
+                <img id="settings-qr-code" src="" alt="2FA QR Code" class="w-28 h-28 object-contain">
+              </div>
+              <div class="space-y-2 text-xs">
+                <p class="text-slate-300">Scan this QR code using <strong>Google Authenticator</strong> or <strong>Microsoft Authenticator</strong> on your phone.</p>
+                <div>
+                  <div class="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Manual Secret Key:</div>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <code id="settings-secret-key" class="font-mono text-emerald-400 bg-slate-900 px-2 py-1 rounded text-xs select-all">JBSWY3DPEHPK3PXP...</code>
+                    <button type="button" id="btn-copy-secret" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors" title="Copy Secret">
+                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <button type="button" id="btn-regen-secret" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center space-x-1.5 transition-colors">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Generate New Authenticator Key</span>
+              </button>
+            </div>
+
+            <div id="container-verify-new-key" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-2">
+              <p class="text-[11px]">You generated a new key! Enter the 6-digit code from your authenticator app to verify it:</p>
+              <input type="text" id="setting-totp-verify" maxlength="6" placeholder="000000" class="w-36 bg-slate-950 border border-amber-500/40 rounded-lg px-3 py-1.5 text-center font-mono text-white text-sm tracking-widest focus:outline-none">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Save Button -->
+      <div class="flex items-center space-x-4 pt-4">
+        <button id="btn-save-admin-security" class="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 flex items-center space-x-2 transition-all">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Save Security Changes</span>
+        </button>
+        <span id="security-save-feedback" class="text-xs text-emerald-400 hidden flex items-center space-x-1">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Settings updated successfully!</span>
+        </span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: INTERACTIVE COURSE CONTENT EDITOR (Add/Remove Lessons) -->
+  <!-- ============================================================== -->
+  <div id="course-editor-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6 my-8">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <i data-lucide="edit-3" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 id="editor-modal-title" class="text-lg font-bold text-white">Edit Course Curriculum</h2>
+            <p class="text-xs text-slate-400">Add or remove lessons & modules. Re-encrypts with the same master key so existing student keys remain valid.</p>
+          </div>
+        </div>
+        <button id="btn-close-course-editor" class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Course Meta Inputs -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Course Title</label>
+          <input type="text" id="editor-course-title" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Description</label>
+          <input type="text" id="editor-course-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+      </div>
+
+      <!-- Curriculum Modules Container -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Curriculum Modules & Lessons</h3>
+          <button type="button" id="btn-editor-add-module" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 flex items-center space-x-1.5 transition-all">
+            <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i>
+            <span>+ Add New Module</span>
+          </button>
+        </div>
+
+        <div id="editor-modules-list" class="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+          <!-- Dynamically filled with modules & lessons -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-800">
+        <button type="button" id="btn-cancel-course-editor" class="px-5 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-medium transition-all">
+          Cancel
+        </button>
+        <button type="button" id="btn-save-course-editor" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 flex items-center space-x-2 transition-all">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Save Changes & Re-Encrypt Package</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADMIN LOGIN & 2FA AUTHENTICATOR GATEWAY -->
+  <!-- ============================================================== -->
+  <div id="admin-login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-6">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-indigo-950/40 relative overflow-hidden space-y-6">
+      
+      <!-- Ambient Glow -->
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 text-center space-y-2">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <i data-lucide="shield-alert" class="w-8 h-8 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-white tracking-tight">Admin Portal Login</h1>
+        <p class="text-slate-400 text-xs">Enter your credentials & 6-digit Authenticator code.</p>
+      </div>
+
+      <form id="admin-login-form" class="relative z-10 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Login ID (Username)</label>
+          <input type="text" id="login-id" value="admin" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
+          <input type="password" id="login-password" placeholder="Enter admin password..." required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <div class="text-[10px] text-slate-500 mt-1">Default password: <code class="text-slate-400">admin123</code></div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider">6-Digit Authenticator Code</label>
+            <span class="text-[10px] text-emerald-400 font-mono">Google / Microsoft Auth</span>
+          </div>
+          <input type="text" id="login-totp" maxlength="6" placeholder="000000" required class="w-full bg-slate-950 border border-indigo-500/50 rounded-xl px-4 py-3 text-center text-lg font-mono text-emerald-400 tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div id="login-error-box" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center space-x-2">
+          <i data-lucide="alert-circle" class="w-4 h-4 text-rose-400 flex-shrink-0"></i>
+          <span id="login-error-text">Authentication failed</span>
+        </div>
+
+        <button type="submit" id="btn-submit-login" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 transition-all">
+          <i data-lucide="key" class="w-4 h-4"></i>
+          <span>Verify 2FA & Sign In</span>
+        </button>
+
+        <!-- Toggle for First-Time Setup / QR Code -->
+        <div class="pt-2 text-center">
+          <button type="button" id="btn-toggle-setup-help" class="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center space-x-1 transition-colors">
+            <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
+            <span>First time? Scan Authenticator QR Code</span>
+          </button>
+        </div>
+
+        <!-- Collapsible QR Code Setup Drawer -->
+        <div id="login-setup-drawer" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3 text-center">
+          <div class="text-xs font-semibold text-white">Pair Your Authenticator App</div>
+          <div class="bg-white p-2 rounded-xl inline-block mx-auto">
+            <img id="login-setup-qr" src="" alt="Setup QR Code" class="w-32 h-32 object-contain mx-auto">
+          </div>
+          <div class="text-[11px] text-slate-400">
+            Or manually type secret: <br>
+            <code id="login-setup-secret" class="text-emerald-400 font-mono text-xs select-all">JBSWY3DPEHPK3PXP...</code>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

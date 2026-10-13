@@ -1,0 +1,54 @@
+{
+  "name": "secure-course-drm",
+  "version": "1.0.0",
+  "description": "Secure DRM Course Packaging, Licensing, and Desktop Player Platform",
+  "type": "module",
+  "main": "student-app/main.js",
+  "scripts": {
+    "server": "node server/index.js",
+    "desktop": "electron student-app/main.js",
+    "seed-demo": "node test-sample-course.js",
+    "start": "node server/index.js",
+    "build:exe": "npx electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.coursedrm.player",
+    "productName": "SecureCoursePlayer",
+    "directories": {
+      "output": "dist-win"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "files": [
+      "student-app/**/*",
+      "server/cryptoEngine.js",
+      "node_modules/**/*"
+    ]
+  },
+  "keywords": [
+    "drm",
+    "course-player",
+    "encryption",
+    "aes-256-gcm",
+    "pdf-viewer",
+    "video-player"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jszip": "^3.10.2",
+    "multer": "^1.4.5-lts.1",
+    "pdfjs-dist": "^4.10.38",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "^34.3.0"
+  }
+}

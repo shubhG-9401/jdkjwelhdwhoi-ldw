@@ -1,0 +1,837 @@
+{
+  "courses": [
+    {
+      "id": "crs_sigma12",
+      "title": "Sigma 12",
+      "description": "Sigma 12 Complete Program with Wistia HD Video Sessions, PDF Handouts, and Community Access.",
+      "encryptedFileName": "sigma_12_encrypted.enc",
+      "encryptedFilePath": "C:\\Users\\Lenovo\\.gemini\\antigravity\\scratch\\secure-course-drm\\server\\encrypted_storage\\sigma_12_encrypted.enc",
+      "fileSize": 1174,
+      "moduleCount": 6,
+      "fileCount": 0,
+      "encryptionKeyHex": "6a0d83b1e406d5a2ebad64b0197a84e54e5abc66159fc4fc06075fc6a83aa95a",
+      "manifest": {
+        "courseId": "crs_sigma12",
+        "title": "Sigma 12",
+        "description": "Sigma 12 Complete Program with Wistia HD Video Sessions, PDF Handouts, and Community Access.",
+        "createdAt": "2026-10-13T19:40:37.630Z",
+        "modules": [
+          {
+            "id": "mod_1",
+            "moduleTitle": "1. welcome to sigma",
+            "lessons": [
+              {
+                "id": "les_1",
+                "title": "Lesson 1",
+                "type": "pdf",
+                "url": "https://www.pdffiller.com/s/k_zyV2H-p",
+                "isStreamUrl": true
+              }
+            ]
+          },
+          {
+            "id": "mod_2",
+            "moduleTitle": "2. Live sessions",
+            "lessons": [
+              {
+                "id": "les_2",
+                "title": "Lesson 1",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/45ed8874a993895cdec4c4ab62e03ed3123f94b9.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_3",
+                "title": "Lesson 2",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/45ed8874a993895cdec4c4ab62e03ed3123f94b9.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_4",
+                "title": "Lesson 3",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/0b3c71c755926770a668cd45fab1210caf94871d.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_5",
+                "title": "Lesson 4",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/9e6e0420fb258ca63592a6456c613ad0bed3eef1.m3u8",
+                "isStreamUrl": true
+              }
+            ]
+          },
+          {
+            "id": "mod_3",
+            "moduleTitle": "3. telegram",
+            "lessons": [
+              {
+                "id": "les_6",
+                "title": "Lesson 1",
+                "type": "telegram",
+                "url": "https://t.me/+OxL7CIMC5c03MjE9",
+                "isStreamUrl": true
+              }
+            ]
+          },
+          {
+            "id": "mod_4",
+            "moduleTitle": "4. introduction",
+            "lessons": [
+              {
+                "id": "les_7",
+                "title": "Lesson 1",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/d2dcbdabc09822bded8bfbea344db4c44595943b.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_8",
+                "title": "Lesson 2",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/38acfcc098fb0d5215d53fb7f4563d406afc3968.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_9",
+                "title": "Lesson 3",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/3ee5894d7ec413bda0c24f55a6a5028688c62fcb.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_10",
+                "title": "Lesson 4",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/c69ee95be0785b9061ccfee490c167bfdea29159.m3u8",
+                "isStreamUrl": true
+              }
+            ]
+          },
+          {
+            "id": "mod_5",
+            "moduleTitle": "5. pre requirements",
+            "lessons": [
+              {
+                "id": "les_11",
+                "title": "Lesson 1",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/17d7e449d095832e9c7bc8b279dfc1cd23532510.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_12",
+                "title": "Lesson 2",
+                "type": "image",
+                "url": "https://ibb.co/8LnvmC6P",
+                "isStreamUrl": true
+              }
+            ]
+          },
+          {
+            "id": "mod_6",
+            "moduleTitle": "6. Html level 1",
+            "lessons": [
+              {
+                "id": "les_13",
+                "title": "Lesson 1",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/a1add416a5c3312b7d5ff709ad4a0c8d2f1f704b.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_14",
+                "title": "Lesson 2",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/32b3c15d038272a1c0ecef98064345b170b5c346.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_15",
+                "title": "Lesson 3",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5b357b73.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_16",
+                "title": "Lesson 4",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/efdb4f1fa10c160d92ba1ab6e07197166ab6ae39.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_17",
+                "title": "Lesson 5",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/039a17e24e720ea8abf41f8f9f59d28fabf9f87d.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_18",
+                "title": "Lesson 6",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/7d407c20e919f96ee6e93b023e9b0cc6e535c2ad.m3u8",
+                "isStreamUrl": true
+              },
+              {
+                "id": "les_19",
+                "title": "Lesson 7",
+                "type": "video",
+                "url": "https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5b357b73.m3u8",
+                "isStreamUrl": true
+              }
+            ]
+          }
+        ]
+      },
+      "createdAt": "2026-10-13T19:40:37.636Z"
+    },
+    {
+      "id": "crs_86904e9bcee1",
+      "title": "000",
+      "description": "33",
+      "encryptedFileName": "000_crs_86904e9bcee1.enc",
+      "encryptedFilePath": "C:\\Users\\Lenovo\\.gemini\\antigravity\\scratch\\secure-course-drm\\server\\encrypted_storage\\000_crs_86904e9bcee1.enc",
+      "fileSize": 1107178,
+      "fileCount": 1,
+      "encryptionKeyHex": "d7347c40f0d87c68eb71b15a1c3bd3499ee24c42acc8bbfe9161eb722cf2bf79",
+      "manifest": {
+        "courseId": "crs_86904e9bcee1",
+        "title": "000",
+        "description": "33",
+        "createdAt": "2026-10-13T18:35:17.531Z",
+        "modules": [
+          {
+            "moduleTitle": "Module 1: Course Content",
+            "lessons": [
+              {
+                "id": "lesson_1",
+                "title": "Sigma12 Curriculum",
+                "type": "pdf",
+                "filename": "file_1791916517531_0_Sigma12_Curriculum.pdf",
+                "size": 1148443
+              }
+            ]
+          }
+        ]
+      },
+      "createdAt": "2026-10-13T18:35:17.600Z"
+    },
+    {
+      "id": "crs_demo_masterclass",
+      "title": "Complete Software Architecture Masterclass 2026",
+      "description": "Encrypted offline masterclass with HD video lectures, architectural blueprints, and student notes.",
+      "encryptedFileName": "software_architecture_masterclass_demo.enc",
+      "encryptedFilePath": "C:\\Users\\Lenovo\\.gemini\\antigravity\\scratch\\secure-course-drm\\server\\encrypted_storage\\software_architecture_masterclass_demo.enc",
+      "fileSize": 776798,
+      "fileCount": 3,
+      "encryptionKeyHex": "bb57a0d7bf49f13e5946737593b9db062f58c5935d238bdb8934305668178cba",
+      "manifest": {
+        "courseId": "crs_demo_masterclass",
+        "title": "Complete Software Architecture Masterclass 2026",
+        "description": "Encrypted offline masterclass with HD video lectures, architectural blueprints, and student notes.",
+        "createdAt": "2026-10-13T18:25:04.491Z",
+        "modules": [
+          {
+            "moduleTitle": "Module 1: Orientation & Foundations",
+            "lessons": [
+              {
+                "id": "les_1",
+                "title": "1. Course Introduction & Welcome",
+                "type": "video",
+                "filename": "intro_lecture.mp4"
+              },
+              {
+                "id": "les_2",
+                "title": "2. Architecture Blueprint & Syllabus",
+                "type": "pdf",
+                "filename": "architecture_guide.pdf"
+              },
+              {
+                "id": "les_3",
+                "title": "3. Lecture Notes & Core Concepts",
+                "type": "doc",
+                "filename": "module1_notes.md"
+              }
+            ]
+          }
+        ]
+      },
+      "createdAt": "2026-10-13T18:25:04.530Z"
+    }
+  ],
+  "licenses": [
+    {
+      "licenseKey": "XBALFYU5Q7PA5YVCZ6RJP6LF35EJD3U99R4ZUTQA9AEKNYZURSSMKCXE",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "Sigma 12 Verified Student",
+      "customerEmail": "student@sigma12.com",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": null,
+      "boundIpv6": null,
+      "boundHwid": null,
+      "status": "active",
+      "createdAt": "2026-10-13T19:40:37.638Z",
+      "activatedAt": null,
+      "lastAccessAt": null
+    },
+    {
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "re",
+      "customerEmail": "re@Js.r",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": "127.0.0.1",
+      "boundIpv6": "::1",
+      "boundHwid": "PC-1D595NLC-WIN64",
+      "status": "active",
+      "createdAt": "2026-10-13T19:08:28.959Z",
+      "activatedAt": "2026-10-13T19:08:54.536Z",
+      "lastAccessAt": "2026-10-13T19:22:04.274Z",
+      "lastAccessIp": "127.0.0.1 / ::1",
+      "boundIp": null
+    },
+    {
+      "licenseKey": "BLHHH3CWLL762EYBY7FY35NU3NGKXNJ3FWJDZ7ZK6N4QKE9HEA8X3JK7",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "Sigma 12 Verified Student",
+      "customerEmail": "student@sigma12.com",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": null,
+      "boundIpv6": null,
+      "boundHwid": null,
+      "status": "active",
+      "createdAt": "2026-10-13T19:06:11.714Z",
+      "activatedAt": null,
+      "lastAccessAt": null
+    },
+    {
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "ssd",
+      "customerEmail": "sdf@d.s",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": "127.0.0.1",
+      "boundIpv6": "::1",
+      "boundHwid": "PC-1D595NLC-WIN64",
+      "status": "active",
+      "createdAt": "2026-10-13T18:58:49.102Z",
+      "activatedAt": "2026-10-13T18:59:44.964Z",
+      "lastAccessAt": "2026-10-13T19:24:26.540Z",
+      "lastAccessIp": "127.0.0.1 / ::1"
+    },
+    {
+      "licenseKey": "9L98NSLE9UJGB3MZYL7E97LWB8R2VSAA93XL5P4XJN5N5HB2N4SJJRZF",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "Sigma 12 Verified Student",
+      "customerEmail": "student@sigma12.com",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": null,
+      "boundIpv6": null,
+      "boundHwid": null,
+      "status": "active",
+      "createdAt": "2026-10-13T18:56:07.196Z",
+      "activatedAt": "2026-10-13T18:56:35.728Z",
+      "lastAccessAt": "2026-10-13T18:56:35.728Z",
+      "lastAccessIp": "192.168.1.100 / 2409:40d0:102f:7801::1",
+      "boundIp": null
+    },
+    {
+      "licenseKey": "LIC-2A00-7BD6-A6F8",
+      "courseId": "crs_86904e9bcee1",
+      "courseTitle": "000",
+      "customerName": "sd",
+      "customerEmail": "gfhcg@gguh.fc",
+      "ipLockMode": "first_login",
+      "allowedIp": null,
+      "boundIp": "127.0.0.1",
+      "boundHwid": "PC-1D595NLC-WIN64",
+      "status": "revoked",
+      "createdAt": "2026-10-13T18:36:51.719Z",
+      "activatedAt": "2026-10-13T18:37:02.678Z",
+      "lastAccessAt": "2026-10-13T18:37:52.740Z",
+      "lastAccessIp": "127.0.0.1"
+    },
+    {
+      "licenseKey": "LIC-DEMO-2026-PASS",
+      "courseId": "crs_demo_masterclass",
+      "courseTitle": "Complete Software Architecture Masterclass 2026",
+      "customerName": "Alex Kumar (Demo Student)",
+      "customerEmail": "alex.kumar@example.com",
+      "ipLockMode": "first_login",
+      "allowedIp": null,
+      "boundIp": "127.0.0.1",
+      "boundHwid": "TEST-HWID-DEVICE-1",
+      "status": "active",
+      "createdAt": "2026-10-13T18:25:04.532Z",
+      "activatedAt": "2026-10-13T18:25:43.388Z",
+      "lastAccessAt": "2026-10-13T18:25:43.388Z",
+      "lastAccessIp": "127.0.0.1"
+    }
+  ],
+  "securityLogs": [
+    {
+      "id": "log_1791920448850_gcl0m",
+      "timestamp": "2026-10-13T19:40:48.850Z",
+      "action": "admin_security_updated",
+      "status": "granted",
+      "message": "Admin security updated: Login ID \"admin\", Password unchanged, TOTP unchanged."
+    },
+    {
+      "id": "log_1791920448841_8jyvc",
+      "timestamp": "2026-10-13T19:40:48.841Z",
+      "action": "admin_security_updated",
+      "status": "granted",
+      "message": "Admin security updated: Login ID \"admin_master\", Password unchanged, TOTP unchanged."
+    },
+    {
+      "id": "log_1791920448826_4auio",
+      "timestamp": "2026-10-13T19:40:48.826Z",
+      "action": "admin_login_success",
+      "status": "granted",
+      "message": "Admin \"admin\" logged in successfully with 2FA verification."
+    },
+    {
+      "id": "log_1791920420626_z2rxx",
+      "timestamp": "2026-10-13T19:40:20.626Z",
+      "action": "course_updated",
+      "status": "granted",
+      "courseId": "crs_sigma12",
+      "message": "Course \"Sigma 12\" content updated. Modules: 6, Total Size: 1209 bytes. Re-encrypted with active master key."
+    },
+    {
+      "id": "log_1791920420586_ayl6e",
+      "timestamp": "2026-10-13T19:40:20.586Z",
+      "action": "admin_login_success",
+      "status": "granted",
+      "message": "Admin \"admin\" logged in successfully with 2FA verification."
+    },
+    {
+      "id": "log_1791920407480_6vq7j",
+      "timestamp": "2026-10-13T19:40:07.480Z",
+      "action": "admin_login_success",
+      "status": "granted",
+      "message": "Admin \"admin\" logged in successfully with 2FA verification."
+    },
+    {
+      "id": "log_1791919391501_f6mm1",
+      "timestamp": "2026-10-13T19:23:11.501Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "studentName": "ssd",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791919344522_fiwlr",
+      "timestamp": "2026-10-13T19:22:24.522Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "studentName": "ssd",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791919324277_24x54",
+      "timestamp": "2026-10-13T19:22:04.277Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791919236381_lqqmc",
+      "timestamp": "2026-10-13T19:20:36.381Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791919171871_vxjgf",
+      "timestamp": "2026-10-13T19:19:31.871Z",
+      "action": "device_reset",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "message": "Reset device HWID and IPv4/IPv6 binding for re."
+    },
+    {
+      "id": "log_1791919157153_jbhpl",
+      "timestamp": "2026-10-13T19:19:17.153Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791919059716_yu8rt",
+      "timestamp": "2026-10-13T19:17:39.716Z",
+      "action": "device_reset",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "message": "Reset device HWID and IPv4/IPv6 binding for re."
+    },
+    {
+      "id": "log_1791918922440_n2c39",
+      "timestamp": "2026-10-13T19:15:22.440Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918705221_ear61",
+      "timestamp": "2026-10-13T19:11:45.221Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918681211_gex8d",
+      "timestamp": "2026-10-13T19:11:21.211Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918632796_x9zxs",
+      "timestamp": "2026-10-13T19:10:32.796Z",
+      "action": "inspection_detected",
+      "status": "rejected_devtools_tampering",
+      "licenseKey": "BLHHH3CWLL762EYBY7FY35NU3NGKXNJ3FWJDZ7ZK6N4QKE9HEA8X3JK7",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "TEST-HWID",
+      "message": "SECURITY ALERT: DevTools / Network tab opened"
+    },
+    {
+      "id": "log_1791918599985_z709y",
+      "timestamp": "2026-10-13T19:09:59.985Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918570381_m9kiy",
+      "timestamp": "2026-10-13T19:09:30.381Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918537592_rxqjp",
+      "timestamp": "2026-10-13T19:08:57.592Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918536917_5usj9",
+      "timestamp": "2026-10-13T19:08:56.917Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918536103_0h5mf",
+      "timestamp": "2026-10-13T19:08:56.103Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918534539_wp0yd",
+      "timestamp": "2026-10-13T19:08:54.539Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918508967_6ipc2",
+      "timestamp": "2026-10-13T19:08:28.967Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for re (IP Mode: first_login)."
+    },
+    {
+      "id": "log_1791918491829_p5xoy",
+      "timestamp": "2026-10-13T19:08:11.829Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "studentName": "ssd",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918491079_kvdwf",
+      "timestamp": "2026-10-13T19:08:11.079Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "studentName": "ssd",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918489692_j6dw5",
+      "timestamp": "2026-10-13T19:08:09.692Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "studentName": "ssd",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791918127705_2l8yo",
+      "timestamp": "2026-10-13T19:02:07.705Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "studentName": "ssd",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791917984968_e6u8k",
+      "timestamp": "2026-10-13T18:59:44.968Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "studentName": "ssd",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791917977274_lh136",
+      "timestamp": "2026-10-13T18:59:37.274Z",
+      "action": "activation_attempt",
+      "status": "rejected_invalid_key",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXRE3VT9R36D2QAKN67S7X",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Attempted activation with non-existent 56-char license key."
+    },
+    {
+      "id": "log_1791917929105_rj6gs",
+      "timestamp": "2026-10-13T18:58:49.105Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
+      "studentName": "ssd",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for ssd (IP Mode: first_login)."
+    },
+    {
+      "id": "log_1791917805863_az525",
+      "timestamp": "2026-10-13T18:56:45.863Z",
+      "action": "device_reset",
+      "status": "granted",
+      "licenseKey": "9L98NSLE9UJGB3MZYL7E97LWB8R2VSAA93XL5P4XJN5N5HB2N4SJJRZF",
+      "studentName": "Sigma 12 Verified Student",
+      "message": "Reset device HWID and IPv4/IPv6 binding for Sigma 12 Verified Student."
+    },
+    {
+      "id": "log_1791917801235_cxc0k",
+      "timestamp": "2026-10-13T18:56:41.235Z",
+      "action": "activation_attempt",
+      "status": "rejected_ip_mismatch",
+      "licenseKey": "9L98NSLE9UJGB3MZYL7E97LWB8R2VSAA93XL5P4XJN5N5HB2N4SJJRZF",
+      "studentName": "Sigma 12 Verified Student",
+      "ip": "10.0.0.99 / 2001:db8::1",
+      "hwid": "TEST-PC-DEVICE-SIGMA",
+      "message": "Blocked: IP Mismatch. Bound to: 192.168.1.100, Detected: IPv4=10.0.0.99, IPv6=2001:db8::1"
+    },
+    {
+      "id": "log_1791917795730_s4daw",
+      "timestamp": "2026-10-13T18:56:35.730Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "9L98NSLE9UJGB3MZYL7E97LWB8R2VSAA93XL5P4XJN5N5HB2N4SJJRZF",
+      "studentName": "Sigma 12 Verified Student",
+      "ip": "192.168.1.100 / 2409:40d0:102f:7801::1",
+      "hwid": "TEST-PC-DEVICE-SIGMA",
+      "message": "Granted course access to Sigma 12 Verified Student. Bound IPv4: 192.168.1.100, IPv6: 2409:40d0:102f:7801::1, HWID: TEST-PC-DEVICE-SIGMA"
+    },
+    {
+      "id": "log_1791916781114_qtkyc",
+      "timestamp": "2026-10-13T18:39:41.114Z",
+      "action": "activation_attempt",
+      "status": "rejected_revoked",
+      "licenseKey": "LIC-2A00-7BD6-A6F8",
+      "studentName": "sd",
+      "ip": "127.0.0.1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Attempted access with revoked license."
+    },
+    {
+      "id": "log_1791916739221_1xayi",
+      "timestamp": "2026-10-13T18:38:59.221Z",
+      "action": "activation_attempt",
+      "status": "rejected_revoked",
+      "licenseKey": "LIC-2A00-7BD6-A6F8",
+      "studentName": "sd",
+      "ip": "127.0.0.1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Attempted access with revoked license."
+    },
+    {
+      "id": "log_1791916691150_0qd1p",
+      "timestamp": "2026-10-13T18:38:11.150Z",
+      "action": "license_revoked",
+      "status": "granted",
+      "licenseKey": "LIC-2A00-7BD6-A6F8",
+      "studentName": "sd",
+      "message": "License LIC-2A00-7BD6-A6F8 revoked by administrator."
+    },
+    {
+      "id": "log_1791916622680_2fl5r",
+      "timestamp": "2026-10-13T18:37:02.680Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "LIC-2A00-7BD6-A6F8",
+      "studentName": "sd",
+      "ip": "127.0.0.1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to sd. Bound IP: 127.0.0.1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791916611722_s9x5j",
+      "timestamp": "2026-10-13T18:36:51.722Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "LIC-2A00-7BD6-A6F8",
+      "studentName": "sd",
+      "courseId": "crs_86904e9bcee1",
+      "message": "Generated license LIC-2A00-7BD6-A6F8 for sd (IP Mode: first_login)."
+    },
+    {
+      "id": "log_1791916517603_f1vrc",
+      "timestamp": "2026-10-13T18:35:17.603Z",
+      "action": "course_encrypted",
+      "status": "granted",
+      "courseId": "crs_86904e9bcee1",
+      "message": "Course \"000\" encrypted with AES-256-GCM. Package size: 1.06 MB."
+    },
+    {
+      "id": "log_1791915962879_qjcn0",
+      "timestamp": "2026-10-13T18:26:02.879Z",
+      "action": "activation_attempt",
+      "status": "rejected_hwid_mismatch",
+      "licenseKey": "LIC-DEMO-2026-PASS",
+      "studentName": "Alex Kumar (Demo Student)",
+      "ip": "127.0.0.1",
+      "hwid": "PIRATED-DEVICE-2",
+      "message": "Blocked: Unauthorized PC Device. Locked to: TEST-HWID-DEVICE-1, Detected: PIRATED-DEVICE-2"
+    },
+    {
+      "id": "log_1791915943391_prtjn",
+      "timestamp": "2026-10-13T18:25:43.391Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "LIC-DEMO-2026-PASS",
+      "studentName": "Alex Kumar (Demo Student)",
+      "ip": "127.0.0.1",
+      "hwid": "TEST-HWID-DEVICE-1",
+      "message": "Granted course access to Alex Kumar (Demo Student). Bound IP: 127.0.0.1, HWID: TEST-HWID-DEVICE-1"
+    },
+    {
+      "id": "log_1791915904535_rgm8l",
+      "timestamp": "2026-10-13T18:25:04.535Z",
+      "action": "demo_seeded",
+      "status": "granted",
+      "courseId": "crs_demo_masterclass",
+      "licenseKey": "LIC-DEMO-2026-PASS",
+      "studentName": "Alex Kumar (Demo Student)",
+      "message": "Pre-seeded demo course and license created successfully."
+    }
+  ],
+  "adminAuth": {
+    "loginId": "admin",
+    "passwordHash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "totpSecret": "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
+    "totpEnabled": true,
+    "updatedAt": "2026-10-13T19:40:48.848Z"
+  }
+}
