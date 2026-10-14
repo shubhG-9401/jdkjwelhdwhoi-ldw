@@ -30,4 +30,17 @@ if (!config.isVercel) {
   server.on('error', (err) => {
     console.error('[SERVER ERROR]', err.message);
   });
+
+  // Render Free Tier Keep-Alive: Ping itself every 10 minutes to prevent idle spin-down
+  const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
+  if (keepAliveUrl) {
+    const pingUrl = keepAliveUrl.replace(/\/$/, '') + '/api/health';
+    console.log(`[KEEP-ALIVE] Auto-ping active for Render free tier: ${pingUrl}`);
+    setInterval(() => {
+      fetch(pingUrl)
+        .then(r => console.log(`[KEEP-ALIVE] Heartbeat ping sent (Status: ${r.status})`))
+        .catch(e => console.warn(`[KEEP-ALIVE] Heartbeat ping warning: ${e.message}`));
+    }, 10 * 60 * 1000); // Ping every 10 minutes (Render idle timeout is 15 min)
+  }
 }
+

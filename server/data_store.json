@@ -432,6 +432,45 @@
   ],
   "securityLogs": [
     {
+      "id": "log_1791960064106_x7377",
+      "timestamp": "2026-10-14T06:41:04.106Z",
+      "action": "license_deleted",
+      "status": "granted",
+      "ip": "127.0.0.1",
+      "message": "Permanently deleted license key LDN37G2M48LPERUTTNJA8QEKZBPF8RENB9726LAT6KB9LNXMJK2FMUWX (Verification Suite Test Student)."
+    },
+    {
+      "id": "log_1791960063922_9cu5h",
+      "timestamp": "2026-10-14T06:41:03.922Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "LDN37G2M48LPERUTTNJA8QEKZBPF8RENB9726LAT6KB9LNXMJK2FMUWX",
+      "studentName": "Verification Suite Test Student",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "test-pc-hwid-998877",
+      "message": "Granted course access to Verification Suite Test Student. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: test-pc-hwid-998877"
+    },
+    {
+      "id": "log_1791960063918_55t5i",
+      "timestamp": "2026-10-14T06:41:03.918Z",
+      "action": "activation_attempt",
+      "status": "rejected_mobile_device",
+      "licenseKey": "LDN37G2M48LPERUTTNJA8QEKZBPF8RENB9726LAT6KB9LNXMJK2FMUWX",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "mobile-fake-hwid",
+      "message": "Blocked activation attempt from mobile device (Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 Mobi). Course playback is restricted to Windows PC."
+    },
+    {
+      "id": "log_1791960063899_siaed",
+      "timestamp": "2026-10-14T06:41:03.899Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "LDN37G2M48LPERUTTNJA8QEKZBPF8RENB9726LAT6KB9LNXMJK2FMUWX",
+      "studentName": "Verification Suite Test Student",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for Verification Suite Test Student (IP Mode: first_login)."
+    },
+    {
       "id": "log_1791959647778_vdjg9",
       "timestamp": "2026-10-14T06:34:07.778Z",
       "action": "activation_success",

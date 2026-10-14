@@ -22,6 +22,9 @@ let lastGithubSha = null;
  * @returns {'upstash_redis' | 'github_sync' | 'render' | 'local_persistent' | 'vercel_ephemeral'}
  */
 export function getStorageProvider() {
+  if (process.env.MONGODB_URI) {
+    return 'mongodb';
+  }
   if (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) {
     return 'upstash_redis';
   }
@@ -86,12 +89,30 @@ function writeLocalDb(data) {
 }
 
 /**
- * Fetches data from remote cloud storage (Upstash Redis or GitHub API).
+ * Fetches data from remote cloud storage (MongoDB Atlas, Upstash Redis, or GitHub API).
  */
 async function fetchRemoteData() {
   const provider = getStorageProvider();
 
-  // 1. Upstash Redis / Vercel KV
+  // 1. MongoDB Atlas
+  if (provider === 'mongodb') {
+    try {
+      const { MongoClient } = await import('mongodb');
+      const client = new MongoClient(process.env.MONGODB_URI);
+      await client.connect();
+      const database = client.db(process.env.MONGODB_DB_NAME || 'secure_course_drm');
+      const doc = await database.collection('system_store').findOne({ _id: 'primary' });
+      await client.close();
+      if (doc && doc.data && doc.data.courses && doc.data.licenses) {
+        console.log('[DB REMOTE] Successfully hydrated data store from MongoDB Atlas.');
+        return doc.data;
+      }
+    } catch (err) {
+      console.warn('[DB REMOTE WARN] Failed to read from MongoDB Atlas:', err.message);
+    }
+  }
+
+  // 2. Upstash Redis / Vercel KV
   if (provider === 'upstash_redis') {
     const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
     const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
@@ -112,7 +133,7 @@ async function fetchRemoteData() {
     }
   }
 
-  // 2. GitHub Repository API
+  // 3. GitHub Repository API
   if (provider === 'github_sync') {
     const token = process.env.GITHUB_TOKEN;
     const repo = process.env.GITHUB_REPO || 'shubhG-9401/jdkjwelhdwhoi-ldw';
@@ -151,7 +172,7 @@ let pendingSync = false;
 
 async function syncRemote(data) {
   const provider = getStorageProvider();
-  if (provider !== 'upstash_redis' && provider !== 'github_sync') {
+  if (provider !== 'upstash_redis' && provider !== 'github_sync' && provider !== 'mongodb') {
     return;
   }
 
@@ -162,7 +183,19 @@ async function syncRemote(data) {
 
   isSyncing = true;
   try {
-    if (provider === 'upstash_redis') {
+    if (provider === 'mongodb') {
+      const { MongoClient } = await import('mongodb');
+      const client = new MongoClient(process.env.MONGODB_URI);
+      await client.connect();
+      const database = client.db(process.env.MONGODB_DB_NAME || 'secure_course_drm');
+      await database.collection('system_store').updateOne(
+        { _id: 'primary' },
+        { $set: { data, updatedAt: new Date() } },
+        { upsert: true }
+      );
+      await client.close();
+      console.log('[DB REMOTE] Data store saved to MongoDB Atlas.');
+    } else if (provider === 'upstash_redis') {
       const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
       const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
       await fetch(`${url}/set/drm_data_store`, {
