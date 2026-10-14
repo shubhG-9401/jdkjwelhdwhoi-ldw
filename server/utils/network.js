@@ -52,11 +52,21 @@ export function getClientIps(req) {
 
 /**
  * Checks whether an incoming HTTP request originated from a mobile or tablet device.
+ * Checks Client Hints headers (sec-ch-ua-mobile, sec-ch-ua-platform) and standard handheld User-Agents.
  * 
  * @param {import('express').Request} req
  * @returns {boolean}
  */
 export function isMobileDevice(req) {
-  const userAgent = req.headers['user-agent'] || '';
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(userAgent);
+  if (!req || !req.headers) return false;
+
+  // Modern browser Client Hints
+  const chMobile = req.headers['sec-ch-ua-mobile'];
+  if (chMobile === '?1') return true;
+
+  const chPlatform = String(req.headers['sec-ch-ua-platform'] || '').toLowerCase();
+  if (chPlatform.includes('android') || chPlatform.includes('ios')) return true;
+
+  const userAgent = String(req.headers['user-agent'] || '');
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Opera Mobi|Mobile|mobile|CriOS|FxiOS|EdgA|EdgIOS|Tablet|Silk|Kindle|PlayBook|BB10|Windows Phone/i.test(userAgent);
 }

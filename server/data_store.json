@@ -432,6 +432,85 @@
   ],
   "securityLogs": [
     {
+      "id": "log_1791960821979_ahv07",
+      "timestamp": "2026-10-14T06:53:41.979Z",
+      "action": "license_deleted",
+      "status": "granted",
+      "ip": "127.0.0.1",
+      "message": "Permanently deleted license key KNJ2E86K4R328UC3W59ZL5LURF8BWE5XX47CX83ZNDU42VZSFLCKN5SW (Verification Suite Test Student)."
+    },
+    {
+      "id": "log_1791960821740_er3o4",
+      "timestamp": "2026-10-14T06:53:41.740Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "KNJ2E86K4R328UC3W59ZL5LURF8BWE5XX47CX83ZNDU42VZSFLCKN5SW",
+      "studentName": "Verification Suite Test Student",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "test-pc-hwid-998877",
+      "message": "Granted course access to Verification Suite Test Student. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: test-pc-hwid-998877"
+    },
+    {
+      "id": "log_1791960821724_95mq4",
+      "timestamp": "2026-10-14T06:53:41.724Z",
+      "action": "activation_attempt",
+      "status": "rejected_mobile_device",
+      "licenseKey": "KNJ2E86K4R328UC3W59ZL5LURF8BWE5XX47CX83ZNDU42VZSFLCKN5SW",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "mobile-fake-hwid",
+      "message": "Blocked activation attempt from mobile device (Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 Mobi). Course playback is restricted to Windows PC."
+    },
+    {
+      "id": "log_1791960821704_u2pu0",
+      "timestamp": "2026-10-14T06:53:41.704Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "KNJ2E86K4R328UC3W59ZL5LURF8BWE5XX47CX83ZNDU42VZSFLCKN5SW",
+      "studentName": "Verification Suite Test Student",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for Verification Suite Test Student (IP Mode: first_login)."
+    },
+    {
+      "id": "log_1791960821649_3bm7z",
+      "timestamp": "2026-10-14T06:53:41.649Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "message": "Blocked mobile device before landing on student portal (/student). UA: node"
+    },
+    {
+      "id": "log_1791960821646_6k0al",
+      "timestamp": "2026-10-14T06:53:41.646Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "message": "Blocked mobile device before landing on student portal (/student/index.html). UA: Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Mobile Safari/537.36"
+    },
+    {
+      "id": "log_1791960821630_lfm1r",
+      "timestamp": "2026-10-14T06:53:41.630Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "message": "Blocked mobile device before landing on student portal (/student). UA: Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148"
+    },
+    {
+      "id": "log_1791960713763_nxwa2",
+      "timestamp": "2026-10-14T06:51:53.763Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "message": "Blocked mobile device before landing on student portal (/student/app.js). UA: Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile"
+    },
+    {
+      "id": "log_1791960713752_cezfc",
+      "timestamp": "2026-10-14T06:51:53.752Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "message": "Blocked mobile device before landing on student portal (/student). UA: Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Vers"
+    },
+    {
       "id": "log_1791960064106_x7377",
       "timestamp": "2026-10-14T06:41:04.106Z",
       "action": "license_deleted",

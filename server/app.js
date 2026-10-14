@@ -4,6 +4,7 @@ import { config } from './config/index.js';
 import { db } from './db.js';
 import apiRouter from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { mobileBlocker } from './middleware/mobileBlocker.js';
 import { ensureStorageDir } from './utils/storage.js';
 
 // Initialize storage directory
@@ -31,7 +32,7 @@ app.use(async (req, res, next) => {
 
 // Static frontend routes
 app.use('/admin', express.static(config.adminPortalDir));
-app.use('/student', express.static(config.studentAppDir));
+app.use('/student', mobileBlocker, express.static(config.studentAppDir));
 app.use('/node_modules', express.static(config.nodeModulesDir));
 
 // Mount modular API routes

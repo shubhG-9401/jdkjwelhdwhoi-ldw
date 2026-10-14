@@ -56,6 +56,32 @@ async function runTests() {
     if (!text.includes('studentStore')) throw new Error('studentStore missing');
   });
 
+  // 5b. Pre-landing Mobile Device Blocker
+  await check('Pre-Landing Mobile Blocker', async () => {
+    // 1. iPhone attempt
+    const iphoneRes = await fetch('http://localhost:3000/student', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148' }
+    });
+    if (iphoneRes.status !== 403) throw new Error(`Expected HTTP 403 for iPhone, got ${iphoneRes.status}`);
+    const iphoneText = await iphoneRes.text();
+    if (!iphoneText.includes('Windows PC Required')) throw new Error('Missing Windows PC Required block message');
+    if (iphoneText.includes('Secure Course Player')) throw new Error('Student portal HTML leaked to mobile device!');
+
+    // 2. Android attempt
+    const androidRes = await fetch('http://localhost:3000/student/index.html', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Mobile Safari/537.36' }
+    });
+    if (androidRes.status !== 403) throw new Error(`Expected HTTP 403 for Android, got ${androidRes.status}`);
+
+    // 3. Client Hints mobile header
+    const chRes = await fetch('http://localhost:3000/student', {
+      headers: { 'Sec-CH-UA-Mobile': '?1' }
+    });
+    if (chRes.status !== 403) throw new Error(`Expected HTTP 403 for Sec-CH-UA-Mobile, got ${chRes.status}`);
+
+    return 'iPhone, Android, and Client-Hint mobile requests strictly blocked (HTTP 403) before landing';
+  });
+
   // 6. Admin Auth with stateless token
   let adminToken = '';
   await check('Admin Stateless Auth', async () => {
@@ -197,7 +223,7 @@ async function runTests() {
 
   console.log('\n----------------------------------------');
   if (failures === 0) {
-    console.log('--- ALL 14 TESTS PASSED PERFECTLY ---');
+    console.log('--- ALL 15 TESTS PASSED PERFECTLY ---');
     process.exit(0);
   } else {
     console.error(`--- ${failures} TESTS FAILED ---`);
