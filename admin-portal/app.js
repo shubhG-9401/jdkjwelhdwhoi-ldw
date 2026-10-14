@@ -24,10 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginTotpInput = document.getElementById('login-totp');
   const loginErrorBox = document.getElementById('login-error-box');
   const loginErrorText = document.getElementById('login-error-text');
-  const btnToggleSetupHelp = document.getElementById('btn-toggle-setup-help');
-  const loginSetupDrawer = document.getElementById('login-setup-drawer');
-  const loginSetupQr = document.getElementById('login-setup-qr');
-  const loginSetupSecret = document.getElementById('login-setup-secret');
 
   // DOM Elements - Navigation Tabs
   const tabEncryptor = document.getElementById('tab-encryptor');
@@ -211,25 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loginErrorText.textContent = msg;
     loginErrorBox.classList.remove('hidden');
   }
-
-  // Toggle First-Time Authenticator Setup QR Code in Login Modal
-  btnToggleSetupHelp.addEventListener('click', async () => {
-    if (loginSetupDrawer.classList.contains('hidden')) {
-      loginSetupDrawer.classList.remove('hidden');
-      try {
-        const res = await fetch('/api/admin/auth/setup-info');
-        const data = await res.json();
-        if (data.success) {
-          loginSetupQr.src = data.qrCodeDataUrl;
-          loginSetupSecret.textContent = data.secret;
-        }
-      } catch (err) {
-        console.error('Error fetching setup info:', err);
-      }
-    } else {
-      loginSetupDrawer.classList.add('hidden');
-    }
-  });
 
   // Admin Logout
   btnAdminLogout.addEventListener('click', async () => {

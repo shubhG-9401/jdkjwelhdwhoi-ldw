@@ -61,3 +61,25 @@ input[type=range]::-webkit-slider-thumb:hover {
 #floating-watermark {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
+
+/* Anti-Screenshot, Anti-Print & Screen Protection */
+@media print {
+  html, body {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Blackout Screen Shield when window is unfocused or screenshot attempted */
+#screen-shield.active {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Protected Video, Canvas & Media */
+video, canvas, iframe {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}

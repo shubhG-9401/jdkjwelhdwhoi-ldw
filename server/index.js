@@ -24,7 +24,7 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = process.env.VERCEL ? process.cwd() : path.resolve(__dirname, '..');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -48,9 +48,29 @@ function requireAdminAuth(req, res, next) {
 }
 
 // Storage directories
-const STORAGE_DIR = path.join(__dirname, 'encrypted_storage');
+const STORAGE_DIR = process.env.VERCEL ? path.join('/tmp', 'encrypted_storage') : path.join(__dirname, 'encrypted_storage');
 if (!fs.existsSync(STORAGE_DIR)) {
-  fs.mkdirSync(STORAGE_DIR, { recursive: true });
+  try {
+    fs.mkdirSync(STORAGE_DIR, { recursive: true });
+  } catch (e) {
+    console.warn('Could not create STORAGE_DIR:', e);
+  }
+}
+
+// Helper to safely locate course encrypted files across Windows and Vercel/Linux environments
+export function getCourseFilePath(course) {
+  if (!course) return null;
+  const candidates = [
+    course.encryptedFilePath,
+    path.join(STORAGE_DIR, course.encryptedFileName || `${course.id}.enc`),
+    path.join(__dirname, 'encrypted_storage', course.encryptedFileName || `${course.id}.enc`),
+    path.join(projectRoot, course.encryptedFileName || `${course.id}.enc`),
+    path.join(projectRoot, 'server', 'encrypted_storage', course.encryptedFileName || `${course.id}.enc`)
+  ];
+  for (const p of candidates) {
+    if (p && fs.existsSync(p)) return p;
+  }
+  return path.join(STORAGE_DIR, course.encryptedFileName || `${course.id}.enc`);
 }
 
 // Multer in-memory storage for handling files securely before encryption
@@ -146,7 +166,7 @@ app.get('/api/admin/auth/status', (req, res) => {
 });
 
 // Get current TOTP setup info (QR code data URL & secret key for pairing authenticator)
-app.get('/api/admin/auth/setup-info', async (req, res) => {
+app.get('/api/admin/auth/setup-info', requireAdminAuth, async (req, res) => {
   try {
     const auth = db.getAdminAuth();
     const uri = generateOtpAuthUri(auth.loginId, auth.totpSecret);
@@ -356,13 +376,17 @@ app.get('/api/admin/courses', (req, res) => {
 // Download an encrypted .enc file
 app.get('/api/admin/courses/:courseId/download', (req, res) => {
   const course = db.getCourseById(req.params.courseId);
-  if (!course || !fs.existsSync(course.encryptedFilePath)) {
-    return res.status(404).json({ error: 'Encrypted course file not found.' });
+  if (!course) {
+    return res.status(404).json({ error: 'Course not found.' });
+  }
+  const filePath = getCourseFilePath(course);
+  if (!filePath || !fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Encrypted course file not found on disk.' });
   }
 
   res.setHeader('Content-Disposition', `attachment; filename="${course.encryptedFileName}"`);
   res.setHeader('Content-Type', 'application/octet-stream');
-  fs.createReadStream(course.encryptedFilePath).pipe(res);
+  fs.createReadStream(filePath).pipe(res);
 });
 
 // Create & Encrypt Course Package (from Doc file, Text paste, or media assets)
@@ -538,7 +562,15 @@ app.put('/api/admin/courses/:courseId', requireAdminAuth, (req, res) => {
     const encryptedBuffer = encryptCourseBundle(courseId, encryptionKeyHex, updatedManifest, []);
 
     // Write back to encrypted file path
-    fs.writeFileSync(course.encryptedFilePath, encryptedBuffer);
+    const targetFilePath = getCourseFilePath(course);
+    try {
+      fs.writeFileSync(targetFilePath, encryptedBuffer);
+    } catch (writeErr) {
+      console.warn('Could not write updated package to target path, trying STORAGE_DIR:', writeErr);
+      try {
+        fs.writeFileSync(path.join(STORAGE_DIR, course.encryptedFileName), encryptedBuffer);
+      } catch (e2) {}
+    }
 
     // If root copy exists (e.g. sigma_12_encrypted.enc), update it as well
     const rootCopy = path.join(projectRoot, course.encryptedFileName);
@@ -586,8 +618,9 @@ app.delete('/api/admin/courses/:courseId', requireAdminAuth, (req, res) => {
       return res.status(404).json({ error: 'Course not found.' });
     }
 
-    if (removed.encryptedFilePath && fs.existsSync(removed.encryptedFilePath)) {
-      try { fs.unlinkSync(removed.encryptedFilePath); } catch (e) {}
+    const targetFilePath = getCourseFilePath(removed);
+    if (targetFilePath && fs.existsSync(targetFilePath)) {
+      try { fs.unlinkSync(targetFilePath); } catch (e) {}
     }
 
     db.addLog({
@@ -763,6 +796,23 @@ app.post('/api/client/activate', (req, res) => {
     if (cleanKey.length !== 56) {
       return res.status(400).json({
         error: `Invalid License Key length (${cleanKey.length} chars). License keys must be exactly 56 characters long.`
+      });
+    }
+
+    // Check if client is on a mobile device (strictly reject mobile activation)
+    const userAgent = req.headers['user-agent'] || '';
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(userAgent);
+    if (isMobile) {
+      db.addLog({
+        action: 'activation_attempt',
+        status: 'rejected_mobile_device',
+        licenseKey: cleanKey || 'UNKNOWN',
+        ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+        hwid,
+        message: `Blocked activation attempt from mobile device (${userAgent.substring(0, 80)}). Course playback is restricted to Windows PC.`
+      });
+      return res.status(403).json({
+        error: 'ACCESS RESTRICTED: Course playback is strictly permitted on Windows PC / Desktop. Mobile devices and tablets are not authorized.'
       });
     }
 
@@ -1072,10 +1122,14 @@ app.get('/', (req, res) => {
   res.redirect('/admin');
 });
 
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(` SECURE COURSE DRM SERVER ACTIVE on Port ${PORT}`);
-  console.log(` Admin Portal:        http://localhost:${PORT}/admin`);
-  console.log(` Student Web Player:  http://localhost:${PORT}/student`);
-  console.log(`====================================================`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(` SECURE COURSE DRM SERVER ACTIVE on Port ${PORT}`);
+    console.log(` Admin Portal:        http://localhost:${PORT}/admin`);
+    console.log(` Student Web Player:  http://localhost:${PORT}/student`);
+    console.log(`====================================================`);
+  });
+}
+
+export default app;

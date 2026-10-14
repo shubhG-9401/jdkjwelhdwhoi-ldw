@@ -351,6 +351,50 @@
     </div>
   </div>
 
+  <!-- ============================================================== -->
+  <!-- 4. MOBILE BLOCK OVERLAY (PC ONLY ENFORCEMENT) -->
+  <!-- ============================================================== -->
+  <div id="mobile-blocked-screen" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950 p-6 text-center">
+    <div class="max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-5">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
+        <i data-lucide="smartphone" class="w-8 h-8"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-white tracking-tight">Mobile Access Blocked</h2>
+        <p class="text-xs text-rose-400 font-medium mt-1">Windows PC Desktop Access Only</p>
+      </div>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        This DRM-protected educational environment is strictly restricted to <strong>Windows PC / Desktop computers</strong>.
+      </p>
+      <div class="text-left text-xs bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 space-y-2 text-slate-400 font-sans">
+        <div class="flex items-start space-x-2">
+          <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5"></i>
+          <span>Mobile phones & tablets (Android / iOS) are prohibited by copyright security policy.</span>
+        </div>
+        <div class="flex items-start space-x-2">
+          <i data-lucide="monitor" class="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+          <span>Hardware encryption and anti-tamper stream verification require a PC.</span>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-500">
+        Please open this course on your authorized Windows PC or laptop.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- 5. ANTI-SCREENSHOT & ANTI-SCREENSHARE FOCUS SHIELD -->
+  <!-- ============================================================== -->
+  <div id="screen-shield" class="pointer-events-none opacity-0 fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center transition-opacity duration-75">
+    <div class="text-center space-y-3 p-6 max-w-sm">
+      <div class="w-12 h-12 mx-auto rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+        <i data-lucide="eye-off" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-sm font-semibold text-slate-300 tracking-wide uppercase">Display Protected</h3>
+      <p class="text-xs text-slate-500">Focus the window to view content. Screen recording, screenshots, and screen sharing are prohibited.</p>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

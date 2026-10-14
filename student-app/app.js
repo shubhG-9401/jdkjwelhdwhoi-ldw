@@ -93,6 +93,38 @@ document.addEventListener('DOMContentLoaded', async () => {
   const wmTime = document.getElementById('wm-time');
 
   // -------------------------------------------------------------
+  // 0. MOBILE DEVICE BLOCK (PC ONLY ENFORCEMENT)
+  // -------------------------------------------------------------
+  function checkMobileBlock() {
+    const ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
+    const mobileKeywords = [
+      'android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 'iemobile', 
+      'opera mini', 'mobile', 'tablet', 'silk', 'kindle', 'mobile safari'
+    ];
+    const isMobileUA = mobileKeywords.some(keyword => ua.includes(keyword));
+    const isTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 1);
+    const isSmallScreen = window.screen.width < 900 || window.innerWidth < 800;
+    const isMobile = isMobileUA || (isTouch && isSmallScreen);
+
+    if (isMobile) {
+      const mobileBlockedScreen = document.getElementById('mobile-blocked-screen');
+      if (mobileBlockedScreen) mobileBlockedScreen.classList.remove('hidden');
+      if (activationScreen) activationScreen.classList.add('hidden');
+      if (lmsScreen) lmsScreen.classList.add('hidden');
+      if (window.lucide) lucide.createIcons();
+      return true;
+    }
+    return false;
+  }
+
+  if (checkMobileBlock()) {
+    console.warn('Access denied: Mobile devices are prohibited by DRM policy.');
+    return;
+  }
+
+  window.addEventListener('resize', checkMobileBlock);
+
+  // -------------------------------------------------------------
   // 1. HARDWARE ID & DUAL IPv4 / IPv6 DETECTION
   // -------------------------------------------------------------
   async function initDeviceFingerprint() {
@@ -1030,7 +1062,83 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).catch(() => {});
   }
 
-  // 1. DevTools Inspector Traps (Active during playback)
+  // -------------------------------------------------------------
+  // 10. ANTI-SCREENSHOT, ANTI-SCREENSHARE & DEVTOOLS LOCKDOWN
+  // -------------------------------------------------------------
+  const screenShield = document.getElementById('screen-shield');
+
+  // A. Block In-Browser Display Capture / Screensharing API (Discord, Zoom web, Meet, etc.)
+  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+    navigator.mediaDevices.getDisplayMedia = async () => {
+      triggerSecurityLockdown('In-browser screen sharing attempt blocked.');
+      throw new Error('Screen sharing is strictly prohibited by DRM policy.');
+    };
+  }
+
+  // B. Blackout Window on Blur & Visibility Change (Blocks OBS, Snipping Tool, background capture)
+  window.addEventListener('blur', () => {
+    if (activeCourseData && screenShield) {
+      screenShield.classList.add('active');
+      if (playerVideo && !playerVideo.paused) {
+        playerVideo.pause();
+      }
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    if (screenShield) {
+      setTimeout(() => {
+        screenShield.classList.remove('active');
+      }, 300);
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && activeCourseData && screenShield) {
+      screenShield.classList.add('active');
+      if (playerVideo && !playerVideo.paused) {
+        playerVideo.pause();
+      }
+    } else if (!document.hidden && screenShield) {
+      setTimeout(() => {
+        screenShield.classList.remove('active');
+      }, 300);
+    }
+  });
+
+  // C. Anti-Screenshot Trap: PrintScreen, Win+Shift+S, Alt+PrintScreen, Ctrl+P, Mac Cmd+Shift+3/4
+  function triggerScreenshotBlock(reason) {
+    if (screenShield) {
+      screenShield.classList.add('active');
+      setTimeout(() => screenShield.classList.remove('active'), 2500);
+    }
+    // Wipe system clipboard immediately
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText('').catch(() => {});
+    }
+    // Pause video playback
+    if (playerVideo && !playerVideo.paused) {
+      playerVideo.pause();
+    }
+    // Log screenshot attempt to server
+    fetch('/api/client/tamper-alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        licenseKey: activeCourseData ? activeCourseData.licenseKey : 'ANONYMOUS',
+        hwid: activeHwid,
+        reason: `Screenshot attempt blocked: ${reason}`
+      })
+    }).catch(() => {});
+  }
+
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'PrintScreen' || e.keyCode === 44) {
+      triggerScreenshotBlock('PrintScreen key pressed');
+    }
+  });
+
+  // D. DevTools Inspector Traps (Active during playback)
   const devtoolsTrap = new Image();
   Object.defineProperty(devtoolsTrap, 'id', {
     get: function() {
@@ -1055,15 +1163,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }, 2000);
 
-  // 2. Keyboard Lockdown: Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, etc.
+  // E. Keyboard & Shortcut Lockdown
   document.addEventListener('contextmenu', (e) => e.preventDefault());
 
   document.addEventListener('keydown', (e) => {
-    const key = e.key.toLowerCase();
+    const key = e.key ? e.key.toLowerCase() : '';
+
+    // Screenshot hotkeys
+    if (
+      e.key === 'PrintScreen' || e.keyCode === 44 ||
+      (e.ctrlKey && e.shiftKey && key === 's') ||
+      (e.metaKey && e.shiftKey && (key === '3' || key === '4' || key === '5')) ||
+      (e.ctrlKey && key === 'p')
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      triggerScreenshotBlock('Screenshot hotkey combination');
+      return false;
+    }
+
+    // DevTools & source inspection hotkeys
     if (
       key === 'f12' ||
       (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) ||
-      (e.ctrlKey && (key === 'u' || key === 's' || key === 'p' || key === 'r'))
+      (e.ctrlKey && (key === 'u' || key === 's' || key === 'r'))
     ) {
       e.preventDefault();
       triggerSecurityLockdown('Inspect shortcut or Developer Tools hotkey pressed.');

@@ -4,7 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DB_PATH = path.join(__dirname, 'data_store.json');
+const SEED_DB_PATH = path.join(__dirname, 'data_store.json');
+const DB_PATH = process.env.VERCEL ? path.join('/tmp', 'data_store.json') : SEED_DB_PATH;
 
 const defaultData = {
   courses: [],
@@ -15,8 +16,16 @@ const defaultData = {
 function readDb() {
   try {
     if (!fs.existsSync(DB_PATH)) {
-      fs.writeFileSync(DB_PATH, JSON.stringify(defaultData, null, 2), 'utf8');
-      return JSON.parse(JSON.stringify(defaultData));
+      if (process.env.VERCEL && fs.existsSync(SEED_DB_PATH)) {
+        try {
+          fs.copyFileSync(SEED_DB_PATH, DB_PATH);
+        } catch (copyErr) {
+          console.warn('Could not copy seed DB to /tmp, using defaults:', copyErr);
+          fs.writeFileSync(DB_PATH, JSON.stringify(defaultData, null, 2), 'utf8');
+        }
+      } else {
+        fs.writeFileSync(DB_PATH, JSON.stringify(defaultData, null, 2), 'utf8');
+      }
     }
     const raw = fs.readFileSync(DB_PATH, 'utf8');
     return JSON.parse(raw);

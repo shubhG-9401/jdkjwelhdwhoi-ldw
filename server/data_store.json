@@ -298,7 +298,7 @@
       "status": "active",
       "createdAt": "2026-10-13T19:08:28.959Z",
       "activatedAt": "2026-10-13T19:08:54.536Z",
-      "lastAccessAt": "2026-10-13T19:22:04.274Z",
+      "lastAccessAt": "2026-10-14T04:26:31.923Z",
       "lastAccessIp": "127.0.0.1 / ::1",
       "boundIp": null
     },
@@ -393,6 +393,147 @@
     }
   ],
   "securityLogs": [
+    {
+      "id": "log_1791951991925_uni34",
+      "timestamp": "2026-10-14T04:26:31.925Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "PC-1D595NLC-WIN64",
+      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
+    },
+    {
+      "id": "log_1791951978108_c35g1",
+      "timestamp": "2026-10-14T04:26:18.108Z",
+      "action": "activation_attempt",
+      "status": "rejected_hwid_mismatch",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "DESKTOP-TEST-HWID-001",
+      "message": "Blocked: Unauthorized PC. Locked to: PC-1D595NLC-WIN64, Detected: DESKTOP-TEST-HWID-001"
+    },
+    {
+      "id": "log_1791951971781_4e8h5",
+      "timestamp": "2026-10-14T04:26:11.781Z",
+      "action": "activation_attempt",
+      "status": "rejected_hwid_mismatch",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "studentName": "re",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "DESKTOP-TEST-HWID-001",
+      "message": "Blocked: Unauthorized PC. Locked to: PC-1D595NLC-WIN64, Detected: DESKTOP-TEST-HWID-001"
+    },
+    {
+      "id": "log_1791951966942_kfilw",
+      "timestamp": "2026-10-14T04:26:06.942Z",
+      "action": "activation_attempt",
+      "status": "rejected_mobile_device",
+      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "mobile-test-hwid",
+      "message": "Blocked activation attempt from mobile device (Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X)). Course playback is restricted to Windows PC."
+    },
+    {
+      "id": "log_1791951263273_8qm2z",
+      "timestamp": "2026-10-14T04:14:23.273Z",
+      "action": "admin_login_success",
+      "status": "granted",
+      "message": "Admin \"shubhg9401\" logged in successfully with 2FA verification."
+    },
+    {
+      "id": "log_1791951184988_5wovo",
+      "timestamp": "2026-10-14T04:13:04.989Z",
+      "action": "admin_login_success",
+      "status": "granted",
+      "message": "Admin \"shubhg9401\" logged in successfully with 2FA verification."
+    },
+    {
+      "id": "log_1791951168066_fmye7",
+      "timestamp": "2026-10-14T04:12:48.066Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_totp",
+      "message": "Admin login failed: Invalid or expired 6-digit code (244415)."
+    },
+    {
+      "id": "log_1791951147389_n50fm",
+      "timestamp": "2026-10-14T04:12:27.389Z",
+      "action": "admin_security_updated",
+      "status": "granted",
+      "message": "Admin security updated: Login ID \"shubhg9401\", Password changed, TOTP unchanged."
+    },
+    {
+      "id": "log_1791951112835_9900i",
+      "timestamp": "2026-10-14T04:11:52.835Z",
+      "action": "admin_login_success",
+      "status": "granted",
+      "message": "Admin \"admin\" logged in successfully with 2FA verification."
+    },
+    {
+      "id": "log_1791951106706_0jm4y",
+      "timestamp": "2026-10-14T04:11:46.706Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_credentials",
+      "message": "Admin login failed: Invalid username \"shubhg9401\"."
+    },
+    {
+      "id": "log_1791951099189_iifjj",
+      "timestamp": "2026-10-14T04:11:39.189Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_credentials",
+      "message": "Admin login failed: Invalid username \"shubhg9401\"."
+    },
+    {
+      "id": "log_1791951087633_yjh9u",
+      "timestamp": "2026-10-14T04:11:27.633Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_credentials",
+      "message": "Admin login failed: Invalid username \"shubhg9401\"."
+    },
+    {
+      "id": "log_1791951087002_gll1y",
+      "timestamp": "2026-10-14T04:11:27.002Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_credentials",
+      "message": "Admin login failed: Invalid username \"shubhg9401\"."
+    },
+    {
+      "id": "log_1791951078936_kdtw1",
+      "timestamp": "2026-10-14T04:11:18.936Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_credentials",
+      "message": "Admin login failed: Invalid username \"shubhg9401\"."
+    },
+    {
+      "id": "log_1791951078311_mzdpz",
+      "timestamp": "2026-10-14T04:11:18.311Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_credentials",
+      "message": "Admin login failed: Invalid username \"shubhg9401\"."
+    },
+    {
+      "id": "log_1791951076969_wvdqn",
+      "timestamp": "2026-10-14T04:11:16.970Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_credentials",
+      "message": "Admin login failed: Invalid username \"shubhg9401\"."
+    },
+    {
+      "id": "log_1791950969870_odh8j",
+      "timestamp": "2026-10-14T04:09:29.870Z",
+      "action": "admin_login_success",
+      "status": "granted",
+      "message": "Admin \"admin\" logged in successfully with 2FA verification."
+    },
+    {
+      "id": "log_1791920508389_yj421",
+      "timestamp": "2026-10-13T19:41:48.389Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_totp",
+      "message": "Admin login failed: Invalid or expired 6-digit code (899983)."
+    },
     {
       "id": "log_1791920448850_gcl0m",
       "timestamp": "2026-10-13T19:40:48.850Z",
@@ -828,10 +969,10 @@
     }
   ],
   "adminAuth": {
-    "loginId": "admin",
-    "passwordHash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "loginId": "shubhg9401",
+    "passwordHash": "d160d1c8265e05cd22e0741ec92d067882f32a45901660cb771beacd663e65ea",
     "totpSecret": "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
     "totpEnabled": true,
-    "updatedAt": "2026-10-13T19:40:48.848Z"
+    "updatedAt": "2026-10-14T04:12:27.385Z"
   }
 }
