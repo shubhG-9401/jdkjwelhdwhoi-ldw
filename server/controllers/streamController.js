@@ -56,19 +56,18 @@ export const streamController = {
         segmentUrl = `${basePath}${trimmed}`;
       }
 
-      // Obfuscate segment URL with base64
-      const b64Seg = Buffer.from(segmentUrl, 'utf8').toString('base64');
-      return `/api/drm/stream/segment.ts?token=${encodeURIComponent(token)}&seg=${encodeURIComponent(b64Seg)}`;
+      // Obfuscate segment URL with URL-safe base64url (no +, no /, no = padding)
+      const b64Seg = Buffer.from(segmentUrl, 'utf8').toString('base64url');
+      return `/api/drm/stream/segment.ts?token=${encodeURIComponent(token)}&seg=${b64Seg}`;
     });
 
     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=60');
     res.send(rewrittenLines.join('\n'));
   },
 
-  // Proxy Video Segment: Streams segment bytes without exposing origin
+  // Proxy Video Segment: Streams segment bytes with Edge caching
   async getSegment(req, res) {
     const { token, seg } = req.query;
     const session = validateClientSession(token, req);
@@ -80,18 +79,38 @@ export const streamController = {
 
     let segmentUrl;
     try {
-      segmentUrl = Buffer.from(seg, 'base64').toString('utf8');
+      // Decode base64url first, with fallback to standard base64
+      let cleanSeg = seg;
+      if (cleanSeg.includes('%')) {
+        try { cleanSeg = decodeURIComponent(cleanSeg); } catch {}
+      }
+      segmentUrl = Buffer.from(cleanSeg, 'base64url').toString('utf8');
+      if (!segmentUrl.startsWith('http://') && !segmentUrl.startsWith('https://')) {
+        segmentUrl = Buffer.from(cleanSeg.replace(/ /g, '+'), 'base64').toString('utf8');
+      }
     } catch {
       return res.status(400).send('Malformed segment identifier');
     }
 
-    const upstreamRes = await fetch(segmentUrl);
-    if (!upstreamRes.ok) {
-      return res.status(upstreamRes.status).send('Segment fetch error');
+    let upstreamRes;
+    try {
+      upstreamRes = await fetch(segmentUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': 'https://embed-cloudfront.wistia.com/'
+        },
+        signal: AbortSignal.timeout(12000)
+      });
+      if (!upstreamRes.ok) {
+        return res.status(upstreamRes.status).send('Segment fetch error');
+      }
+    } catch (e) {
+      return res.status(502).send('Upstream connection error');
     }
 
     res.setHeader('Content-Type', 'video/MP2T');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400, immutable');
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
     const arrayBuffer = await upstreamRes.arrayBuffer();

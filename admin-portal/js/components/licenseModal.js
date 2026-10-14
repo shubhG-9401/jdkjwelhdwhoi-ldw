@@ -56,7 +56,11 @@ export class LicenseModalComponent {
   }
 
   open() {
-    if (this.modal) this.modal.classList.remove('hidden');
+    this.updateCourseSelect();
+    if (this.modal) {
+      this.modal.classList.remove('hidden');
+      this.modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
     const nameInput = document.getElementById('lic-student-name') || document.getElementById('lic-customer-name');
     if (nameInput) nameInput.focus();
     if (window.lucide) lucide.createIcons();
@@ -78,6 +82,9 @@ export class LicenseModalComponent {
     this.courseSelect.innerHTML = courses.map(c => `
       <option value="${c.id}">${c.title} (${c.moduleCount || 0} Modules)</option>
     `).join('');
+    if (!this.courseSelect.value && courses.length > 0) {
+      this.courseSelect.value = courses[0].id;
+    }
   }
 
   async handleSubmit(e) {

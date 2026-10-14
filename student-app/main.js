@@ -65,6 +65,10 @@ function createWindow() {
   // Remove window menu bar entirely
   mainWindow.setMenu(null);
 
+  // OS-Level Anti-Screenshot & Anti-Recording Protection (Windows SetWindowDisplayAffinity)
+  // Forces Windows OS to black out this window in all screenshots, OBS, and screen shares
+  mainWindow.setContentProtection(true);
+
   // Load the LMS player interface
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 

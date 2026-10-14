@@ -115,15 +115,47 @@ export class VideoPlayerManager {
       if (window.Hls && Hls.isSupported()) {
         this.hlsInstance = new Hls({
           enableWorker: true,
-          lowLatencyMode: true,
-          maxBufferLength: 30,
-          maxMaxBufferLength: 60
+          lowLatencyMode: false,
+          maxBufferLength: 20,
+          maxMaxBufferLength: 40,
+          maxBufferSize: 30 * 1000 * 1000
         });
 
         this.hlsInstance.loadSource(streamSource);
         this.hlsInstance.attachMedia(this.video);
 
+        let bufferWatchdog = null;
+        const resetWatchdog = () => {
+          if (bufferWatchdog) clearTimeout(bufferWatchdog);
+          bufferWatchdog = null;
+        };
+
+        this.video.addEventListener('waiting', () => {
+          this.spinner?.classList.remove('hidden');
+          // If stuck buffering for > 4.5s on proxy, fallback to direct stream
+          if (!bufferWatchdog && streamSource !== streamUrl) {
+            bufferWatchdog = setTimeout(() => {
+              if (this.video && this.video.paused && streamSource !== streamUrl) {
+                console.warn('[DRM Player] Proxy buffering timeout - switching to direct stream');
+                streamSource = streamUrl;
+                this.hlsInstance?.loadSource(streamUrl);
+                this.hlsInstance?.startLoad();
+              }
+            }, 4500);
+          }
+        });
+
+        this.video.addEventListener('playing', () => {
+          resetWatchdog();
+          this.spinner?.classList.add('hidden');
+        });
+        this.video.addEventListener('canplay', () => {
+          resetWatchdog();
+          this.spinner?.classList.add('hidden');
+        });
+
         this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+          resetWatchdog();
           this.spinner?.classList.add('hidden');
           this.play().catch(() => {
             this.bigPlayBtn?.classList.remove('hidden');
@@ -134,14 +166,27 @@ export class VideoPlayerManager {
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
-                this.hlsInstance?.startLoad();
+                if (streamSource !== streamUrl) {
+                  console.warn('[DRM Player] Proxy network error - fallback to direct stream');
+                  streamSource = streamUrl;
+                  this.hlsInstance?.loadSource(streamUrl);
+                  this.hlsInstance?.startLoad();
+                } else {
+                  this.hlsInstance?.startLoad();
+                }
                 break;
               case Hls.ErrorTypes.MEDIA_ERROR:
                 this.hlsInstance?.recoverMediaError();
                 break;
               default:
-                this.showError(`Stream Error: ${data.details || 'Cannot load stream segment'}`);
-                this.hlsInstance?.destroy();
+                if (streamSource !== streamUrl) {
+                  streamSource = streamUrl;
+                  this.hlsInstance?.loadSource(streamUrl);
+                  this.hlsInstance?.startLoad();
+                } else {
+                  this.showError(`Stream Error: ${data.details || 'Cannot load stream segment'}`);
+                  this.hlsInstance?.destroy();
+                }
                 break;
             }
           }

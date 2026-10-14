@@ -54,15 +54,18 @@ export class SecurityManager {
 
   /**
    * Pitch-black overlay activated whenever focus is lost.
-   * Defeats Snipping Tool, OBS window captures, screen recording software.
+   * Defeats Windows Snipping Tool (Win+Shift+S), PrintScreen, OBS window captures, screen recording software.
    */
   setupScreenShield() {
     const showShield = () => {
       if (this.screenShield) {
-        this.screenShield.classList.remove('hidden');
+        this.screenShield.classList.remove('opacity-0', 'pointer-events-none', 'hidden');
+        this.screenShield.classList.add('opacity-100');
       }
+      document.body.classList.add('drm-obscured');
+
       // Pause active video if playing
-      const video = document.getElementById('video-element');
+      const video = document.getElementById('player-video') || document.getElementById('video-element');
       if (video && !video.paused) {
         video.pause();
       }
@@ -70,15 +73,26 @@ export class SecurityManager {
 
     const hideShield = () => {
       if (this.screenShield && !this.isLockdown) {
-        this.screenShield.classList.add('hidden');
+        this.screenShield.classList.remove('opacity-100');
+        this.screenShield.classList.add('opacity-0', 'pointer-events-none');
       }
+      document.body.classList.remove('drm-obscured');
     };
 
+    // Trigger on both window and document events
     window.addEventListener('blur', showShield);
     window.addEventListener('focus', hideShield);
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) showShield();
       else hideShield();
+    });
+
+    // Also trigger blackout if mouse leaves window towards top/sides (common when taking snips)
+    document.addEventListener('mouseleave', () => {
+      showShield();
+    });
+    document.addEventListener('mouseenter', () => {
+      if (!this.isLockdown) hideShield();
     });
   }
 
@@ -98,45 +112,49 @@ export class SecurityManager {
    * Traps screenshot hotkeys and clears system clipboard.
    */
   setupScreenshotTrap() {
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'PrintScreen') {
+    const handleCaptureKey = (e) => {
+      // PrintScreen
+      if (e.key === 'PrintScreen' || e.code === 'PrintScreen' || e.keyCode === 44) {
+        if (e.cancelable) e.preventDefault();
         this.wipeClipboard();
         this.flashBlackout('Screenshot blocked by DRM protection.');
-      }
-    });
-
-    window.addEventListener('keydown', (e) => {
-      // PrintScreen
-      if (e.key === 'PrintScreen') {
-        e.preventDefault();
-        this.wipeClipboard();
-        this.flashBlackout('Screenshot blocked.');
         return false;
       }
 
-      // Windows Snipping Tool (Win + Shift + S)
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'S' || e.key === 's')) {
-        e.preventDefault();
+      // Windows Snipping Tool (Win + Shift + S) or Ctrl + Shift + S
+      if (e.shiftKey && (e.metaKey || e.ctrlKey || e.altKey) && (e.key === 'S' || e.key === 's' || e.code === 'KeyS')) {
+        if (e.cancelable) e.preventDefault();
         this.wipeClipboard();
         this.flashBlackout('Screen capture shortcut blocked.');
         return false;
       }
 
-      // Ctrl + P (Print)
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
-        e.preventDefault();
-        this.flashBlackout('Document printing blocked.');
-        return false;
-      }
-
-      // macOS Screenshot shortcuts (Cmd + Shift + 3, Cmd + Shift + 4)
-      if (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5')) {
-        e.preventDefault();
+      // Alt + PrintScreen
+      if (e.altKey && (e.key === 'PrintScreen' || e.code === 'PrintScreen')) {
+        if (e.cancelable) e.preventDefault();
         this.wipeClipboard();
         this.flashBlackout('Screenshot blocked.');
         return false;
       }
-    });
+
+      // Ctrl + P (Print)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.code === 'KeyP')) {
+        if (e.cancelable) e.preventDefault();
+        this.flashBlackout('Document printing blocked.');
+        return false;
+      }
+
+      // macOS Screenshot shortcuts (Cmd + Shift + 3, Cmd + Shift + 4, Cmd + Shift + 5)
+      if (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key)) {
+        if (e.cancelable) e.preventDefault();
+        this.wipeClipboard();
+        this.flashBlackout('Screenshot blocked.');
+        return false;
+      }
+    };
+
+    window.addEventListener('keydown', handleCaptureKey, true);
+    window.addEventListener('keyup', handleCaptureKey, true);
   }
 
   /**
@@ -155,12 +173,22 @@ export class SecurityManager {
    */
   flashBlackout(message) {
     if (!this.screenShield) return;
-    this.screenShield.classList.remove('hidden');
+    this.screenShield.classList.remove('opacity-0', 'pointer-events-none', 'hidden');
+    this.screenShield.classList.add('opacity-100');
+    document.body.classList.add('drm-obscured');
+
+    const video = document.getElementById('player-video') || document.getElementById('video-element');
+    if (video && !video.paused) {
+      video.pause();
+    }
+
     setTimeout(() => {
-      if (!document.hidden && !this.isLockdown) {
-        this.screenShield.classList.add('hidden');
+      if (!document.hidden && !this.isLockdown && document.hasFocus()) {
+        this.screenShield.classList.remove('opacity-100');
+        this.screenShield.classList.add('opacity-0', 'pointer-events-none');
+        document.body.classList.remove('drm-obscured');
       }
-    }, 1500);
+    }, 2000);
 
     this.onTamper(message);
   }

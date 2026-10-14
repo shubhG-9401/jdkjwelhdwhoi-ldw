@@ -265,6 +265,25 @@
   ],
   "licenses": [
     {
+      "licenseKey": "N23M7S4EP74ASNKTVFW4BWZCVX3C9YHB5T3U67P5SAKPBQUXK8BJMSQR",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "Verification Suite Test Student",
+      "customerEmail": "",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": "127.0.0.1",
+      "boundIpv6": "::1",
+      "boundHwid": "test-pc-hwid-998877",
+      "status": "active",
+      "createdAt": "2026-10-14T05:20:25.312Z",
+      "activatedAt": "2026-10-14T05:20:25.331Z",
+      "lastAccessAt": "2026-10-14T05:20:25.331Z",
+      "lastAccessIp": "127.0.0.1 / ::1"
+    },
+    {
       "licenseKey": "FJNDA6YLGB5CVAFLKXPUNVMWSVNT96P37H6JEB7X73487WZ2LKV5KJ6G",
       "keyLength": 56,
       "courseId": "crs_sigma12",
@@ -505,6 +524,37 @@
     }
   ],
   "securityLogs": [
+    {
+      "id": "log_1791955225335_33qmh",
+      "timestamp": "2026-10-14T05:20:25.335Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "N23M7S4EP74ASNKTVFW4BWZCVX3C9YHB5T3U67P5SAKPBQUXK8BJMSQR",
+      "studentName": "Verification Suite Test Student",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "test-pc-hwid-998877",
+      "message": "Granted course access to Verification Suite Test Student. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: test-pc-hwid-998877"
+    },
+    {
+      "id": "log_1791955225323_65sgk",
+      "timestamp": "2026-10-14T05:20:25.323Z",
+      "action": "activation_attempt",
+      "status": "rejected_mobile_device",
+      "licenseKey": "N23M7S4EP74ASNKTVFW4BWZCVX3C9YHB5T3U67P5SAKPBQUXK8BJMSQR",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "mobile-fake-hwid",
+      "message": "Blocked activation attempt from mobile device (Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 Mobi). Course playback is restricted to Windows PC."
+    },
+    {
+      "id": "log_1791955225316_yeka8",
+      "timestamp": "2026-10-14T05:20:25.316Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "N23M7S4EP74ASNKTVFW4BWZCVX3C9YHB5T3U67P5SAKPBQUXK8BJMSQR",
+      "studentName": "Verification Suite Test Student",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for Verification Suite Test Student (IP Mode: first_login)."
+    },
     {
       "id": "log_1791954369293_8blvj",
       "timestamp": "2026-10-14T05:06:09.293Z",

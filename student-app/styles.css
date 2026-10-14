@@ -71,9 +71,20 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 /* Blackout Screen Shield when window is unfocused or screenshot attempted */
+#screen-shield.opacity-100,
 #screen-shield.active {
   opacity: 1 !important;
   pointer-events: auto !important;
+  display: flex !important;
+  z-index: 999999 !important;
+}
+
+body.drm-obscured #lms-environment,
+body.drm-obscured #activation-screen {
+  filter: blur(50px) brightness(0) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  user-select: none !important;
 }
 
 /* Protected Video, Canvas & Media */

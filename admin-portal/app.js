@@ -34,17 +34,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const adminUsernameDisplay = document.getElementById('admin-username-display');
 
   // Navigation Tabs
-  const tabDashboard = document.getElementById('tab-dashboard');
+  const tabEncryptor = document.getElementById('tab-encryptor') || document.getElementById('tab-encrypt');
   const tabCourses = document.getElementById('tab-courses');
-  const tabEncrypt = document.getElementById('tab-encrypt');
   const tabLicenses = document.getElementById('tab-licenses');
   const tabSecurity = document.getElementById('tab-security');
   const tabAdminAuth = document.getElementById('tab-admin-auth');
 
   // Content Sections
-  const sectionDashboard = document.getElementById('section-dashboard');
+  const sectionEncryptor = document.getElementById('section-encryptor') || document.getElementById('section-encrypt');
   const sectionCourses = document.getElementById('section-courses');
-  const sectionEncrypt = document.getElementById('section-encrypt');
   const sectionLicenses = document.getElementById('section-licenses');
   const sectionSecurity = document.getElementById('section-security');
   const sectionAdminAuth = document.getElementById('section-admin-auth');
@@ -64,12 +62,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Course Encrypt Form
   const encryptForm = document.getElementById('encrypt-form');
-  const dropzone = document.getElementById('file-dropzone');
+  const dropzone = document.getElementById('drop-zone') || document.getElementById('file-dropzone');
   const fileInput = document.getElementById('file-input');
   const fileQueue = document.getElementById('file-queue');
   const fileList = document.getElementById('file-list');
-  const courseDocText = document.getElementById('courseDocText');
-  const btnPreviewDoc = document.getElementById('btn-preview-doc');
+  const courseDocText = document.getElementById('course-doc-text') || document.getElementById('courseDocText');
+  const btnPreviewDoc = document.getElementById('btn-preview-syllabus') || document.getElementById('btn-preview-doc');
   const parsedPreviewBox = document.getElementById('parsed-preview-box');
   const parsedPreviewContent = document.getElementById('parsed-preview-content');
   const btnEncryptSubmit = document.getElementById('btn-encrypt-submit');
@@ -182,9 +180,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 5. TAB NAVIGATION
   // -------------------------------------------------------------
   const tabs = [
-    { btn: tabDashboard, sec: sectionDashboard },
+    { btn: tabEncryptor, sec: sectionEncryptor },
     { btn: tabCourses, sec: sectionCourses },
-    { btn: tabEncrypt, sec: sectionEncrypt },
     { btn: tabLicenses, sec: sectionLicenses },
     { btn: tabSecurity, sec: sectionSecurity },
     { btn: tabAdminAuth, sec: sectionAdminAuth }
