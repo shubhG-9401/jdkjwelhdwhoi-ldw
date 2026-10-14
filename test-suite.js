@@ -172,9 +172,32 @@ async function runTests() {
     return '403 Forbidden as expected';
   });
 
+  // 13. System Status API Check
+  await check('System Status API', async () => {
+    const res = await fetch('http://localhost:3000/api/system/status');
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const data = await res.json();
+    if (!data.success || !data.storageProvider) throw new Error('Invalid system status response');
+    return `Provider: ${data.storageProvider} (Licenses: ${data.licenseCount})`;
+  });
+
+  // 14. Test License Cleanup (Delete mock test key so it does not pollute production DB)
+  if (generatedKey) {
+    await check('Test License Cleanup', async () => {
+      const res = await fetch(`http://localhost:3000/api/system/licenses/${generatedKey}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      const data = await res.json();
+      if (!data.success) throw new Error('Failed to delete test key');
+      return 'Mock test key safely removed from data store';
+    });
+  }
+
   console.log('\n----------------------------------------');
   if (failures === 0) {
-    console.log('--- ALL 12 TESTS PASSED PERFECTLY ---');
+    console.log('--- ALL 14 TESTS PASSED PERFECTLY ---');
     process.exit(0);
   } else {
     console.error(`--- ${failures} TESTS FAILED ---`);
@@ -183,3 +206,4 @@ async function runTests() {
 }
 
 runTests();
+

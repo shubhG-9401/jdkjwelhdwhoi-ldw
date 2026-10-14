@@ -17,6 +17,7 @@ import {
 } from './js/components/tableRenderers.js';
 import { CourseEditorComponent } from './js/components/courseEditor.js';
 import { LicenseModalComponent } from './js/components/licenseModal.js';
+import { systemService } from './js/services/systemService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------------------------------------------
@@ -39,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tabLicenses = document.getElementById('tab-licenses');
   const tabSecurity = document.getElementById('tab-security');
   const tabAdminAuth = document.getElementById('tab-admin-auth');
+  const tabSystem = document.getElementById('tab-system');
 
   // Content Sections
   const sectionEncryptor = document.getElementById('section-encryptor') || document.getElementById('section-encrypt');
@@ -46,6 +48,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const sectionLicenses = document.getElementById('section-licenses');
   const sectionSecurity = document.getElementById('section-security');
   const sectionAdminAuth = document.getElementById('section-admin-auth');
+  const sectionSystem = document.getElementById('section-system');
+
+  // Storage & Free Server System Elements
+  const serverStatusPill = document.getElementById('server-status-pill');
+  const storageStatusDot = document.getElementById('storage-status-dot');
+  const storageStatusText = document.getElementById('storage-status-text');
+  const badgeSystemStorage = document.getElementById('badge-system-storage');
+  const statStorageProvider = document.getElementById('stat-storage-provider');
+  const statStorageSub = document.getElementById('stat-storage-sub');
+  const statCoursesCount = document.getElementById('stat-courses-count');
+  const statLicensesCount = document.getElementById('stat-licenses-count');
+  const statLogsCount = document.getElementById('stat-logs-count');
+  const btnExportBackup = document.getElementById('btn-export-backup');
+  const btnForceSync = document.getElementById('btn-force-sync');
+  const inputRestoreBackup = document.getElementById('input-restore-backup');
 
   // Container Elements
   const courseListContainer = document.getElementById('course-list-container');
@@ -184,7 +201,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     { btn: tabCourses, sec: sectionCourses },
     { btn: tabLicenses, sec: sectionLicenses },
     { btn: tabSecurity, sec: sectionSecurity },
-    { btn: tabAdminAuth, sec: sectionAdminAuth }
+    { btn: tabAdminAuth, sec: sectionAdminAuth },
+    { btn: tabSystem, sec: sectionSystem }
   ];
 
   function switchTab(activeBtn, activeSec) {
@@ -209,6 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       courseService.loadCourses();
     } else if (activeSec === sectionSecurity) logService.loadLogs();
     else if (activeSec === sectionAdminAuth) loadAdminSecurityInfo();
+    else if (activeSec === sectionSystem) loadSystemStatus();
 
     if (window.lucide) lucide.createIcons();
   }
@@ -219,7 +238,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     else if (tabName === 'encrypt') switchTab(tabEncryptor, sectionEncryptor);
     else if (tabName === 'security') switchTab(tabSecurity, sectionSecurity);
     else if (tabName === 'auth') switchTab(tabAdminAuth, sectionAdminAuth);
+    else if (tabName === 'system') switchTab(tabSystem, sectionSystem);
   };
+
+  if (serverStatusPill) {
+    serverStatusPill.addEventListener('click', () => switchTab(tabSystem, sectionSystem));
+  }
 
   tabs.forEach(({ btn, sec }) => {
     if (btn) btn.addEventListener('click', () => switchTab(btn, sec));
@@ -444,6 +468,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
+  window.deleteLicense = async function(licenseKey) {
+    if (!confirm(`Permanently DELETE license key ${licenseKey}?\nThis action will remove the license from the database.`)) return;
+    try {
+      await licenseService.deleteLicense(licenseKey);
+      Toast.success(`License ${licenseKey} permanently deleted.`);
+      loadSystemStatus();
+    } catch (err) {
+      Toast.error('Failed to delete license: ' + err.message);
+    }
+  };
+
   if (btnRefreshLogs) {
     btnRefreshLogs.addEventListener('click', async () => {
       await logService.loadLogs();
@@ -535,6 +570,116 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // -------------------------------------------------------------
+  // 8B. SYSTEM PERSISTENCE & FREE SERVER STATUS
+  // -------------------------------------------------------------
+  async function loadSystemStatus() {
+    try {
+      const res = await systemService.getStatus();
+      if (!res || !res.storageProvider) return;
+
+      const providerLabels = {
+        render: 'Render Server (Persistent)',
+        upstash_redis: 'Upstash Redis KV (Cloud)',
+        github_sync: 'GitHub Auto-Sync (Cloud)',
+        local_persistent: 'Local Disk (Persistent)',
+        vercel_ephemeral: 'Vercel /tmp (Ephemeral Warning)'
+      };
+
+      const isSafe = res.isPersistent;
+
+      if (storageStatusDot) {
+        storageStatusDot.className = isSafe
+          ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse'
+          : 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+      }
+
+      if (storageStatusText) {
+        storageStatusText.textContent = isSafe
+          ? (res.isRender ? 'Render: Online' : 'Cloud DB: Active')
+          : 'Storage: Ephemeral /tmp';
+      }
+
+      if (badgeSystemStorage) {
+        badgeSystemStorage.className = isSafe
+          ? 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+          : 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30';
+        badgeSystemStorage.textContent = isSafe ? 'Persistent Storage Active' : 'Ephemeral Storage (/tmp)';
+      }
+
+      if (statStorageProvider) {
+        statStorageProvider.textContent = providerLabels[res.storageProvider] || res.storageProvider;
+      }
+
+      if (statStorageSub) {
+        statStorageSub.textContent = res.guidance || 'Protected against container resets';
+      }
+
+      if (statCoursesCount) statCoursesCount.textContent = res.courseCount || 0;
+      if (statLicensesCount) statLicensesCount.textContent = res.licenseCount || 0;
+      if (statLogsCount) statLogsCount.textContent = res.logCount || 0;
+
+    } catch (err) {
+      console.warn('[SYSTEM STATUS WARN]', err.message);
+    }
+  }
+
+  // Backup Export
+  if (btnExportBackup) {
+    btnExportBackup.addEventListener('click', () => {
+      systemService.downloadBackup();
+      Toast.success('Database backup downloaded successfully.');
+    });
+  }
+
+  // Backup Import / Restore
+  if (inputRestoreBackup) {
+    inputRestoreBackup.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!confirm(`Import and restore database from "${file.name}"?\nThis will merge/update existing courses, licenses, and security logs.`)) {
+        inputRestoreBackup.value = '';
+        return;
+      }
+
+      try {
+        const text = await file.text();
+        const json = JSON.parse(text);
+        const res = await systemService.restoreBackup(json);
+        Toast.success(res.message || 'Database restored successfully!');
+        inputRestoreBackup.value = '';
+        await loadAllData();
+      } catch (err) {
+        Toast.error('Restore failed: ' + err.message);
+        inputRestoreBackup.value = '';
+      }
+    });
+  }
+
+  // Cloud Sync Now
+  if (btnForceSync) {
+    btnForceSync.addEventListener('click', async () => {
+      btnForceSync.disabled = true;
+      const oldHtml = btnForceSync.innerHTML;
+      btnForceSync.innerHTML = `
+        <div class="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-1 inline-block"></div>
+        <span>Syncing...</span>
+      `;
+      try {
+        const res = await systemService.forceSync();
+        Toast.success(res.message || 'Cloud database synchronized.');
+        await loadAllData();
+      } catch (err) {
+        Toast.error('Sync failed: ' + err.message);
+      } finally {
+        btnForceSync.disabled = false;
+        btnForceSync.innerHTML = oldHtml;
+        if (window.lucide) lucide.createIcons();
+      }
+    });
+  }
+
+  // -------------------------------------------------------------
   // 9. APP INITIALIZATION & LIFECYCLE
   // -------------------------------------------------------------
   async function loadAllData() {
@@ -542,7 +687,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       courseService.loadCourses(),
       licenseService.loadLicenses(),
       logService.loadLogs(),
-      loadAdminSecurityInfo()
+      loadAdminSecurityInfo(),
+      loadSystemStatus()
     ]);
   }
 

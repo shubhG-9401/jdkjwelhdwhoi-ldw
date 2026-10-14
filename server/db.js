@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { config } from './config/index.js';
 
 const DB_PATH = config.dbPath;
@@ -10,14 +11,49 @@ const defaultData = {
   securityLogs: []
 };
 
-function readDb() {
+// In-memory cache for ultra-fast zero-latency reads & persistence across requests
+let cachedData = null;
+let isInitialized = false;
+let initPromise = null;
+let lastGithubSha = null;
+
+/**
+ * Detects the active storage provider.
+ * @returns {'upstash_redis' | 'github_sync' | 'render' | 'local_persistent' | 'vercel_ephemeral'}
+ */
+export function getStorageProvider() {
+  if (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) {
+    return 'upstash_redis';
+  }
+  if (process.env.GITHUB_TOKEN) {
+    return 'github_sync';
+  }
+  if (process.env.RENDER) {
+    return 'render';
+  }
+  if (!config.isVercel) {
+    return 'local_persistent';
+  }
+  return 'vercel_ephemeral';
+}
+
+/**
+ * Reads local database file or seeds it from bundled repo state.
+ */
+function readLocalDb() {
   try {
     if (!fs.existsSync(DB_PATH)) {
       if (process.env.VERCEL && fs.existsSync(SEED_DB_PATH)) {
         try {
           fs.copyFileSync(SEED_DB_PATH, DB_PATH);
         } catch (copyErr) {
-          console.warn('Could not copy seed DB to /tmp, using defaults:', copyErr);
+          console.warn('[DB] Could not copy seed DB to /tmp, using defaults:', copyErr.message);
+          fs.writeFileSync(DB_PATH, JSON.stringify(defaultData, null, 2), 'utf8');
+        }
+      } else if (fs.existsSync(SEED_DB_PATH)) {
+        try {
+          fs.copyFileSync(SEED_DB_PATH, DB_PATH);
+        } catch (copyErr) {
           fs.writeFileSync(DB_PATH, JSON.stringify(defaultData, null, 2), 'utf8');
         }
       } else {
@@ -27,31 +63,282 @@ function readDb() {
     const raw = fs.readFileSync(DB_PATH, 'utf8');
     return JSON.parse(raw);
   } catch (err) {
-    console.error('Error reading database, creating fresh state:', err);
+    console.error('[DB] Error reading local database file, using fallback defaults:', err.message);
     return JSON.parse(JSON.stringify(defaultData));
   }
 }
 
-function writeDb(data) {
+/**
+ * Writes data directly to local disk/filesystem.
+ */
+function writeLocalDb(data) {
   try {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
+    // Also keep seedDbPath in sync if we are in local development
+    if (!config.isVercel && fs.existsSync(path.dirname(SEED_DB_PATH)) && DB_PATH !== SEED_DB_PATH) {
+      try {
+        fs.writeFileSync(SEED_DB_PATH, JSON.stringify(data, null, 2), 'utf8');
+      } catch (e) {}
+    }
   } catch (err) {
-    console.error('Error writing database:', err);
+    console.error('[DB] Error writing local database:', err.message);
   }
 }
 
+/**
+ * Fetches data from remote cloud storage (Upstash Redis or GitHub API).
+ */
+async function fetchRemoteData() {
+  const provider = getStorageProvider();
+
+  // 1. Upstash Redis / Vercel KV
+  if (provider === 'upstash_redis') {
+    const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+    try {
+      const res = await fetch(`${url}/get/drm_data_store`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.result) {
+          const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
+          console.log('[DB REMOTE] Successfully hydrated data store from Upstash Redis.');
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('[DB REMOTE WARN] Failed to read from Upstash Redis:', err.message);
+    }
+  }
+
+  // 2. GitHub Repository API
+  if (provider === 'github_sync') {
+    const token = process.env.GITHUB_TOKEN;
+    const repo = process.env.GITHUB_REPO || 'shubhG-9401/jdkjwelhdwhoi-ldw';
+    const filePath = 'server/data_store.json';
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'SecureDRM-Server'
+        }
+      });
+      if (res.ok) {
+        const fileData = await res.json();
+        lastGithubSha = fileData.sha;
+        const rawContent = Buffer.from(fileData.content, 'base64').toString('utf8');
+        const parsed = JSON.parse(rawContent);
+        console.log(`[DB REMOTE] Successfully hydrated data store from GitHub repo ${repo}.`);
+        return parsed;
+      } else {
+        console.warn(`[DB REMOTE WARN] GitHub API returned status ${res.status}`);
+      }
+    } catch (err) {
+      console.warn('[DB REMOTE WARN] Failed to read from GitHub API:', err.message);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Asynchronously pushes data to remote cloud storage.
+ */
+let isSyncing = false;
+let pendingSync = false;
+
+async function syncRemote(data) {
+  const provider = getStorageProvider();
+  if (provider !== 'upstash_redis' && provider !== 'github_sync') {
+    return;
+  }
+
+  if (isSyncing) {
+    pendingSync = true;
+    return;
+  }
+
+  isSyncing = true;
+  try {
+    if (provider === 'upstash_redis') {
+      const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+      const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+      await fetch(`${url}/set/drm_data_store`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(JSON.stringify(data))
+      });
+      console.log('[DB REMOTE] Data store saved to Upstash Redis.');
+    } else if (provider === 'github_sync') {
+      const token = process.env.GITHUB_TOKEN;
+      const repo = process.env.GITHUB_REPO || 'shubhG-9401/jdkjwelhdwhoi-ldw';
+      const filePath = 'server/data_store.json';
+
+      // Ensure we have current sha
+      if (!lastGithubSha) {
+        const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github.v3+json',
+            'User-Agent': 'SecureDRM-Server'
+          }
+        });
+        if (getRes.ok) {
+          const f = await getRes.json();
+          lastGithubSha = f.sha;
+        }
+      }
+
+      const bodyPayload = {
+        message: '[skip ci] sync drm database store',
+        content: Buffer.from(JSON.stringify(data, null, 2), 'utf8').toString('base64'),
+        sha: lastGithubSha
+      };
+
+      const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'SecureDRM-Server',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bodyPayload)
+      });
+
+      if (putRes.ok) {
+        const resData = await putRes.json();
+        lastGithubSha = resData.content?.sha || lastGithubSha;
+        console.log('[DB REMOTE] Data store successfully committed to GitHub repository.');
+      } else {
+        const errText = await putRes.text();
+        console.warn('[DB REMOTE WARN] GitHub commit failed:', putRes.status, errText);
+      }
+    }
+  } catch (err) {
+    console.error('[DB REMOTE ERROR] Sync failed:', err.message);
+  } finally {
+    isSyncing = false;
+    if (pendingSync) {
+      pendingSync = false;
+      syncRemote(cachedData);
+    }
+  }
+}
+
+/**
+ * Reads database state from cache or local disk.
+ */
+function readDb() {
+  if (cachedData) {
+    return cachedData;
+  }
+  cachedData = readLocalDb();
+  return cachedData;
+}
+
+/**
+ * Writes database state to cache, local disk, and remote storage.
+ */
+function writeDb(data) {
+  cachedData = data;
+  writeLocalDb(data);
+  // Asynchronously sync to cloud store without blocking synchronous call
+  syncRemote(data).catch(() => {});
+}
+
 export const db = {
+  /**
+   * Initializes the database on server start or serverless cold start.
+   */
+  async init() {
+    if (isInitialized) return cachedData;
+    if (initPromise) return initPromise;
+
+    initPromise = (async () => {
+      try {
+        const remote = await fetchRemoteData();
+        if (remote && remote.courses && remote.licenses) {
+          cachedData = remote;
+          writeLocalDb(cachedData);
+          isInitialized = true;
+          return cachedData;
+        }
+      } catch (err) {
+        console.warn('[DB] Remote init failed, falling back to local disk:', err.message);
+      }
+
+      cachedData = readLocalDb();
+      isInitialized = true;
+      return cachedData;
+    })();
+
+    return initPromise;
+  },
+
+  /**
+   * Returns system storage status and metadata.
+   */
+  getSystemStatus() {
+    const data = readDb();
+    const provider = getStorageProvider();
+    return {
+      storageProvider: provider,
+      isPersistent: provider !== 'vercel_ephemeral',
+      isVercel: config.isVercel,
+      isRender: !!process.env.RENDER,
+      courseCount: (data.courses || []).length,
+      licenseCount: (data.licenses || []).length,
+      activeLicenses: (data.licenses || []).filter(l => l.status === 'active').length,
+      logCount: (data.securityLogs || []).length,
+      lastGithubSha,
+      guidance: provider === 'vercel_ephemeral'
+        ? 'Running on Vercel ephemeral /tmp. For permanent storage, add Upstash Redis KV in Vercel, or set GITHUB_TOKEN, or deploy to Render free.'
+        : 'Storage is fully persistent and protected against restarts.'
+    };
+  },
+
+  /**
+   * Exports entire database as an object.
+   */
+  exportData() {
+    return readDb();
+  },
+
+  /**
+   * Restores database from imported object.
+   */
+  restoreData(newData) {
+    if (!newData || typeof newData !== 'object') {
+      throw new Error('Invalid data payload for database restore');
+    }
+    const data = {
+      courses: Array.isArray(newData.courses) ? newData.courses : [],
+      licenses: Array.isArray(newData.licenses) ? newData.licenses : [],
+      securityLogs: Array.isArray(newData.securityLogs) ? newData.securityLogs : [],
+      adminAuth: newData.adminAuth || readDb().adminAuth
+    };
+    writeDb(data);
+    return data;
+  },
+
   // --- Courses ---
   getCourses() {
-    return readDb().courses;
+    return readDb().courses || [];
   },
 
   getCourseById(courseId) {
-    return readDb().courses.find(c => c.id === courseId);
+    return (readDb().courses || []).find(c => c.id === courseId);
   },
 
   saveCourse(course) {
     const data = readDb();
+    if (!data.courses) data.courses = [];
     const existingIdx = data.courses.findIndex(c => c.id === course.id);
     if (existingIdx >= 0) {
       data.courses[existingIdx] = course;
@@ -62,17 +349,33 @@ export const db = {
     return course;
   },
 
+  deleteCourse(courseId) {
+    const data = readDb();
+    if (!data.courses) return null;
+    const idx = data.courses.findIndex(c => c.id === courseId);
+    if (idx >= 0) {
+      const removed = data.courses.splice(idx, 1)[0];
+      writeDb(data);
+      return removed;
+    }
+    return null;
+  },
+
   // --- Licenses ---
   getLicenses() {
-    return readDb().licenses;
+    return readDb().licenses || [];
   },
 
   getLicenseByKey(licenseKey) {
-    return readDb().licenses.find(l => l.licenseKey.toUpperCase() === licenseKey.trim().toUpperCase());
+    if (!licenseKey) return null;
+    return (readDb().licenses || []).find(
+      l => l.licenseKey && l.licenseKey.toUpperCase() === licenseKey.trim().toUpperCase()
+    );
   },
 
   saveLicense(license) {
     const data = readDb();
+    if (!data.licenses) data.licenses = [];
     const existingIdx = data.licenses.findIndex(l => l.licenseKey === license.licenseKey);
     if (existingIdx >= 0) {
       data.licenses[existingIdx] = license;
@@ -85,6 +388,7 @@ export const db = {
 
   revokeLicense(licenseKey) {
     const data = readDb();
+    if (!data.licenses) return null;
     const item = data.licenses.find(l => l.licenseKey === licenseKey);
     if (item) {
       item.status = 'revoked';
@@ -95,22 +399,38 @@ export const db = {
 
   resetLicenseDevice(licenseKey) {
     const data = readDb();
+    if (!data.licenses) return null;
     const item = data.licenses.find(l => l.licenseKey === licenseKey);
     if (item) {
       item.boundHwid = null;
       item.boundIp = null;
+      item.boundIpv4 = null;
+      item.boundIpv6 = null;
       writeDb(data);
     }
     return item;
   },
 
+  deleteLicense(licenseKey) {
+    const data = readDb();
+    if (!data.licenses) return null;
+    const idx = data.licenses.findIndex(l => l.licenseKey === licenseKey);
+    if (idx >= 0) {
+      const removed = data.licenses.splice(idx, 1)[0];
+      writeDb(data);
+      return removed;
+    }
+    return null;
+  },
+
   // --- Security Logs ---
   getLogs(limit = 100) {
-    return readDb().securityLogs.slice(0, limit);
+    return (readDb().securityLogs || []).slice(0, limit);
   },
 
   addLog(entry) {
     const data = readDb();
+    if (!data.securityLogs) data.securityLogs = [];
     const logItem = {
       id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       timestamp: new Date().toISOString(),
@@ -122,17 +442,6 @@ export const db = {
     }
     writeDb(data);
     return logItem;
-  },
-
-  deleteCourse(courseId) {
-    const data = readDb();
-    const idx = data.courses.findIndex(c => c.id === courseId);
-    if (idx >= 0) {
-      const removed = data.courses.splice(idx, 1)[0];
-      writeDb(data);
-      return removed;
-    }
-    return null;
   },
 
   // --- Admin Authentication (Login ID, Password Hash, TOTP Secret) ---

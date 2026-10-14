@@ -27,5 +27,11 @@ export const licenseService = {
     const res = await adminApiClient.post(`${ADMIN_CONFIG.ENDPOINTS.LICENSES}/${licenseKey}/reset-device`, {});
     await this.loadLicenses();
     return res;
+  },
+
+  async deleteLicense(licenseKey) {
+    const res = await adminApiClient.post(`${ADMIN_CONFIG.ENDPOINTS.SYSTEM}/licenses/${licenseKey}/delete`, {});
+    await this.loadLicenses();
+    return res;
   }
 };

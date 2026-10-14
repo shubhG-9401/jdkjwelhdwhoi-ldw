@@ -1,12 +1,12 @@
 services:
   - type: web
     name: secure-course-drm
-    env: node
+    runtime: node
     plan: free
     region: oregon
     buildCommand: npm install
     startCommand: npm start
-    healthCheckPath: /api/health
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,9 +14,3 @@ services:
         value: 10000
       - key: ADMIN_JWT_SECRET
         generateValue: true
-      - key: ADMIN_LOGIN_ID
-        value: shubhg9401
-      - key: ADMIN_PASSWORD
-        value: admin123
-      - key: TOTP_SECRET
-        value: JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP

@@ -19,6 +19,7 @@ export const ADMIN_CONFIG = {
     COURSES_ENCRYPT: '/api/admin/courses/encrypt',
 
     LICENSES: '/api/admin/licenses',
-    LOGS: '/api/admin/logs'
+    LOGS: '/api/admin/logs',
+    SYSTEM: '/api/admin/system'
   }
 };

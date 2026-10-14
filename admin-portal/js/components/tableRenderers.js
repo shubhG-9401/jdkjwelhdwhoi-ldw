@@ -204,17 +204,21 @@ export function renderLicensesTable(licenses, container, countEl) {
         </td>
         <td class="px-5 py-4 text-right">
           <div class="flex items-center justify-end space-x-2">
-            <button onclick="window.resetDeviceLock('${lic.licenseKey}')" class="px-2 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">
+            <button onclick="window.resetDeviceLock('${lic.licenseKey}')" class="px-2 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors" title="Reset HWID & IP Binding">
               Reset
             </button>
             ${!isRevoked ? `
-              <button onclick="window.revokeLicense('${lic.licenseKey}')" class="px-2 py-1 text-xs rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 transition-colors">
+              <button onclick="window.revokeLicense('${lic.licenseKey}')" class="px-2 py-1 text-xs rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 transition-colors" title="Revoke Access">
                 Revoke
               </button>
             ` : ''}
+            <button onclick="window.deleteLicense('${lic.licenseKey}')" class="p-1 text-xs rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/40 transition-colors" title="Delete License Permanently">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
         </td>
       </tr>
+
     `;
   }).join('');
 
