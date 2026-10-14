@@ -152,5 +152,8 @@ export class PdfViewerManager {
       const ctx = this.canvas.getContext('2d');
       if (ctx) ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
+    if (this.container) {
+      this.container.classList.add('hidden');
+    }
   }
 }

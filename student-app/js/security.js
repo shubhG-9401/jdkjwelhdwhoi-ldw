@@ -86,14 +86,6 @@ export class SecurityManager {
       if (document.hidden) showShield();
       else hideShield();
     });
-
-    // Also trigger blackout if mouse leaves window towards top/sides (common when taking snips)
-    document.addEventListener('mouseleave', () => {
-      showShield();
-    });
-    document.addEventListener('mouseenter', () => {
-      if (!this.isLockdown) hideShield();
-    });
   }
 
   /**
@@ -200,16 +192,17 @@ export class SecurityManager {
     let triggered = false;
 
     // Viewport delta check (DevTools dock detection)
+    // Docked DevTools takes >= 280px width or >= 320px height
     const checkViewport = () => {
-      const widthDelta = window.outerWidth - window.innerWidth > 170;
-      const heightDelta = window.outerHeight - window.innerHeight > 170;
-      if ((widthDelta || heightDelta) && !triggered) {
+      const widthDelta = window.outerWidth - window.innerWidth;
+      const heightDelta = window.outerHeight - window.innerHeight;
+      if ((widthDelta > 280 || heightDelta > 320) && !triggered) {
         triggered = true;
         this.triggerLockdown('DevTools or Network Inspector detected via viewport delta.');
       }
     };
     window.addEventListener('resize', checkViewport);
-    setInterval(checkViewport, 1500);
+    setInterval(checkViewport, 2000);
 
     // Context menu & keyboard shortcut suppression
     document.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -235,14 +228,15 @@ export class SecurityManager {
     this.isLockdown = true;
 
     // Halt video and clear source immediately
-    const video = document.getElementById('video-element');
+    const video = document.getElementById('player-video') || document.getElementById('video-element');
     if (video) {
       video.pause();
-      video.src = '';
+      video.removeAttribute('src');
+      video.load();
     }
 
     // Display lockdown modal
-    const lockdownModal = document.getElementById('devtools-lockdown-modal');
+    const lockdownModal = document.getElementById('tamper-lockdown-screen') || document.getElementById('devtools-lockdown-modal');
     if (lockdownModal) {
       lockdownModal.classList.remove('hidden');
     }

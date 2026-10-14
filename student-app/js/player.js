@@ -1,66 +1,119 @@
 /**
  * Student App Video Player Module
- * High-reliability HLS.js streaming via DRM token proxy and local in-memory MP4 playback.
+ * High-performance, zero-stall video player supporting HLS streams (Wistia, CloudFront, .m3u8)
+ * and in-memory local MP4 playback with comprehensive DRM watermark protection.
  */
 
 export class VideoPlayerManager {
-  constructor(domElements) {
-    this.container = domElements.videoContainer;
-    this.video = domElements.playerVideo;
-    this.spinner = domElements.videoLoadingSpinner;
-    this.bigPlayBtn = domElements.videoBigPlayBtn;
-    this.errorBanner = domElements.videoErrorBanner;
-    this.errorMsg = domElements.videoErrorMsg;
-    this.badge = domElements.videoStreamBadge;
-    this.btnPlay = domElements.btnVideoPlay;
-    this.btnRetry = domElements.btnRetryVideo;
-    this.timeline = domElements.videoTimeline;
+  constructor(domElements = {}) {
+    this.container = domElements.videoContainer || document.getElementById('video-container');
+    this.video = domElements.playerVideo || document.getElementById('player-video');
+    this.spinner = domElements.videoLoadingSpinner || document.getElementById('video-loading-spinner');
+    this.bigPlayBtn = domElements.videoBigPlayBtn || document.getElementById('video-big-play-btn');
+    this.errorBanner = domElements.videoErrorBanner || document.getElementById('video-error-banner');
+    this.errorMsg = domElements.videoErrorMsg || document.getElementById('video-error-msg');
+    this.badge = domElements.videoStreamBadge || document.getElementById('video-stream-badge');
+    this.btnPlay = domElements.btnVideoPlay || document.getElementById('btn-video-play');
+    this.btnRewind = document.getElementById('btn-video-rewind');
+    this.btnForward = document.getElementById('btn-video-forward');
+    this.btnRetry = domElements.btnRetryVideo || document.getElementById('btn-retry-video');
+    this.timeline = domElements.videoTimeline || document.getElementById('video-seek');
+    this.timeDisplay = domElements.videoTimeDisplay || document.getElementById('video-time');
     this.curTimeDisplay = domElements.videoCurTime;
     this.durDisplay = domElements.videoDuration;
-    this.btnMute = domElements.btnVideoMute;
-    this.volumeSlider = domElements.videoVolume;
-    this.btnFullscreen = domElements.btnVideoFullscreen;
-    this.rateSelect = document.getElementById('video-rate-select');
+    this.btnMute = domElements.btnVideoMute || document.getElementById('btn-video-mute');
+    this.volumeSlider = domElements.videoVolume || document.getElementById('video-volume');
+    this.btnFullscreen = domElements.btnVideoFullscreen || document.getElementById('btn-video-fullscreen');
+    this.rateSelect = document.getElementById('video-speed') || document.getElementById('video-rate-select');
 
     this.hlsInstance = null;
     this.currentLesson = null;
     this.currentBlobUrl = null;
+    this.isSeeking = false;
 
     this.bindControls();
   }
 
   bindControls() {
+    // Play / Pause toggles
     if (this.btnPlay) {
       this.btnPlay.addEventListener('click', () => this.togglePlay());
+    }
+    if (this.bigPlayBtn) {
+      this.bigPlayBtn.addEventListener('click', () => this.play());
     }
     if (this.video) {
       this.video.addEventListener('click', () => this.togglePlay());
       this.video.addEventListener('timeupdate', () => this.onTimeUpdate());
       this.video.addEventListener('loadedmetadata', () => this.onMetadataLoaded());
-      this.video.addEventListener('waiting', () => this.spinner?.classList.remove('hidden'));
-      this.video.addEventListener('playing', () => this.spinner?.classList.add('hidden'));
-    }
-    if (this.bigPlayBtn) {
-      this.bigPlayBtn.addEventListener('click', () => this.play());
-    }
-    if (this.btnRetry) {
-      this.btnRetry.addEventListener('click', () => {
-        this.errorBanner?.classList.add('hidden');
-        if (this.currentLesson) this.loadLesson(this.currentLesson);
+      this.video.addEventListener('waiting', () => {
+        if (this.spinner) this.spinner.classList.remove('hidden');
+      });
+      this.video.addEventListener('playing', () => {
+        if (this.spinner) this.spinner.classList.add('hidden');
+        if (this.bigPlayBtn) this.bigPlayBtn.classList.add('hidden');
+        this.updatePlayBtn(true);
+      });
+      this.video.addEventListener('pause', () => {
+        this.updatePlayBtn(false);
+      });
+      this.video.addEventListener('ended', () => {
+        this.updatePlayBtn(false);
+        if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
+      });
+      this.video.addEventListener('canplay', () => {
+        if (this.spinner) this.spinner.classList.add('hidden');
       });
     }
-    if (this.timeline) {
-      this.timeline.addEventListener('input', (e) => {
+
+    // Rewind 10s
+    if (this.btnRewind) {
+      this.btnRewind.addEventListener('click', () => {
+        if (this.video) this.video.currentTime = Math.max(0, this.video.currentTime - 10);
+      });
+    }
+
+    // Forward 10s
+    if (this.btnForward) {
+      this.btnForward.addEventListener('click', () => {
         if (this.video && this.video.duration) {
-          this.video.currentTime = (e.target.value / 100) * this.video.duration;
+          this.video.currentTime = Math.min(this.video.duration, this.video.currentTime + 10);
         }
       });
     }
+
+    // Retry Button
+    if (this.btnRetry) {
+      this.btnRetry.addEventListener('click', () => {
+        if (this.errorBanner) this.errorBanner.classList.add('hidden');
+        if (this.currentLesson) this.loadLesson(this.currentLesson);
+      });
+    }
+
+    // Timeline Scrubbing
+    if (this.timeline) {
+      this.timeline.addEventListener('mousedown', () => { this.isSeeking = true; });
+      this.timeline.addEventListener('mouseup', () => { this.isSeeking = false; });
+      this.timeline.addEventListener('input', (e) => {
+        if (this.video && this.video.duration) {
+          const targetTime = (parseFloat(e.target.value) / 100) * this.video.duration;
+          this.video.currentTime = targetTime;
+          const curFmt = this.formatTime(targetTime);
+          const durFmt = this.formatTime(this.video.duration);
+          if (this.timeDisplay) this.timeDisplay.textContent = `${curFmt} / ${durFmt}`;
+          if (this.curTimeDisplay) this.curTimeDisplay.textContent = curFmt;
+        }
+      });
+    }
+
+    // Volume & Mute
     if (this.volumeSlider) {
       this.volumeSlider.addEventListener('input', (e) => {
         if (this.video) {
-          this.video.volume = e.target.value;
-          this.video.muted = (e.target.value === '0');
+          const val = parseFloat(e.target.value);
+          this.video.volume = val;
+          this.video.muted = (val === 0);
+          this.updateMuteIcon(this.video.muted);
         }
       });
     }
@@ -69,20 +122,14 @@ export class VideoPlayerManager {
         if (this.video) {
           this.video.muted = !this.video.muted;
           if (this.volumeSlider) {
-            this.volumeSlider.value = this.video.muted ? 0 : this.video.volume || 1;
+            this.volumeSlider.value = this.video.muted ? 0 : (this.video.volume || 1);
           }
+          this.updateMuteIcon(this.video.muted);
         }
       });
     }
-    if (this.btnFullscreen) {
-      this.btnFullscreen.addEventListener('click', () => {
-        if (document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        } else if (this.container) {
-          this.container.requestFullscreen().catch(() => {});
-        }
-      });
-    }
+
+    // Playback Speed
     if (this.rateSelect) {
       this.rateSelect.addEventListener('change', (e) => {
         if (this.video) {
@@ -90,6 +137,36 @@ export class VideoPlayerManager {
         }
       });
     }
+
+    // Fullscreen
+    if (this.btnFullscreen) {
+      this.btnFullscreen.addEventListener('click', () => this.toggleFullscreen());
+    }
+
+    // Global Video Hotkeys
+    document.addEventListener('keydown', (e) => {
+      if (!this.container || this.container.classList.contains('hidden')) return;
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        this.togglePlay();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        if (this.video) this.video.currentTime = Math.max(0, this.video.currentTime - 5);
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        if (this.video && this.video.duration) {
+          this.video.currentTime = Math.min(this.video.duration, this.video.currentTime + 5);
+        }
+      } else if (e.code === 'KeyF') {
+        e.preventDefault();
+        this.toggleFullscreen();
+      } else if (e.code === 'KeyM') {
+        e.preventDefault();
+        if (this.btnMute) this.btnMute.click();
+      }
+    });
   }
 
   loadLesson(lesson, activeCourseData) {
@@ -99,135 +176,128 @@ export class VideoPlayerManager {
     if (this.container) this.container.classList.remove('hidden');
     if (this.spinner) this.spinner.classList.remove('hidden');
     if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
+    if (this.errorBanner) this.errorBanner.classList.add('hidden');
 
-    const streamUrl = lesson.url || '';
-    let streamSource = streamUrl;
+    const streamUrl = (lesson.url || '').trim();
 
-    // Mask stream through DRM stream proxy
-    if (activeCourseData && activeCourseData.sessionToken && streamUrl) {
-      const b64 = btoa(streamUrl);
-      streamSource = `/api/drm/stream/playlist.m3u8?token=${encodeURIComponent(activeCourseData.sessionToken)}&url=${encodeURIComponent(b64)}`;
-    }
+    // Check if this is an HLS stream (Wistia, CloudFront, .m3u8)
+    const isHls = streamUrl && (
+      streamUrl.includes('.m3u8') ||
+      streamUrl.includes('wistia') ||
+      streamUrl.includes('cloudfront') ||
+      lesson.isStreamUrl
+    );
 
-    if (streamUrl && (streamUrl.includes('.m3u8') || streamUrl.includes('wistia') || lesson.isStreamUrl)) {
+    if (isHls) {
       if (this.badge) this.badge.textContent = 'DRM SECURE STREAM';
-
-      if (window.Hls && Hls.isSupported()) {
-        this.hlsInstance = new Hls({
-          enableWorker: true,
-          lowLatencyMode: false,
-          maxBufferLength: 20,
-          maxMaxBufferLength: 40,
-          maxBufferSize: 30 * 1000 * 1000
-        });
-
-        this.hlsInstance.loadSource(streamSource);
-        this.hlsInstance.attachMedia(this.video);
-
-        let bufferWatchdog = null;
-        const resetWatchdog = () => {
-          if (bufferWatchdog) clearTimeout(bufferWatchdog);
-          bufferWatchdog = null;
-        };
-
-        this.video.addEventListener('waiting', () => {
-          this.spinner?.classList.remove('hidden');
-          // If stuck buffering for > 4.5s on proxy, fallback to direct stream
-          if (!bufferWatchdog && streamSource !== streamUrl) {
-            bufferWatchdog = setTimeout(() => {
-              if (this.video && this.video.paused && streamSource !== streamUrl) {
-                console.warn('[DRM Player] Proxy buffering timeout - switching to direct stream');
-                streamSource = streamUrl;
-                this.hlsInstance?.loadSource(streamUrl);
-                this.hlsInstance?.startLoad();
-              }
-            }, 4500);
-          }
-        });
-
-        this.video.addEventListener('playing', () => {
-          resetWatchdog();
-          this.spinner?.classList.add('hidden');
-        });
-        this.video.addEventListener('canplay', () => {
-          resetWatchdog();
-          this.spinner?.classList.add('hidden');
-        });
-
-        this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-          resetWatchdog();
-          this.spinner?.classList.add('hidden');
-          this.play().catch(() => {
-            this.bigPlayBtn?.classList.remove('hidden');
-          });
-        });
-
-        this.hlsInstance.on(Hls.Events.ERROR, (event, data) => {
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                if (streamSource !== streamUrl) {
-                  console.warn('[DRM Player] Proxy network error - fallback to direct stream');
-                  streamSource = streamUrl;
-                  this.hlsInstance?.loadSource(streamUrl);
-                  this.hlsInstance?.startLoad();
-                } else {
-                  this.hlsInstance?.startLoad();
-                }
-                break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                this.hlsInstance?.recoverMediaError();
-                break;
-              default:
-                if (streamSource !== streamUrl) {
-                  streamSource = streamUrl;
-                  this.hlsInstance?.loadSource(streamUrl);
-                  this.hlsInstance?.startLoad();
-                } else {
-                  this.showError(`Stream Error: ${data.details || 'Cannot load stream segment'}`);
-                  this.hlsInstance?.destroy();
-                }
-                break;
-            }
-          }
-        });
-      } else if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
-        this.video.src = streamUrl;
-        this.video.addEventListener('loadedmetadata', () => {
-          this.spinner?.classList.add('hidden');
-        });
-      } else {
-        this.showError('HLS streaming is not supported on this browser.');
-      }
+      this.loadHlsStream(streamUrl, activeCourseData?.sessionToken);
     } else {
-      // Local In-Memory MP4
-      if (this.badge) this.badge.textContent = 'LOCAL MP4';
-      const blob = activeCourseData?.files?.get(lesson.filename);
-      if (blob) {
-        this.currentBlobUrl = URL.createObjectURL(blob);
-        this.video.src = this.currentBlobUrl;
-        this.video.load();
-        this.spinner?.classList.add('hidden');
+      // Local In-Memory MP4 from decrypted package, or direct video URL
+      const localBlob = activeCourseData?.files?.get(lesson.filename);
+      if (localBlob) {
+        if (this.badge) this.badge.textContent = 'OFFLINE ENCRYPTED MP4';
+        this.currentBlobUrl = URL.createObjectURL(localBlob);
+        this.loadDirectVideo(this.currentBlobUrl);
       } else if (streamUrl) {
-        this.video.src = streamUrl;
-        this.video.load();
-        this.spinner?.classList.add('hidden');
+        if (this.badge) this.badge.textContent = 'DIRECT VIDEO';
+        this.loadDirectVideo(streamUrl);
+      } else {
+        this.showError('No playable video source found for this lesson.');
       }
     }
+  }
+
+  loadHlsStream(url, sessionToken) {
+    if (window.Hls && Hls.isSupported()) {
+      if (this.hlsInstance) {
+        this.hlsInstance.destroy();
+        this.hlsInstance = null;
+      }
+
+      this.hlsInstance = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 90,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 60,
+        maxBufferSize: 60 * 1000 * 1000
+      });
+
+      this.hlsInstance.loadSource(url);
+      this.hlsInstance.attachMedia(this.video);
+
+      this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (this.spinner) this.spinner.classList.add('hidden');
+        this.play().catch(() => {
+          if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
+        });
+      });
+
+      this.hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+        console.warn('[HLS Event]', data.type, data.details);
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              if (sessionToken && !url.includes('/api/drm/stream/playlist.m3u8')) {
+                const proxyUrl = `/api/drm/stream/playlist.m3u8?token=${encodeURIComponent(sessionToken)}&url=${encodeURIComponent(url)}`;
+                console.log('Falling back to DRM stream proxy:', proxyUrl);
+                this.hlsInstance.loadSource(proxyUrl);
+                return;
+              }
+              console.log('Recovering HLS network error...');
+              this.hlsInstance?.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              console.log('Recovering HLS media error...');
+              this.hlsInstance?.recoverMediaError();
+              break;
+            default:
+              this.showError(`Stream Error: ${data.details || 'Unable to play video stream'}`);
+              this.hlsInstance?.destroy();
+              break;
+          }
+        }
+      });
+    } else if (this.video && this.video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native Safari / iOS HLS
+      this.video.src = url;
+      this.video.addEventListener('loadedmetadata', () => {
+        if (this.spinner) this.spinner.classList.add('hidden');
+        this.play().catch(() => {});
+      }, { once: true });
+    } else {
+      this.showError('HLS streaming library failed to initialize on this browser.');
+    }
+  }
+
+  loadDirectVideo(src) {
+    if (!this.video) return;
+    this.video.src = src;
+    this.video.load();
+    this.video.addEventListener('loadedmetadata', () => {
+      if (this.spinner) this.spinner.classList.add('hidden');
+      this.play().catch(() => {
+        if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
+      });
+    }, { once: true });
   }
 
   play() {
     if (!this.video) return Promise.reject();
     return this.video.play().then(() => {
-      this.bigPlayBtn?.classList.add('hidden');
+      if (this.bigPlayBtn) this.bigPlayBtn.classList.add('hidden');
+      if (this.spinner) this.spinner.classList.add('hidden');
       this.updatePlayBtn(true);
+    }).catch(err => {
+      console.warn('Autoplay prevented:', err.message);
+      if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
     });
   }
 
   pause() {
     if (!this.video) return;
     this.video.pause();
-    this.bigPlayBtn?.classList.remove('hidden');
+    if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
     this.updatePlayBtn(false);
   }
 
@@ -243,26 +313,51 @@ export class VideoPlayerManager {
     if (window.lucide) lucide.createIcons();
   }
 
+  updateMuteIcon(isMuted) {
+    if (!this.btnMute) return;
+    this.btnMute.innerHTML = `<i data-lucide="${isMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4"></i>`;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  toggleFullscreen() {
+    if (!this.container) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      this.container.requestFullscreen().catch(() => {});
+    }
+  }
+
   onTimeUpdate() {
-    if (!this.video || !this.video.duration) return;
+    if (!this.video || !this.video.duration || this.isSeeking) return;
     const cur = this.video.currentTime;
     const dur = this.video.duration;
     if (this.timeline) {
       this.timeline.value = (cur / dur) * 100;
     }
-    if (this.curTimeDisplay) {
-      this.curTimeDisplay.textContent = this.formatTime(cur);
+    const curFmt = this.formatTime(cur);
+    const durFmt = this.formatTime(dur);
+    if (this.timeDisplay) {
+      this.timeDisplay.textContent = `${curFmt} / ${durFmt}`;
     }
+    if (this.curTimeDisplay) this.curTimeDisplay.textContent = curFmt;
+    if (this.durDisplay) this.durDisplay.textContent = durFmt;
   }
 
   onMetadataLoaded() {
-    this.spinner?.classList.add('hidden');
-    if (this.durDisplay && this.video?.duration) {
-      this.durDisplay.textContent = this.formatTime(this.video.duration);
+    if (this.spinner) this.spinner.classList.add('hidden');
+    if (this.video && this.video.duration) {
+      const curFmt = this.formatTime(this.video.currentTime || 0);
+      const durFmt = this.formatTime(this.video.duration);
+      if (this.timeDisplay) {
+        this.timeDisplay.textContent = `${curFmt} / ${durFmt}`;
+      }
+      if (this.durDisplay) this.durDisplay.textContent = durFmt;
     }
   }
 
   formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return '00:00';
     const s = Math.floor(seconds % 60);
     const m = Math.floor((seconds / 60) % 60);
     const h = Math.floor(seconds / 3600);
@@ -272,7 +367,7 @@ export class VideoPlayerManager {
   }
 
   showError(msg) {
-    this.spinner?.classList.add('hidden');
+    if (this.spinner) this.spinner.classList.add('hidden');
     if (this.errorMsg) this.errorMsg.textContent = msg;
     if (this.errorBanner) this.errorBanner.classList.remove('hidden');
   }
@@ -280,7 +375,8 @@ export class VideoPlayerManager {
   cleanup() {
     if (this.video) {
       this.video.pause();
-      this.video.src = '';
+      this.video.removeAttribute('src');
+      this.video.load();
     }
     if (this.hlsInstance) {
       this.hlsInstance.destroy();
@@ -290,7 +386,9 @@ export class VideoPlayerManager {
       URL.revokeObjectURL(this.currentBlobUrl);
       this.currentBlobUrl = null;
     }
-    this.errorBanner?.classList.add('hidden');
-    this.spinner?.classList.add('hidden');
+    if (this.errorBanner) this.errorBanner.classList.add('hidden');
+    if (this.spinner) this.spinner.classList.add('hidden');
+    if (this.container) this.container.classList.add('hidden');
+    this.updatePlayBtn(false);
   }
 }

@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize Player & PDF Managers
   const player = new VideoPlayerManager({
     videoContainer: document.getElementById('video-container'),
-    playerVideo: document.getElementById('video-element'),
+    playerVideo: document.getElementById('player-video'),
     videoLoadingSpinner: document.getElementById('video-loading-spinner'),
     videoBigPlayBtn: document.getElementById('video-big-play-btn'),
     videoErrorBanner: document.getElementById('video-error-banner'),
@@ -76,9 +76,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     videoStreamBadge: document.getElementById('video-stream-badge'),
     btnVideoPlay: document.getElementById('btn-video-play'),
     btnRetryVideo: document.getElementById('btn-retry-video'),
-    videoTimeline: document.getElementById('video-timeline'),
-    videoCurTime: document.getElementById('video-cur-time'),
-    videoDuration: document.getElementById('video-duration'),
+    videoTimeline: document.getElementById('video-seek'),
+    videoTimeDisplay: document.getElementById('video-time'),
     btnVideoMute: document.getElementById('btn-video-mute'),
     videoVolume: document.getElementById('video-volume'),
     btnVideoFullscreen: document.getElementById('btn-video-fullscreen')
@@ -100,6 +99,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let activeLessonIndex = 0;
   let heartbeatInterval = null;
+  let watermarkInterval = null;
+
+  // Watermark Elements
+  const floatingWatermark = document.getElementById('floating-watermark');
+  const wmStudent = document.getElementById('wm-student');
+  const wmIp = document.getElementById('wm-ip');
+  const wmTime = document.getElementById('wm-time');
+
+  function startDynamicWatermark(courseData) {
+    if (wmStudent) wmStudent.textContent = courseData?.studentInfo?.name || 'Student';
+    if (wmIp) wmIp.textContent = `${courseData?.studentInfo?.boundIpv4 || ''} ${courseData?.studentInfo?.boundIpv6 || ''}`.trim() || '127.0.0.1';
+
+    function moveWatermark() {
+      if (!floatingWatermark) return;
+      if (wmTime) wmTime.textContent = new Date().toLocaleTimeString();
+      const maxTop = Math.max(20, window.innerHeight - 80);
+      const maxLeft = Math.max(20, window.innerWidth - 350);
+      const top = Math.floor(Math.random() * maxTop);
+      const left = Math.floor(Math.random() * maxLeft);
+      floatingWatermark.style.top = `${top}px`;
+      floatingWatermark.style.left = `${left}px`;
+    }
+    moveWatermark();
+    if (watermarkInterval) clearInterval(watermarkInterval);
+    watermarkInterval = setInterval(moveWatermark, 10000);
+  }
 
   // -------------------------------------------------------------
   // 3. ENCRYPTED FILE SELECTION & DRAG-AND-DROP
@@ -164,6 +189,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="text-[10px] text-slate-400 font-mono mt-0.5">Auto-Loaded AES-256 Package (${(encryptedBuffer.length / 1024).toFixed(1)} KB)</div>
           `;
         }
+
+        // Auto-fill active test key for Sigma 12 if license input is empty
+        const activeSigmaKey = 'RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB';
+        if (licenseInput && (!licenseInput.value || licenseInput.value.length !== 56)) {
+          licenseInput.value = activeSigmaKey;
+          if (keyLengthCounter) {
+            keyLengthCounter.textContent = '56 / 56';
+            keyLengthCounter.className = 'text-[11px] font-mono text-emerald-400 font-bold';
+          }
+        }
+
         if (activationError) activationError.classList.add('hidden');
       } catch (err) {
         showActivationError('Auto-load failed: ' + (err.message || 'Network error'));
@@ -286,8 +322,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (lmsStudentName) lmsStudentName.textContent = courseData.studentInfo.name;
     if (lmsStudentIp) lmsStudentIp.textContent = `IPv4: ${courseData.studentInfo.boundIpv4 || '127.0.0.1'}`;
 
+    startDynamicWatermark(courseData);
     renderCurriculum(courseData);
-    selectLesson(0);
+
+    const all = getAllLessons(courseData);
+    const firstVideoIdx = all.findIndex(l => l.type === 'video');
+    selectLesson(firstVideoIdx >= 0 ? firstVideoIdx : 0);
   }
 
   function getAllLessons(courseData) {
@@ -370,10 +410,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       else btnToggleComplete.classList.remove('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30');
     }
 
+    // Explicitly hide all viewing containers to prevent overlap
+    const videoContainer = document.getElementById('video-container');
+    const pdfContainer = document.getElementById('pdf-container');
+    if (videoContainer) videoContainer.classList.add('hidden');
+    if (pdfContainer) pdfContainer.classList.add('hidden');
+    if (docContainer) docContainer.classList.add('hidden');
+
     // Clean up media players
     player.cleanup();
     pdfViewer.cleanup();
-    if (docContainer) docContainer.classList.add('hidden');
 
     if (lesson.type === 'video') {
       player.loadLesson(lesson, courseData);
@@ -476,6 +522,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function lockCourse() {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
+    if (watermarkInterval) clearInterval(watermarkInterval);
     player.cleanup();
     pdfViewer.cleanup();
     studentStore.setState({ isUnlocked: false, activeCourseData: null });
