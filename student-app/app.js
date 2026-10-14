@@ -37,13 +37,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (clientHwidDisplay) clientHwidDisplay.textContent = state.hwid;
   if (clientIpv4Display) clientIpv4Display.textContent = state.clientIpv4;
-  if (clientIpv6Display) clientIpv6Display.textContent = state.clientIpv6;
+  if (clientIpv6Display) clientIpv6Display.textContent = state.clientIpv6 || 'Detecting...';
 
   studentApi.getMyIp().then(ips => {
     if (ips && ips.ipv4) {
-      studentStore.setState({ clientIpv4: ips.ipv4, clientIpv6: ips.ipv6 || '::1' });
+      studentStore.setState({ clientIpv4: ips.ipv4, clientIpv6: ips.ipv6 || null });
       if (clientIpv4Display) clientIpv4Display.textContent = ips.ipv4;
-      if (clientIpv6Display) clientIpv6Display.textContent = ips.ipv6 || '::1';
+      if (clientIpv6Display) {
+        if (ips.ipv6 && ips.ipv6 !== '::1') {
+          clientIpv6Display.textContent = ips.ipv6;
+          clientIpv6Display.className = 'font-mono text-indigo-400 font-semibold select-all text-[10px]';
+        } else if (ips.ipv6 === '::1') {
+          clientIpv6Display.textContent = '::1 (Localhost)';
+          clientIpv6Display.className = 'font-mono text-slate-400 text-[10px]';
+        } else {
+          clientIpv6Display.textContent = 'IPv4 Connection';
+          clientIpv6Display.className = 'italic text-slate-500 text-[10px]';
+        }
+      }
     }
   }).catch(() => {});
 

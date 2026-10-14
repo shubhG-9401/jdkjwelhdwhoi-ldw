@@ -262,6 +262,73 @@ async function runTests() {
     return `Verified ${data.logs.length} events with IPv4 & IPv6 telemetry`;
   });
 
+  // 14b. Public IPv6 Dual-Stack Resolution & Binding Test
+  let dualStackKey = '';
+  await check('Public IPv6 Dual-Stack Binding', async () => {
+    // 1. Issue test license
+    const issueRes = await fetch('http://localhost:3000/api/licenses/issue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
+      body: JSON.stringify({
+        courseId: activeCourseId,
+        customerName: 'IPv6 Test Student',
+        durationDays: 30,
+        bindIp: true,
+        bindHwid: true
+      })
+    });
+    const issueData = await issueRes.json();
+    dualStackKey = issueData.license.licenseKey;
+
+    // 2. Activate simulating Indian mobile ISP (Airtel/Jio) with public IPv4 & public IPv6
+    const actRes = await fetch('http://localhost:3000/api/client/activate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Forwarded-For': '182.77.71.147',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
+      },
+      body: JSON.stringify({
+        courseId: activeCourseId,
+        licenseKey: dualStackKey,
+        hwid: 'hwid-ipv6-student-99',
+        clientIpv4: '182.77.71.147',
+        clientIpv6: '2401:4900:8f5c:2ded:84a3:57d9:899c:7056',
+        screenShortSide: 1080,
+        isPhoneDevice: false
+      })
+    });
+    if (!actRes.ok) {
+      const err = await actRes.json();
+      throw new Error(`Activation failed: ${err.error || actRes.status}`);
+    }
+    const actData = await actRes.json();
+    if (actData.studentInfo.boundIpv4 !== '182.77.71.147') {
+      throw new Error(`Expected bound IPv4 182.77.71.147, got ${actData.studentInfo.boundIpv4}`);
+    }
+    if (actData.studentInfo.boundIpv6 !== '2401:4900:8f5c:2ded:84a3:57d9:899c:7056') {
+      throw new Error(`Expected bound IPv6 2401:4900:..., got ${actData.studentInfo.boundIpv6}`);
+    }
+
+    // 3. Check security logs
+    const logRes = await fetch('http://localhost:3000/api/logs?limit=5', {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const logData = await logRes.json();
+    const actLog = logData.logs.find(l => l.licenseKey === dualStackKey);
+    if (!actLog || actLog.ipv6 !== '2401:4900:8f5c:2ded:84a3:57d9:899c:7056') {
+      throw new Error('Log does not contain real public IPv6');
+    }
+
+    // 4. Cleanup dual stack test key
+    await fetch(`http://localhost:3000/api/system/licenses/${dualStackKey}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+
+    return `Bound IPv4: ${actData.studentInfo.boundIpv4} | IPv6: ${actData.studentInfo.boundIpv6}`;
+  });
+
   // 15. Test License Cleanup (Delete mock test key so it does not pollute production DB)
   if (generatedKey) {
     await check('Test License Cleanup', async () => {
@@ -278,7 +345,7 @@ async function runTests() {
 
   console.log('\n----------------------------------------');
   if (failures === 0) {
-    console.log('--- ALL 16 TESTS PASSED PERFECTLY ---');
+    console.log('--- ALL 17 TESTS PASSED PERFECTLY ---');
     process.exit(0);
   } else {
     console.error(`--- ${failures} TESTS FAILED ---`);

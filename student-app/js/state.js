@@ -10,7 +10,7 @@ class StudentStore {
       licenseKey: '',
       hwid: this.generateClientHwid(),
       clientIpv4: '127.0.0.1',
-      clientIpv6: '::1',
+      clientIpv6: null,
       activeCourseData: null,
       currentLesson: null,
       completedLessonIds: new Set(),

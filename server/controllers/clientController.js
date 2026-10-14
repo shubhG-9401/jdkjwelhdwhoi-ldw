@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { db } from '../db.js';
 import { config } from '../config/index.js';
 import { inspectEncryptedFile } from '../cryptoEngine.js';
-import { getClientIps, isMobileDevice } from '../utils/network.js';
+import { getClientIps, isMobileDevice, isPublicIpv4, isPublicIpv6 } from '../utils/network.js';
 
 // In-memory active DRM session store (with memory fallback)
 export const activeSessions = new Map();
@@ -74,14 +74,23 @@ export const clientController = {
     const reqIps = getClientIps(req);
     let effectiveIpv4 = reqIps.ipv4;
     let effectiveIpv6 = reqIps.ipv6;
-    if (clientIpv4 && clientIpv4 !== '127.0.0.1' && (!effectiveIpv4 || effectiveIpv4 === '127.0.0.1')) {
+
+    if (clientIpv4 && isPublicIpv4(clientIpv4) && (!effectiveIpv4 || effectiveIpv4 === '127.0.0.1')) {
       effectiveIpv4 = clientIpv4;
     }
-    if (clientIpv6 && clientIpv6 !== '::1' && (!effectiveIpv6 || effectiveIpv6 === '::1')) {
+    if (clientIpv6 && isPublicIpv6(clientIpv6) && (!effectiveIpv6 || effectiveIpv6 === '::1')) {
       effectiveIpv6 = clientIpv6;
     }
-    if (!effectiveIpv4) effectiveIpv4 = '127.0.0.1';
-    if (!effectiveIpv6) effectiveIpv6 = '::1';
+    if (!effectiveIpv4 && !effectiveIpv6) {
+      effectiveIpv4 = '127.0.0.1';
+      effectiveIpv6 = '::1';
+    } else if (effectiveIpv4 === '127.0.0.1' && !effectiveIpv6) {
+      effectiveIpv6 = '::1';
+    } else if (effectiveIpv6 === '::1' && effectiveIpv4 && effectiveIpv4 !== '127.0.0.1') {
+      effectiveIpv6 = null;
+    }
+
+    const effectiveIpDisplay = effectiveIpv6 ? `${effectiveIpv4 || '127.0.0.1'} / ${effectiveIpv6}` : (effectiveIpv4 || '127.0.0.1');
 
     if (!licenseKey || !hwid) {
       return res.status(400).json({ error: 'License key and Device Hardware ID (HWID) are required.' });
@@ -104,7 +113,9 @@ export const clientController = {
         action: 'activation_attempt',
         status: 'rejected_mobile_device',
         licenseKey: cleanKey,
-        ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+        ip: effectiveIpDisplay,
+        ipv4: effectiveIpv4 || '127.0.0.1',
+        ipv6: effectiveIpv6 || null,
         hwid,
         message: `Blocked activation attempt from mobile device / phone desktop site (${(req.headers['user-agent'] || '').substring(0, 80)}, screen short edge: ${screenShortSide || 'N/A'}). Course playback is restricted to Windows PC.`
       });
@@ -119,7 +130,9 @@ export const clientController = {
         action: 'activation_attempt',
         status: 'rejected_invalid_key',
         licenseKey: cleanKey,
-        ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+        ip: effectiveIpDisplay,
+        ipv4: effectiveIpv4 || '127.0.0.1',
+        ipv6: effectiveIpv6 || null,
         hwid,
         message: 'Attempted activation with non-existent 56-char license key.'
       });
@@ -132,7 +145,9 @@ export const clientController = {
         status: 'rejected_revoked',
         licenseKey: cleanKey,
         studentName: license.customerName,
-        ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+        ip: effectiveIpDisplay,
+        ipv4: effectiveIpv4 || '127.0.0.1',
+        ipv6: effectiveIpv6 || null,
         hwid,
         message: 'Attempted access with revoked license.'
       });
@@ -146,7 +161,9 @@ export const clientController = {
         status: 'rejected_course_mismatch',
         licenseKey: cleanKey,
         studentName: license.customerName,
-        ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+        ip: effectiveIpDisplay,
+        ipv4: effectiveIpv4 || '127.0.0.1',
+        ipv6: effectiveIpv6 || null,
         hwid,
         message: `License is for course ${license.courseId}, but user opened ${keyId}.`
       });
@@ -169,21 +186,23 @@ export const clientController = {
           status: 'rejected_ip_mismatch',
           licenseKey: cleanKey,
           studentName: license.customerName,
-          ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+          ip: effectiveIpDisplay,
+          ipv4: effectiveIpv4 || '127.0.0.1',
+          ipv6: effectiveIpv6 || null,
           hwid,
-          message: `Blocked: Strict IP Mismatch. Allowed: ${license.allowedIpv4 || license.allowedIpv6}, Detected: IPv4=${effectiveIpv4}, IPv6=${effectiveIpv6}`
+          message: `Blocked: Strict IP Mismatch. Allowed: ${license.allowedIpv4 || license.allowedIpv6}, Detected: IPv4=${effectiveIpv4}, IPv6=${effectiveIpv6 || 'None'}`
         });
         return res.status(403).json({
-          error: `Access Denied: Your IP (IPv4: ${effectiveIpv4}, IPv6: ${effectiveIpv6}) is not authorized for this license.`
+          error: `Access Denied: Your IP (IPv4: ${effectiveIpv4}, IPv6: ${effectiveIpv6 || 'Not Assigned'}) is not authorized for this license.`
         });
       }
       if (!license.boundIpv4) license.boundIpv4 = effectiveIpv4;
-      if (!license.boundIpv6) license.boundIpv6 = effectiveIpv6;
+      if (!license.boundIpv6 && effectiveIpv6) license.boundIpv6 = effectiveIpv6;
     } else {
       // 'first_login' auto-binding mode: bind both IPv4 and IPv6 on initial activation
       if (!license.boundIpv4 && !license.boundIpv6) {
         license.boundIpv4 = effectiveIpv4;
-        license.boundIpv6 = effectiveIpv6;
+        license.boundIpv6 = effectiveIpv6 || null;
       } else {
         const matchesV4 = license.boundIpv4 && (license.boundIpv4 === effectiveIpv4);
         const matchesV6 = license.boundIpv6 && (license.boundIpv6 === effectiveIpv6);
@@ -194,9 +213,11 @@ export const clientController = {
             status: 'rejected_ip_mismatch',
             licenseKey: cleanKey,
             studentName: license.customerName,
-            ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+            ip: effectiveIpDisplay,
+            ipv4: effectiveIpv4 || '127.0.0.1',
+            ipv6: effectiveIpv6 || null,
             hwid,
-            message: `Blocked: IP Mismatch. Bound to: ${license.boundIpv4 || license.boundIpv6}, Detected: IPv4=${effectiveIpv4}, IPv6=${effectiveIpv6}`
+            message: `Blocked: IP Mismatch. Bound to: ${license.boundIpv4 || license.boundIpv6}, Detected: IPv4=${effectiveIpv4}, IPv6=${effectiveIpv6 || 'None'}`
           });
           return res.status(403).json({
             error: `Access Denied: This license is locked to another network (Bound IPv4: ${license.boundIpv4 || 'none'}, IPv6: ${license.boundIpv6 || 'none'}). Cannot be accessed from other locations.`
@@ -214,7 +235,9 @@ export const clientController = {
         status: 'rejected_hwid_mismatch',
         licenseKey: cleanKey,
         studentName: license.customerName,
-        ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+        ip: effectiveIpDisplay,
+        ipv4: effectiveIpv4 || '127.0.0.1',
+        ipv6: effectiveIpv6 || null,
         hwid,
         message: `Blocked: Unauthorized PC. Locked to: ${license.boundHwid}, Detected: ${hwid}`
       });
@@ -225,7 +248,7 @@ export const clientController = {
 
     // Success: Update license state
     license.lastAccessAt = new Date().toISOString();
-    license.lastAccessIp = `${effectiveIpv4} / ${effectiveIpv6}`;
+    license.lastAccessIp = effectiveIpDisplay;
     if (!license.activatedAt) {
       license.activatedAt = new Date().toISOString();
     }
@@ -236,9 +259,11 @@ export const clientController = {
       status: 'granted',
       licenseKey: cleanKey,
       studentName: license.customerName,
-      ip: `${effectiveIpv4} / ${effectiveIpv6}`,
+      ip: effectiveIpDisplay,
+      ipv4: effectiveIpv4 || '127.0.0.1',
+      ipv6: effectiveIpv6 || null,
       hwid,
-      message: `Granted course access to ${license.customerName}. Bound IPv4: ${license.boundIpv4}, IPv6: ${license.boundIpv6}, HWID: ${license.boundHwid}`
+      message: `Granted course access to ${license.customerName}. Bound IPv4: ${license.boundIpv4}, IPv6: ${license.boundIpv6 || 'None'}, HWID: ${license.boundHwid}`
     });
 
     const sessionPayload = {
@@ -274,8 +299,8 @@ export const clientController = {
   heartbeat(req, res) {
     const { licenseKey, hwid, clientIpv4, clientIpv6 } = req.body;
     const reqIps = getClientIps(req);
-    const curIpv4 = clientIpv4 || reqIps.ipv4;
-    const curIpv6 = clientIpv6 || reqIps.ipv6;
+    const curIpv4 = (clientIpv4 && isPublicIpv4(clientIpv4)) ? clientIpv4 : reqIps.ipv4;
+    const curIpv6 = (clientIpv6 && isPublicIpv6(clientIpv6)) ? clientIpv6 : (reqIps.ipv6 || null);
 
     const license = db.getLicenseByKey(licenseKey || '');
     if (!license || license.status === 'revoked') {
@@ -303,7 +328,7 @@ export const clientController = {
     res.json({
       success: true,
       ipv4: ips.ipv4,
-      ipv6: ips.ipv6,
+      ipv6: ips.ipv6 || null,
       combined: ips.combined
     });
   },
@@ -312,12 +337,15 @@ export const clientController = {
   tamperAlert(req, res) {
     const { licenseKey, hwid, reason } = req.body;
     const ips = getClientIps(req);
+    const ipStr = ips.ipv6 ? `${ips.ipv4} / ${ips.ipv6}` : ips.ipv4;
 
     db.addLog({
       action: 'inspection_detected',
       status: 'rejected_devtools_tampering',
       licenseKey: licenseKey || 'UNKNOWN',
-      ip: `${ips.ipv4} / ${ips.ipv6}`,
+      ip: ipStr,
+      ipv4: ips.ipv4,
+      ipv6: ips.ipv6 || null,
       hwid: hwid || 'UNKNOWN',
       message: `SECURITY ALERT: ${reason || 'DevTools / Network tab inspection detected on student machine.'}`
     });

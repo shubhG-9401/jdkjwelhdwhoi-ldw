@@ -105,28 +105,41 @@ export function renderLicensesTable(licenses, container, countEl) {
 
   container.innerHTML = licenses.map(lic => {
     const isRevoked = lic.status === 'revoked';
-    const hasBoundIp = Boolean(lic.boundIpv4 || lic.boundIpv6);
+    let boundV4 = lic.boundIpv4 || null;
+    let boundV6 = lic.boundIpv6 || null;
+    if (boundV4 && boundV4 !== '127.0.0.1' && boundV6 === '::1') {
+      boundV6 = null;
+    }
+    const hasBoundIp = Boolean(boundV4 || boundV6);
     const hasAllowedIp = Boolean(lic.allowedIpv4 || lic.allowedIpv6);
 
     let ipDisplay = '';
     if (hasBoundIp) {
       ipDisplay = `
         <div class="text-[11px] font-mono space-y-1">
-          ${lic.boundIpv4 ? `
+          ${boundV4 ? `
             <div class="flex items-center space-x-1.5">
               <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-slate-800 text-slate-400 font-sans font-semibold">IPv4</span>
-              <span class="text-emerald-400 font-medium select-all">${lic.boundIpv4}</span>
+              <span class="text-emerald-400 font-medium select-all">${boundV4}</span>
             </div>` : ''}
-          ${lic.boundIpv6 ? `
+          ${boundV6 && boundV6 !== '::1' ? `
             <div class="flex items-start space-x-1.5">
-              <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-slate-800 text-slate-400 font-sans font-semibold mt-0.5">IPv6</span>
+              <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-700/50 font-sans font-semibold mt-0.5">IPv6</span>
               <div class="flex items-center space-x-1">
-                <span class="text-emerald-300 font-semibold break-all select-all max-w-[200px]" title="${lic.boundIpv6}">${lic.boundIpv6}</span>
-                <button onclick="window.copyToClipboard('${lic.boundIpv6}')" class="text-slate-500 hover:text-white p-0.5 flex-shrink-0" title="Copy IPv6">
+                <span class="text-indigo-200 font-semibold break-all select-all max-w-[200px]" title="${boundV6}">${boundV6}</span>
+                <button onclick="window.copyToClipboard('${boundV6}')" class="text-slate-500 hover:text-white p-0.5 flex-shrink-0" title="Copy Public IPv6">
                   <i data-lucide="copy" class="w-3 h-3"></i>
                 </button>
               </div>
-            </div>` : ''}
+            </div>` : (boundV6 === '::1' ? `
+            <div class="flex items-center space-x-1.5 text-slate-400">
+              <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-slate-800 text-slate-400 font-sans font-semibold">IPv6</span>
+              <span class="text-[10px]">::1 (Localhost)</span>
+            </div>` : `
+            <div class="flex items-center space-x-1.5 text-slate-500">
+              <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-slate-800/60 text-slate-500 font-sans font-semibold">IPv6</span>
+              <span class="italic text-[10px]">Not Assigned (IPv4 Connection)</span>
+            </div>`)}
           <div class="pt-0.5">
             <span class="inline-flex items-center space-x-1 text-[9px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans font-medium">
               <i data-lucide="shield-check" class="w-2.5 h-2.5"></i>
@@ -287,6 +300,11 @@ export function renderLogsTable(logs, container) {
       }
     }
 
+    // Sanitize loopback ::1 when on external IPv4 connection
+    if (ipv4 && ipv4 !== '127.0.0.1' && ipv6 === '::1') {
+      ipv6 = null;
+    }
+
     const ipDisplayHtml = `
       <div class="space-y-1 font-mono text-[11px] min-w-[210px]">
         ${ipv4 ? `
@@ -295,7 +313,7 @@ export function renderLogsTable(logs, container) {
             <span class="text-emerald-400 font-medium select-all">${ipv4}</span>
           </div>
         ` : ''}
-        ${ipv6 ? `
+        ${ipv6 && ipv6 !== '::1' ? `
           <div class="flex items-start space-x-1.5">
             <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-700/50 font-sans font-bold mt-0.5">IPv6</span>
             <div class="flex items-center space-x-1">
@@ -305,7 +323,17 @@ export function renderLogsTable(logs, container) {
               </button>
             </div>
           </div>
-        ` : ''}
+        ` : (ipv6 === '::1' ? `
+          <div class="flex items-center space-x-1.5 text-slate-400">
+            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 font-sans font-bold">IPv6</span>
+            <span class="text-[10px]">::1 (Localhost)</span>
+          </div>
+        ` : (ipv4 ? `
+          <div class="flex items-center space-x-1.5 text-slate-500">
+            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800/60 text-slate-500 border border-slate-700/40 font-sans font-medium">IPv6</span>
+            <span class="italic text-[10px]">Not Assigned (IPv4 Connection)</span>
+          </div>
+        ` : ''))}
         ${!ipv4 && !ipv6 ? `<span class="text-slate-500 italic text-[11px]">No IP logged</span>` : ''}
       </div>
     `;

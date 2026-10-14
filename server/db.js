@@ -548,6 +548,12 @@ export const db = {
           v4 = raw;
         }
       }
+
+      // If IPv4 is an external/remote IP and IPv6 was assigned loopback ::1, sanitize to null
+      if (v4 && v4 !== '127.0.0.1' && v6 === '::1') {
+        v6 = null;
+      }
+
       return {
         ...l,
         ipv4: v4 || null,
@@ -572,13 +578,17 @@ export const db = {
       }
     }
 
+    if (ipv4 && ipv4 !== '127.0.0.1' && ipv6 === '::1') {
+      ipv6 = null;
+    }
+
     const logItem = {
       id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       timestamp: new Date().toISOString(),
       ...entry,
       ipv4: ipv4 || null,
       ipv6: ipv6 || null,
-      ip: entry.ip || `${ipv4 || '127.0.0.1'} / ${ipv6 || '::1'}`
+      ip: entry.ip || (ipv6 ? `${ipv4 || '127.0.0.1'} / ${ipv6}` : (ipv4 || '127.0.0.1'))
     };
     data.securityLogs.unshift(logItem);
     if (data.securityLogs.length > 500) {
