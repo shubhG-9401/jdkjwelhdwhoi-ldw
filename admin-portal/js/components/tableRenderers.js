@@ -228,27 +228,115 @@ export function renderLicensesTable(licenses, container, countEl) {
 export function renderLogsTable(logs, container) {
   if (!container) return;
   if (!logs || logs.length === 0) {
-    container.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 italic">No security events recorded.</td></tr>`;
+    container.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500 italic">No security events recorded.</td></tr>`;
     return;
   }
 
   container.innerHTML = logs.map(log => {
-    let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400">INFO</span>';
-    if (log.status === 'granted') {
-      statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SUCCESS</span>';
-    } else if (log.status?.startsWith('rejected')) {
-      statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">BLOCKED</span>';
+    // 1. Action Badge
+    let actionBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-slate-800 text-slate-300">${log.action}</span>`;
+    if (log.action?.includes('blocked') || log.action?.includes('rejected')) {
+      actionBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-rose-500/10 text-rose-400 border border-rose-500/20">${log.action}</span>`;
+    } else if (log.action === 'activation_success') {
+      actionBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ACTIVATION</span>`;
+    } else if (log.action?.includes('license')) {
+      actionBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${log.action}</span>`;
     }
 
-    const timeStr = new Date(log.timestamp).toLocaleString();
+    // 2. Status Badge
+    let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400 font-sans font-semibold">INFO</span>';
+    if (log.status === 'granted') {
+      statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-sans font-bold">GRANTED</span>';
+    } else if (log.status?.startsWith('rejected') || log.status?.includes('tamper')) {
+      statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 font-sans font-bold">BLOCKED</span>';
+    }
+
+    // 3. Student / Key Column
+    let studentKeyHtml = '<span class="text-slate-500 italic text-[11px]">System / Client</span>';
+    if (log.studentName || log.licenseKey) {
+      studentKeyHtml = `
+        <div class="space-y-0.5 font-sans">
+          ${log.studentName ? `<div class="font-medium text-white truncate max-w-[170px]" title="${log.studentName}">${log.studentName}</div>` : ''}
+          ${log.licenseKey ? `
+            <div class="flex items-center space-x-1 font-mono">
+              <span class="text-[10px] text-indigo-300 truncate max-w-[140px]" title="${log.licenseKey}">${log.licenseKey.substring(0, 16)}...</span>
+              <button onclick="window.copyToClipboard('${log.licenseKey}')" class="text-slate-500 hover:text-white p-0.5 flex-shrink-0" title="Copy Key">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // 4. IP Column: Distinct badges for Public IPv4 & Public IPv6
+    let ipv4 = log.ipv4 || null;
+    let ipv6 = log.ipv6 || null;
+    if (!ipv4 || !ipv6) {
+      const rawIp = String(log.ip || '');
+      if (rawIp.includes('/')) {
+        const parts = rawIp.split('/').map(s => s.trim());
+        for (const p of parts) {
+          if (p.includes(':') && !ipv6) ipv6 = p;
+          else if (p.includes('.') && !ipv4) ipv4 = p;
+        }
+      } else if (rawIp.includes(':')) {
+        ipv6 = rawIp;
+      } else if (rawIp.includes('.')) {
+        ipv4 = rawIp;
+      }
+    }
+
+    const ipDisplayHtml = `
+      <div class="space-y-1 font-mono text-[11px] min-w-[210px]">
+        ${ipv4 ? `
+          <div class="flex items-center space-x-1.5">
+            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-sans font-bold">IPv4</span>
+            <span class="text-emerald-400 font-medium select-all">${ipv4}</span>
+          </div>
+        ` : ''}
+        ${ipv6 ? `
+          <div class="flex items-start space-x-1.5">
+            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-700/50 font-sans font-bold mt-0.5">IPv6</span>
+            <div class="flex items-center space-x-1">
+              <span class="text-indigo-200 font-semibold break-all select-all max-w-[200px]" title="${ipv6}">${ipv6}</span>
+              <button onclick="window.copyToClipboard('${ipv6}')" class="text-slate-500 hover:text-white p-0.5 flex-shrink-0 transition-colors" title="Copy Public IPv6">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+        ` : ''}
+        ${!ipv4 && !ipv6 ? `<span class="text-slate-500 italic text-[11px]">No IP logged</span>` : ''}
+      </div>
+    `;
+
+    // 5. Timestamp
+    const dateObj = new Date(log.timestamp);
+    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = dateObj.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
     return `
       <tr class="hover:bg-slate-800/30 transition-colors text-xs font-mono">
-        <td class="px-5 py-3 text-slate-400 whitespace-nowrap">${timeStr}</td>
-        <td class="px-5 py-3 text-indigo-300 font-semibold uppercase">${log.action}</td>
-        <td class="px-5 py-3">${statusBadge}</td>
-        <td class="px-5 py-3 text-slate-400 max-w-xs truncate" title="${log.ip || '-'}">${log.ip || '-'}</td>
-        <td class="px-5 py-3 text-slate-300 max-w-md truncate font-sans" title="${log.message}">${log.message}</td>
+        <td class="px-5 py-3 text-slate-400 whitespace-nowrap">
+          <div class="font-medium text-slate-300">${dateStr}</div>
+          <div class="text-[10px] text-slate-500">${timeStr}</div>
+        </td>
+        <td class="px-5 py-3">${actionBadge}</td>
+        <td class="px-5 py-3">${studentKeyHtml}</td>
+        <td class="px-5 py-3">${ipDisplayHtml}</td>
+        <td class="px-5 py-3 whitespace-nowrap">${statusBadge}</td>
+        <td class="px-5 py-3 text-slate-300 max-w-md font-sans">
+          <div class="leading-relaxed break-words" title="${log.message}">${log.message}</div>
+          ${log.hwid ? `
+            <div class="text-[10px] text-slate-500 font-mono mt-1 flex items-center space-x-1">
+              <i data-lucide="cpu" class="w-3 h-3 text-slate-500"></i>
+              <span>HWID: ${log.hwid}</span>
+            </div>
+          ` : ''}
+        </td>
       </tr>
     `;
   }).join('');
+
+  if (window.lucide) lucide.createIcons();
 }

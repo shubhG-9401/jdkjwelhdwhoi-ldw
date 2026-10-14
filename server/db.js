@@ -530,16 +530,55 @@ export const db = {
 
   // --- Security Logs ---
   getLogs(limit = 100) {
-    return (readDb().securityLogs || []).slice(0, limit);
+    const rawLogs = (readDb().securityLogs || []).slice(0, limit);
+    return rawLogs.map(l => {
+      let v4 = l.ipv4;
+      let v6 = l.ipv6;
+      if (!v4 || !v6) {
+        const raw = String(l.ip || '');
+        if (raw.includes('/')) {
+          const parts = raw.split('/').map(s => s.trim());
+          for (const p of parts) {
+            if (p.includes(':') && !v6) v6 = p;
+            else if (p.includes('.') && !v4) v4 = p;
+          }
+        } else if (raw.includes(':') && !v6) {
+          v6 = raw;
+        } else if (raw.includes('.') && !v4) {
+          v4 = raw;
+        }
+      }
+      return {
+        ...l,
+        ipv4: v4 || null,
+        ipv6: v6 || null
+      };
+    });
   },
 
   addLog(entry) {
     const data = readDb();
     if (!data.securityLogs) data.securityLogs = [];
+
+    let ipv4 = entry.ipv4;
+    let ipv6 = entry.ipv6;
+    if (!ipv4 || !ipv6) {
+      if (typeof entry.ip === 'string') {
+        const parts = entry.ip.split('/').map(s => s.trim());
+        for (const p of parts) {
+          if (p.includes(':') && !ipv6) ipv6 = p;
+          else if (p.includes('.') && !ipv4) ipv4 = p;
+        }
+      }
+    }
+
     const logItem = {
       id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       timestamp: new Date().toISOString(),
-      ...entry
+      ...entry,
+      ipv4: ipv4 || null,
+      ipv6: ipv6 || null,
+      ip: entry.ip || `${ipv4 || '127.0.0.1'} / ${ipv6 || '::1'}`
     };
     data.securityLogs.unshift(logItem);
     if (data.securityLogs.length > 500) {

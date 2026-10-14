@@ -247,7 +247,22 @@ async function runTests() {
     return `Provider: ${data.storageProvider} (Licenses: ${data.licenseCount})`;
   });
 
-  // 14. Test License Cleanup (Delete mock test key so it does not pollute production DB)
+  // 14. Real-Time Security Event Feed & IPv6 Public IP Verification
+  await check('Security Event Feed & IPv6 API', async () => {
+    const res = await fetch('http://localhost:3000/api/logs?limit=10', {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const data = await res.json();
+    if (!data.success || !Array.isArray(data.logs)) throw new Error('Invalid logs response');
+    const firstLog = data.logs[0];
+    if (!firstLog || !('ipv4' in firstLog) || !('ipv6' in firstLog)) {
+      throw new Error('Logs missing separated ipv4 or ipv6 telemetry fields');
+    }
+    return `Verified ${data.logs.length} events with IPv4 & IPv6 telemetry`;
+  });
+
+  // 15. Test License Cleanup (Delete mock test key so it does not pollute production DB)
   if (generatedKey) {
     await check('Test License Cleanup', async () => {
       const res = await fetch(`http://localhost:3000/api/system/licenses/${generatedKey}`, {
@@ -263,7 +278,7 @@ async function runTests() {
 
   console.log('\n----------------------------------------');
   if (failures === 0) {
-    console.log('--- ALL 15 TESTS PASSED PERFECTLY ---');
+    console.log('--- ALL 16 TESTS PASSED PERFECTLY ---');
     process.exit(0);
   } else {
     console.error(`--- ${failures} TESTS FAILED ---`);
