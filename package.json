@@ -9,6 +9,7 @@
     "desktop": "electron student-app/main.js",
     "seed-demo": "node test-sample-course.js",
     "test": "node test-suite.js",
+    "tunnel": "npx localtunnel --port 3000",
     "start": "node server/index.js",
     "build:exe": "npx electron-builder --win --x64"
   },
