@@ -213,9 +213,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.lucide) lucide.createIcons();
   }
 
+  window.switchAdminTab = (tabName) => {
+    if (tabName === 'licenses') switchTab(tabLicenses, sectionLicenses);
+    else if (tabName === 'courses') switchTab(tabCourses, sectionCourses);
+    else if (tabName === 'encrypt') switchTab(tabEncryptor, sectionEncryptor);
+    else if (tabName === 'security') switchTab(tabSecurity, sectionSecurity);
+    else if (tabName === 'auth') switchTab(tabAdminAuth, sectionAdminAuth);
+  };
+
   tabs.forEach(({ btn, sec }) => {
     if (btn) btn.addEventListener('click', () => switchTab(btn, sec));
   });
+
+  const btnRefreshLicenses = document.getElementById('btn-refresh-licenses');
+  if (btnRefreshLicenses) {
+    btnRefreshLicenses.addEventListener('click', async () => {
+      btnRefreshLicenses.disabled = true;
+      const oldHtml = btnRefreshLicenses.innerHTML;
+      btnRefreshLicenses.innerHTML = `
+        <div class="animate-spin rounded-full h-3 w-3 border-2 border-slate-300 border-t-transparent mr-1 inline-block"></div>
+        <span>Refreshing...</span>
+      `;
+      try {
+        await licenseService.loadLicenses();
+        Toast.success('License list refreshed from database.');
+      } catch (err) {
+        Toast.error('Refresh failed: ' + err.message);
+      } finally {
+        btnRefreshLicenses.disabled = false;
+        btnRefreshLicenses.innerHTML = oldHtml;
+        if (window.lucide) lucide.createIcons();
+      }
+    });
+  }
 
   // -------------------------------------------------------------
   // 6. ENCRYPT COURSE FORM & FILE QUEUE

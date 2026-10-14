@@ -105,17 +105,77 @@ export function renderLicensesTable(licenses, container, countEl) {
 
   container.innerHTML = licenses.map(lic => {
     const isRevoked = lic.status === 'revoked';
-    const ipDisplay = lic.boundIpv4 || lic.boundIpv6
-      ? `<div class="text-[11px] font-mono text-emerald-400">
-           <div>${lic.boundIpv4 ? 'IPv4: ' + lic.boundIpv4 : ''}</div>
-           <div>${lic.boundIpv6 ? 'IPv6: ' + lic.boundIpv6.slice(0, 16) + '...' : ''}</div>
-           <span class="text-[9px] bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20">Locked</span>
-         </div>`
-      : `<span class="text-slate-500 italic text-xs">Waiting 1st Login</span>`;
+    const hasBoundIp = Boolean(lic.boundIpv4 || lic.boundIpv6);
+    const hasAllowedIp = Boolean(lic.allowedIpv4 || lic.allowedIpv6);
+
+    let ipDisplay = '';
+    if (hasBoundIp) {
+      ipDisplay = `
+        <div class="text-[11px] font-mono space-y-1">
+          ${lic.boundIpv4 ? `
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-slate-800 text-slate-400 font-sans font-semibold">IPv4</span>
+              <span class="text-emerald-400 font-medium select-all">${lic.boundIpv4}</span>
+            </div>` : ''}
+          ${lic.boundIpv6 ? `
+            <div class="flex items-start space-x-1.5">
+              <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-slate-800 text-slate-400 font-sans font-semibold mt-0.5">IPv6</span>
+              <div class="flex items-center space-x-1">
+                <span class="text-emerald-300 font-semibold break-all select-all max-w-[200px]" title="${lic.boundIpv6}">${lic.boundIpv6}</span>
+                <button onclick="window.copyToClipboard('${lic.boundIpv6}')" class="text-slate-500 hover:text-white p-0.5 flex-shrink-0" title="Copy IPv6">
+                  <i data-lucide="copy" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>` : ''}
+          <div class="pt-0.5">
+            <span class="inline-flex items-center space-x-1 text-[9px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans font-medium">
+              <i data-lucide="shield-check" class="w-2.5 h-2.5"></i>
+              <span>Locked to Device & IP</span>
+            </span>
+          </div>
+        </div>
+      `;
+    } else if (hasAllowedIp) {
+      ipDisplay = `
+        <div class="text-[11px] font-mono space-y-1">
+          ${lic.allowedIpv4 ? `
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-slate-800 text-slate-400 font-sans font-semibold">Pre-IPv4</span>
+              <span class="text-indigo-300 font-medium select-all">${lic.allowedIpv4}</span>
+            </div>` : ''}
+          ${lic.allowedIpv6 ? `
+            <div class="flex items-start space-x-1.5">
+              <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-slate-800 text-slate-400 font-sans font-semibold mt-0.5">Pre-IPv6</span>
+              <div class="flex items-center space-x-1">
+                <span class="text-indigo-200 font-semibold break-all select-all max-w-[200px]" title="${lic.allowedIpv6}">${lic.allowedIpv6}</span>
+                <button onclick="window.copyToClipboard('${lic.allowedIpv6}')" class="text-slate-500 hover:text-white p-0.5 flex-shrink-0" title="Copy Pre-configured IPv6">
+                  <i data-lucide="copy" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>` : ''}
+          <div class="pt-0.5">
+            <span class="inline-flex items-center space-x-1 text-[9px] bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/20 font-sans font-medium">
+              <i data-lucide="lock" class="w-2.5 h-2.5"></i>
+              <span>Strict Pre-Configured</span>
+            </span>
+          </div>
+        </div>
+      `;
+    } else {
+      ipDisplay = `
+        <div class="space-y-1 font-sans">
+          <div class="text-xs text-amber-400/90 font-medium flex items-center space-x-1">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>Waiting 1st Login</span>
+          </div>
+          <div class="text-[10px] text-slate-500">Auto-locks IPv4 & IPv6 on first student launch</div>
+        </div>
+      `;
+    }
 
     const hwidDisplay = lic.boundHwid
-      ? `<span class="text-slate-300 font-mono text-xs" title="${lic.boundHwid}">${lic.boundHwid.slice(0, 10)}...</span>`
-      : `<span class="text-slate-500 italic text-xs">Unbound</span>`;
+      ? `<div class="font-mono text-xs text-slate-200 select-all" title="${lic.boundHwid}">${lic.boundHwid}</div>`
+      : `<span class="text-slate-500 italic text-xs">Unbound (Any PC on 1st login)</span>`;
 
     return `
       <tr class="hover:bg-slate-800/30 transition-colors">

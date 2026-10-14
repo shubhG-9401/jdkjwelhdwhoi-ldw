@@ -67,6 +67,17 @@ export const studentApi = {
   },
 
   /**
+   * Queries real dual-stack IPv4 and IPv6 detected by server.
+   */
+  async getMyIp() {
+    try {
+      const res = await fetch('/api/client/my-ip');
+      if (res.ok) return await res.json();
+    } catch {}
+    return { ipv4: '127.0.0.1', ipv6: '::1' };
+  },
+
+  /**
    * Auto-loads a pre-packaged course .enc file from the server.
    */
   async downloadPrepackagedCourse(courseId = 'crs_sigma12') {

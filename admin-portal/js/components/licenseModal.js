@@ -134,6 +134,11 @@ export class LicenseModalComponent {
 
       this.close();
 
+      // Automatically switch to Customer Licenses tab so admin sees the new license immediately
+      if (window.switchAdminTab) {
+        window.switchAdminTab('licenses');
+      }
+
       const licKey = data.license.licenseKey;
       if (navigator.clipboard) {
         navigator.clipboard.writeText(licKey).catch(() => {});

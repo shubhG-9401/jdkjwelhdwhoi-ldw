@@ -15,7 +15,6 @@ export class PdfViewerManager {
     this.btnNext = domElements.btnPdfNext;
     this.btnZoomIn = domElements.btnPdfZoomIn;
     this.btnZoomOut = domElements.btnPdfZoomOut;
-    this.btnOpenTab = domElements.btnPdfOpenTab;
 
     this.pdfDoc = null;
     this.currentPage = 1;
@@ -87,10 +86,6 @@ export class PdfViewerManager {
         console.error('PDF.js in-memory render error:', err);
       }
     } else if (lesson.url) {
-      if (this.btnOpenTab) {
-        this.btnOpenTab.href = lesson.url;
-        this.btnOpenTab.classList.remove('hidden');
-      }
 
       if (lesson.url.endsWith('.pdf') && window.pdfjsLib) {
         if (this.webFrame) this.webFrame.classList.add('hidden');

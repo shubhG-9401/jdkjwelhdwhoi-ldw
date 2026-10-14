@@ -10,6 +10,7 @@ const upload = multer({
   limits: { fileSize: config.maxFileSize }
 });
 
+router.get('/my-ip', asyncHandler(clientController.getMyIp));
 router.post('/inspect-file', upload.single('encFile'), asyncHandler(clientController.inspectFile));
 router.post('/activate', asyncHandler(clientController.activate));
 router.post('/heartbeat', asyncHandler(clientController.heartbeat));

@@ -72,8 +72,16 @@ export const clientController = {
   activate(req, res) {
     const { licenseKey, hwid, keyId, clientIpv4, clientIpv6 } = req.body;
     const reqIps = getClientIps(req);
-    const effectiveIpv4 = clientIpv4 || reqIps.ipv4;
-    const effectiveIpv6 = clientIpv6 || reqIps.ipv6;
+    let effectiveIpv4 = reqIps.ipv4;
+    let effectiveIpv6 = reqIps.ipv6;
+    if (clientIpv4 && clientIpv4 !== '127.0.0.1' && (!effectiveIpv4 || effectiveIpv4 === '127.0.0.1')) {
+      effectiveIpv4 = clientIpv4;
+    }
+    if (clientIpv6 && clientIpv6 !== '::1' && (!effectiveIpv6 || effectiveIpv6 === '::1')) {
+      effectiveIpv6 = clientIpv6;
+    }
+    if (!effectiveIpv4) effectiveIpv4 = '127.0.0.1';
+    if (!effectiveIpv6) effectiveIpv6 = '::1';
 
     if (!licenseKey || !hwid) {
       return res.status(400).json({ error: 'License key and Device Hardware ID (HWID) are required.' });
@@ -166,6 +174,8 @@ export const clientController = {
           error: `Access Denied: Your IP (IPv4: ${effectiveIpv4}, IPv6: ${effectiveIpv6}) is not authorized for this license.`
         });
       }
+      if (!license.boundIpv4) license.boundIpv4 = effectiveIpv4;
+      if (!license.boundIpv6) license.boundIpv6 = effectiveIpv6;
     } else {
       // 'first_login' auto-binding mode: bind both IPv4 and IPv6 on initial activation
       if (!license.boundIpv4 && !license.boundIpv6) {
@@ -282,6 +292,17 @@ export const clientController = {
     db.saveLicense(license);
 
     res.json({ valid: true });
+  },
+
+  // Query detected IP address
+  getMyIp(req, res) {
+    const ips = getClientIps(req);
+    res.json({
+      success: true,
+      ipv4: ips.ipv4,
+      ipv6: ips.ipv6,
+      combined: ips.combined
+    });
   },
 
   // Client Tamper & Network Inspection Alert Endpoint

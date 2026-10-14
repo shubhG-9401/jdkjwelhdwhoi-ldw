@@ -6,20 +6,29 @@
  * @returns {{ ipv4: string, ipv6: string, combined: string }}
  */
 export function getClientIps(req) {
-  const rawHeader = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
+  const cfIp = req.headers['cf-connecting-ip'];
+  const realIp = req.headers['x-real-ip'];
+  const clientIp = req.headers['x-client-ip'];
+  const forwarded = req.headers['x-forwarded-for'];
+  const socketIp = req.socket?.remoteAddress;
+
+  const candidates = [cfIp, realIp, clientIp, forwarded, socketIp].filter(Boolean);
   let ips = [];
 
-  if (typeof rawHeader === 'string') {
-    ips = rawHeader.split(',').map(s => s.trim());
-  } else if (Array.isArray(rawHeader)) {
-    ips = rawHeader;
+  for (const c of candidates) {
+    if (typeof c === 'string') {
+      ips.push(...c.split(',').map(s => s.trim()));
+    } else if (Array.isArray(c)) {
+      ips.push(...c);
+    }
   }
+  if (ips.length === 0) ips.push('127.0.0.1');
 
   let ipv4 = null;
   let ipv6 = null;
 
   for (const rawIp of ips) {
-    let clean = rawIp;
+    let clean = rawIp.trim();
     if (clean.startsWith('::ffff:')) {
       clean = clean.substring(7);
     }
@@ -37,7 +46,7 @@ export function getClientIps(req) {
   return {
     ipv4: ipv4 || '127.0.0.1',
     ipv6: ipv6 || '::1',
-    combined: `${ipv4 || '127.0.0.1'}`
+    combined: `${ipv4 || '127.0.0.1'} / ${ipv6 || '::1'}`
   };
 }
 

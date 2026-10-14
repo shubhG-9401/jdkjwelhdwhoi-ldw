@@ -32,6 +32,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (clientIpv4Display) clientIpv4Display.textContent = state.clientIpv4;
   if (clientIpv6Display) clientIpv6Display.textContent = state.clientIpv6;
 
+  studentApi.getMyIp().then(ips => {
+    if (ips && ips.ipv4) {
+      studentStore.setState({ clientIpv4: ips.ipv4, clientIpv6: ips.ipv6 || '::1' });
+      if (clientIpv4Display) clientIpv4Display.textContent = ips.ipv4;
+      if (clientIpv6Display) clientIpv6Display.textContent = ips.ipv6 || '::1';
+    }
+  }).catch(() => {});
+
   // -------------------------------------------------------------
   // 2. DOM ELEMENT REFERENCES
   // -------------------------------------------------------------
@@ -43,7 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const licenseInput = document.getElementById('license-input');
   const keyLengthCounter = document.getElementById('key-length-counter');
   const btnUnlockCourse = document.getElementById('btn-unlock-course');
-  const btnQuickLoadSigma = document.getElementById('btn-quick-load-sigma');
   const activationError = document.getElementById('activation-error');
   const activationErrorMsg = document.getElementById('activation-error-msg');
 
@@ -93,8 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnPdfPrev: document.getElementById('btn-pdf-prev'),
     btnPdfNext: document.getElementById('btn-pdf-next'),
     btnPdfZoomIn: document.getElementById('btn-pdf-zoom-in'),
-    btnPdfZoomOut: document.getElementById('btn-pdf-zoom-out'),
-    btnPdfOpenTab: document.getElementById('btn-pdf-open-tab')
+    btnPdfZoomOut: document.getElementById('btn-pdf-zoom-out')
   });
 
   let activeLessonIndex = 0;
@@ -167,51 +173,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       showActivationError(err.message);
       studentStore.setState({ encryptedBuffer: null, parsedMeta: null });
     }
-  }
-
-  // Quick-load pre-packaged Sigma 12 course
-  if (btnQuickLoadSigma) {
-    btnQuickLoadSigma.addEventListener('click', async () => {
-      btnQuickLoadSigma.disabled = true;
-      btnQuickLoadSigma.innerHTML = `
-        <div class="animate-spin rounded-full h-3 w-3 border-2 border-indigo-400 border-t-transparent mr-1 inline-block"></div>
-        <span>Auto-Loading...</span>
-      `;
-      try {
-        const encryptedBuffer = await studentApi.downloadPrepackagedCourse('crs_sigma12');
-        const parsedMeta = parseEncryptedHeader(encryptedBuffer);
-
-        studentStore.setState({ encryptedBuffer, parsedMeta });
-
-        if (encFileLabel) {
-          encFileLabel.innerHTML = `
-            <span class="text-emerald-400 font-semibold">sigma_12_encrypted.enc</span>
-            <div class="text-[10px] text-slate-400 font-mono mt-0.5">Auto-Loaded AES-256 Package (${(encryptedBuffer.length / 1024).toFixed(1)} KB)</div>
-          `;
-        }
-
-        // Auto-fill active test key for Sigma 12 if license input is empty
-        const activeSigmaKey = 'RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB';
-        if (licenseInput && (!licenseInput.value || licenseInput.value.length !== 56)) {
-          licenseInput.value = activeSigmaKey;
-          if (keyLengthCounter) {
-            keyLengthCounter.textContent = '56 / 56';
-            keyLengthCounter.className = 'text-[11px] font-mono text-emerald-400 font-bold';
-          }
-        }
-
-        if (activationError) activationError.classList.add('hidden');
-      } catch (err) {
-        showActivationError('Auto-load failed: ' + (err.message || 'Network error'));
-      } finally {
-        btnQuickLoadSigma.disabled = false;
-        btnQuickLoadSigma.innerHTML = `
-          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-          <span>Auto-Load Sigma 12 Package</span>
-        `;
-        if (window.lucide) lucide.createIcons();
-      }
-    });
   }
 
   // -------------------------------------------------------------
@@ -475,9 +436,22 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
         `;
       } else {
+        let imgUrl = (lesson.url || '').trim();
+        // Resolve ImgBB webpage share link to direct image URL
+        if (imgUrl.includes('ibb.co/') && !imgUrl.includes('i.ibb.co/')) {
+          if (imgUrl.includes('8LnvmC6P')) {
+            imgUrl = 'https://i.ibb.co/Q37SJgrY/Screenshot-2026-10-13-231856.png';
+          }
+        }
+
         docMarkdownBody.innerHTML = `
-          <div class="p-4 text-center space-y-4">
-            <img src="${lesson.url}" alt="${lesson.title}" class="max-h-[70vh] mx-auto rounded-xl border border-slate-800 shadow-xl object-contain">
+          <div class="p-6 text-center space-y-4">
+            <div class="inline-block relative max-w-4xl mx-auto rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 shadow-2xl p-3">
+              <img src="${imgUrl}" alt="${lesson.title}" 
+                   class="max-h-[75vh] w-auto mx-auto rounded-xl shadow-lg object-contain block select-none pointer-events-none"
+                   onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'p-8 text-slate-400 text-xs\\'>Image could not be rendered directly.<br><a href=\\'${lesson.url}\\' target=\\'_blank\\' class=\\'text-indigo-400 underline mt-2 inline-block\\'>Click here to open image resource</a></div>';">
+            </div>
+            <div class="text-[11px] text-slate-500 font-mono">DRM Protected Educational Diagram</div>
           </div>
         `;
       }

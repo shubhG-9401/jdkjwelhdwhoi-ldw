@@ -6,7 +6,7 @@
       "description": "Sigma 12 Complete Program with Wistia HD Video Sessions, PDF Handouts, and Community Access.",
       "encryptedFileName": "sigma_12_encrypted.enc",
       "encryptedFilePath": "C:\\Users\\Lenovo\\.gemini\\antigravity\\scratch\\secure-course-drm\\server\\encrypted_storage\\sigma_12_encrypted.enc",
-      "fileSize": 1174,
+      "fileSize": 1198,
       "moduleCount": 6,
       "fileCount": 0,
       "encryptionKeyHex": "6a0d83b1e406d5a2ebad64b0197a84e54e5abc66159fc4fc06075fc6a83aa95a",
@@ -125,7 +125,7 @@
                 "id": "les_12",
                 "title": "Lesson 2",
                 "type": "image",
-                "url": "https://ibb.co/8LnvmC6P",
+                "url": "https://i.ibb.co/Q37SJgrY/Screenshot-2026-10-13-231856.png",
                 "isStreamUrl": true
               }
             ]
@@ -264,6 +264,25 @@
     }
   ],
   "licenses": [
+    {
+      "licenseKey": "THTTKB6H487XPYF7SGXF3MHXCKCSK7USFVCDTDFZE8596NJHHF5WXZFK",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "Verification Suite Test Student",
+      "customerEmail": "",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": "127.0.0.1",
+      "boundIpv6": "::1",
+      "boundHwid": "test-pc-hwid-998877",
+      "status": "active",
+      "createdAt": "2026-10-14T06:14:25.196Z",
+      "activatedAt": "2026-10-14T06:14:25.227Z",
+      "lastAccessAt": "2026-10-14T06:14:25.227Z",
+      "lastAccessIp": "127.0.0.1 / ::1"
+    },
     {
       "licenseKey": "LQYUC3ZCUJLD6LQBRH8FBCU35NVAXTEE5GPQJPZ9NY4863EYCR8BFHJJ",
       "keyLength": 56,
@@ -581,6 +600,37 @@
     }
   ],
   "securityLogs": [
+    {
+      "id": "log_1791958465231_vy35u",
+      "timestamp": "2026-10-14T06:14:25.231Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "THTTKB6H487XPYF7SGXF3MHXCKCSK7USFVCDTDFZE8596NJHHF5WXZFK",
+      "studentName": "Verification Suite Test Student",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "test-pc-hwid-998877",
+      "message": "Granted course access to Verification Suite Test Student. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: test-pc-hwid-998877"
+    },
+    {
+      "id": "log_1791958465210_z9yny",
+      "timestamp": "2026-10-14T06:14:25.210Z",
+      "action": "activation_attempt",
+      "status": "rejected_mobile_device",
+      "licenseKey": "THTTKB6H487XPYF7SGXF3MHXCKCSK7USFVCDTDFZE8596NJHHF5WXZFK",
+      "ip": "127.0.0.1 / ::1",
+      "hwid": "mobile-fake-hwid",
+      "message": "Blocked activation attempt from mobile device (Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 Mobi). Course playback is restricted to Windows PC."
+    },
+    {
+      "id": "log_1791958465200_i094c",
+      "timestamp": "2026-10-14T06:14:25.201Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "THTTKB6H487XPYF7SGXF3MHXCKCSK7USFVCDTDFZE8596NJHHF5WXZFK",
+      "studentName": "Verification Suite Test Student",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for Verification Suite Test Student (IP Mode: first_login)."
+    },
     {
       "id": "log_1791957384897_fz9r1",
       "timestamp": "2026-10-14T05:56:24.897Z",
