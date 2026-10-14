@@ -25,7 +25,12 @@ export function getStorageProvider() {
   if (process.env.MONGODB_URI) {
     return 'mongodb';
   }
-  if (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) {
+  if (
+    process.env.UPSTASH_REDIS_REST_URL ||
+    process.env.KV_REST_API_URL ||
+    process.env.KV_URL ||
+    process.env.REDIS_URL
+  ) {
     return 'upstash_redis';
   }
   if (process.env.GITHUB_TOKEN) {
@@ -88,6 +93,29 @@ function writeLocalDb(data) {
   }
 }
 
+let upstashClient = null;
+
+/**
+ * Gets or initializes the Upstash Redis client using the official @upstash/redis SDK.
+ */
+async function getUpstashRedis() {
+  if (upstashClient) return upstashClient;
+  try {
+    const { Redis } = await import('@upstash/redis');
+    const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (url && token) {
+      upstashClient = new Redis({ url, token });
+    } else {
+      upstashClient = Redis.fromEnv();
+    }
+    return upstashClient;
+  } catch (err) {
+    console.warn('[UPSTASH] Could not initialize @upstash/redis SDK:', err.message);
+    return null;
+  }
+}
+
 /**
  * Fetches data from remote cloud storage (MongoDB Atlas, Upstash Redis, or GitHub API).
  */
@@ -114,22 +142,42 @@ async function fetchRemoteData() {
 
   // 2. Upstash Redis / Vercel KV
   if (provider === 'upstash_redis') {
-    const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-    const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+    // A. Official @upstash/redis SDK
     try {
-      const res = await fetch(`${url}/get/drm_data_store`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json && json.result) {
-          const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
-          console.log('[DB REMOTE] Successfully hydrated data store from Upstash Redis.');
-          return parsed;
+      const redis = await getUpstashRedis();
+      if (redis) {
+        const result = await redis.get('drm_data_store');
+        if (result) {
+          const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+          if (parsed && (parsed.licenses || parsed.courses)) {
+            console.log('[DB REMOTE] Successfully hydrated data store from Upstash Redis via SDK.');
+            return parsed;
+          }
         }
       }
-    } catch (err) {
-      console.warn('[DB REMOTE WARN] Failed to read from Upstash Redis:', err.message);
+    } catch (sdkErr) {
+      console.warn('[DB REMOTE WARN] Upstash Redis SDK read failed, attempting REST fallback:', sdkErr.message);
+    }
+
+    // B. Direct REST fallback
+    const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+    if (url && token) {
+      try {
+        const res = await fetch(`${url}/get/drm_data_store`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.result) {
+            const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
+            console.log('[DB REMOTE] Successfully hydrated data store from Upstash Redis (REST).');
+            return parsed;
+          }
+        }
+      } catch (err) {
+        console.warn('[DB REMOTE WARN] Failed to read from Upstash Redis:', err.message);
+      }
     }
   }
 
@@ -196,17 +244,33 @@ async function syncRemote(data) {
       await client.close();
       console.log('[DB REMOTE] Data store saved to MongoDB Atlas.');
     } else if (provider === 'upstash_redis') {
-      const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-      const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-      await fetch(`${url}/set/drm_data_store`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(JSON.stringify(data))
-      });
-      console.log('[DB REMOTE] Data store saved to Upstash Redis.');
+      let saved = false;
+      try {
+        const redis = await getUpstashRedis();
+        if (redis) {
+          await redis.set('drm_data_store', JSON.stringify(data));
+          console.log('[DB REMOTE] Data store saved to Upstash Redis via SDK.');
+          saved = true;
+        }
+      } catch (sdkErr) {
+        console.warn('[DB REMOTE WARN] Upstash Redis SDK save failed, attempting REST fallback:', sdkErr.message);
+      }
+
+      if (!saved) {
+        const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+        const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+        if (url && token) {
+          await fetch(`${url}/set/drm_data_store`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(JSON.stringify(data))
+          });
+          console.log('[DB REMOTE] Data store saved to Upstash Redis (REST).');
+        }
+      }
     } else if (provider === 'github_sync') {
       const token = process.env.GITHUB_TOKEN;
       const repo = process.env.GITHUB_REPO || 'shubhG-9401/jdkjwelhdwhoi-ldw';
@@ -308,6 +372,14 @@ export const db = {
 
       cachedData = readLocalDb();
       isInitialized = true;
+
+      // If connected to a cloud provider (e.g. freshly created Upstash Redis or MongoDB instance)
+      // and remote database was empty, auto-seed it immediately with existing courses and licenses!
+      const provider = getStorageProvider();
+      if (provider === 'upstash_redis' || provider === 'mongodb') {
+        syncRemote(cachedData).catch(e => console.warn('[DB AUTO-SEED WARN]', e.message));
+      }
+
       return cachedData;
     })();
 
