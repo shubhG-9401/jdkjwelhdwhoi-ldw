@@ -24,12 +24,15 @@ export function mobileBlocker(req, res, next) {
   const { ipv4, ipv6 } = getClientIps(req);
   const ua = req.headers['user-agent'] || 'Unknown Handheld Device';
 
+  let logItem = null;
   // Audit log the mobile intrusion attempt
   try {
-    db.addLog({
+    logItem = db.addLog({
       action: 'student_portal_blocked_mobile',
       status: 'rejected_mobile_device',
-      ip: `${ipv4} / ${ipv6}`,
+      ip: ipv6 ? `${ipv4 || '127.0.0.1'} / ${ipv6}` : (ipv4 || '127.0.0.1'),
+      ipv4: ipv4 || null,
+      ipv6: ipv6 || null,
       message: `Blocked mobile device before landing on student portal (${req.originalUrl || req.url}). UA: ${ua.substring(0, 100)}`
     });
   } catch (err) {
@@ -46,7 +49,7 @@ export function mobileBlocker(req, res, next) {
       error: 'ACCESS DENIED: Windows PC Required. Course playback and student portal are strictly prohibited on mobile devices and tablets.',
       blocked: true,
       device: 'Mobile / Tablet',
-      ip: `${ipv4} / ${ipv6}`
+      ip: ipv6 ? `${ipv4} / ${ipv6}` : ipv4
     });
   }
 
@@ -212,7 +215,7 @@ export function mobileBlocker(req, res, next) {
 
     <div class="audit-grid">
       <div>Security Status: <span style="color: #f87171;">HTTP 403 Forbidden</span></div>
-      <div>Client IP: <span>${escapeHtml(ipv4)} / ${escapeHtml(ipv6)}</span></div>
+      <div>Client IP: <span id="audit-client-ip">${escapeHtml(ipv4)}${ipv6 && ipv6 !== '::1' ? ' / ' + escapeHtml(ipv6) : ''}</span></div>
       <div>Device Type: <span>Smartphone / Handheld Device</span></div>
       <div>Policy: <span>Strict Windows PC Desktop Only</span></div>
     </div>
@@ -221,6 +224,25 @@ export function mobileBlocker(req, res, next) {
       Please copy your course URL and access it using Google Chrome, Microsoft Edge, or the Course Player on your <strong>Windows PC or Laptop</strong>.
     </p>
   </div>
+  <script>
+    (async function() {
+      try {
+        var res = await fetch('https://api6.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          var data = await res.json();
+          if (data && data.ip && data.ip.includes(':')) {
+            fetch('/api/client/report-client-ipv6', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ipv6: data.ip, logId: '${logItem ? logItem.id : ""}' })
+            }).catch(function(){});
+            var el = document.getElementById('audit-client-ip');
+            if (el) el.textContent = '${escapeHtml(ipv4)} / ' + data.ip;
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
 </body>
 </html>`);
 }

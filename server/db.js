@@ -598,6 +598,23 @@ export const db = {
     return logItem;
   },
 
+  updateLogIpv6(logId, ipv6) {
+    const data = readDb();
+    if (!data.securityLogs) return null;
+    const log = data.securityLogs.find(l => l.id === logId);
+    if (log) {
+      log.ipv6 = ipv6;
+      if (log.ipv4) {
+        log.ip = `${log.ipv4} / ${ipv6}`;
+      } else {
+        log.ip = ipv6;
+      }
+      writeDb(data);
+      return log;
+    }
+    return null;
+  },
+
   // --- Admin Authentication (Login ID, Password Hash, TOTP Secret) ---
   getAdminAuth() {
     const data = readDb();

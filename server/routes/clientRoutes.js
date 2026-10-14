@@ -15,5 +15,6 @@ router.post('/inspect-file', upload.single('encFile'), asyncHandler(clientContro
 router.post('/activate', asyncHandler(clientController.activate));
 router.post('/heartbeat', asyncHandler(clientController.heartbeat));
 router.post('/tamper-alert', asyncHandler(clientController.tamperAlert));
+router.post('/report-client-ipv6', asyncHandler(clientController.reportClientIpv6));
 
 export default router;

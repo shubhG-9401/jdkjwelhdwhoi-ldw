@@ -351,5 +351,26 @@ export const clientController = {
     });
 
     res.json({ recorded: true });
+  },
+
+  // Asynchronously updates recent log or session with client-resolved public IPv6
+  reportClientIpv6(req, res) {
+    const { ipv6, logId } = req.body;
+    if (!ipv6 || !isPublicIpv6(ipv6)) {
+      return res.status(400).json({ error: 'Invalid or non-public IPv6 address.' });
+    }
+
+    const data = db.getLogs(50);
+    const reqIps = getClientIps(req);
+    const targetLog = logId
+      ? data.find(l => l.id === logId)
+      : data.find(l => (l.ipv4 === reqIps.ipv4 && !l.ipv6));
+
+    if (targetLog) {
+      db.updateLogIpv6(targetLog.id, ipv6);
+      return res.json({ success: true, updated: targetLog.id, ipv6 });
+    }
+
+    res.json({ success: false, reason: 'Target log not found' });
   }
 };
