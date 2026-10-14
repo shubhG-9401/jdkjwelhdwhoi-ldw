@@ -863,14 +863,23 @@ https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5
   // -------------------------------------------------------------
   function updateLicenseCourseSelect() {
     if (!licCourseSelect) return;
+    if (!courses || courses.length === 0) {
+      licCourseSelect.innerHTML = '<option value="">-- No Courses Available --</option>';
+      return;
+    }
     licCourseSelect.innerHTML = courses.map(c => `
       <option value="${c.id}">${c.title} (${c.moduleCount || 0} Modules)</option>
     `).join('');
   }
 
-  btnOpenCreateLicense.addEventListener('click', () => {
+  btnOpenCreateLicense.addEventListener('click', async () => {
+    if (!courses || courses.length === 0) {
+      await loadCourses();
+    }
     updateLicenseCourseSelect();
     licenseModal.classList.remove('hidden');
+    const nameInput = document.getElementById('lic-student-name') || document.getElementById('lic-customer-name');
+    if (nameInput) nameInput.focus();
   });
 
   btnCloseLicenseModal.addEventListener('click', () => licenseModal.classList.add('hidden'));
@@ -890,11 +899,36 @@ https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5
     e.preventDefault();
 
     const courseId = licCourseSelect.value;
-    const customerName = document.getElementById('lic-student-name').value.trim();
-    const customerEmail = document.getElementById('lic-student-email').value.trim();
-    const ipLockMode = document.querySelector('input[name="ipLockMode"]:checked').value;
-    const allowedIpv4 = document.getElementById('lic-allowed-ipv4').value.trim();
-    const allowedIpv6 = document.getElementById('lic-allowed-ipv6').value.trim();
+    const nameEl = document.getElementById('lic-student-name') || document.getElementById('lic-customer-name');
+    const emailEl = document.getElementById('lic-student-email') || document.getElementById('lic-customer-email');
+    const ipLockRadio = document.querySelector('input[name="ipLockMode"]:checked');
+    const ipv4El = document.getElementById('lic-allowed-ipv4') || document.getElementById('lic-strict-ipv4');
+    const ipv6El = document.getElementById('lic-allowed-ipv6') || document.getElementById('lic-strict-ipv6');
+
+    const customerName = nameEl ? nameEl.value.trim() : '';
+    const customerEmail = emailEl ? emailEl.value.trim() : '';
+    const ipLockMode = ipLockRadio ? ipLockRadio.value : 'first_login';
+    const allowedIpv4 = ipv4El ? ipv4El.value.trim() : '';
+    const allowedIpv6 = ipv6El ? ipv6El.value.trim() : '';
+
+    if (!courseId) {
+      alert('Please select a course for this license.');
+      return;
+    }
+    if (!customerName) {
+      alert('Please enter a student name.');
+      return;
+    }
+
+    const submitBtn = createLicenseForm.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <div class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mr-1.5 inline-block"></div>
+        <span>Generating 56-Char Key...</span>
+      `;
+    }
 
     try {
       const res = await fetch('/api/admin/licenses', {
@@ -924,10 +958,19 @@ https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5
       licenseModal.classList.add('hidden');
       createLicenseForm.reset();
       strictIpContainer.classList.add('hidden');
-      loadLicenses();
-      alert(`56-Character License Created!\nStudent: ${data.license.customerName}\nKey (${data.license.keyLength} chars): ${data.license.licenseKey}\nGive this 56-char key and the .enc file to the customer.`);
+      await loadLicenses();
+      alert(`56-Character License Created Successfully!\n\nStudent: ${data.license.customerName}\nCourse: ${data.license.courseTitle}\n56-Char License Key:\n${data.license.licenseKey}\n\n(Key copied to clipboard)`);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(data.license.licenseKey).catch(() => {});
+      }
     } catch (err) {
       alert('Error creating license: ' + err.message);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+        if (window.lucide) lucide.createIcons();
+      }
     }
   });
 

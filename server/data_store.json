@@ -265,6 +265,24 @@
   ],
   "licenses": [
     {
+      "licenseKey": "A23WSJS6XVMX5WYEW7NDY84DTUL7GDRCB2MNTLLYX9WJHHQ7FXPEXZUC",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "Aarav Patel",
+      "customerEmail": "aarav@example.com",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": null,
+      "boundIpv6": null,
+      "boundHwid": null,
+      "status": "active",
+      "createdAt": "2026-10-14T04:43:51.129Z",
+      "activatedAt": null,
+      "lastAccessAt": null
+    },
+    {
       "licenseKey": "XBALFYU5Q7PA5YVCZ6RJP6LF35EJD3U99R4ZUTQA9AEKNYZURSSMKCXE",
       "keyLength": 56,
       "courseId": "crs_sigma12",
@@ -393,6 +411,23 @@
     }
   ],
   "securityLogs": [
+    {
+      "id": "log_1791953031132_sz6hn",
+      "timestamp": "2026-10-14T04:43:51.132Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "A23WSJS6XVMX5WYEW7NDY84DTUL7GDRCB2MNTLLYX9WJHHQ7FXPEXZUC",
+      "studentName": "Aarav Patel",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for Aarav Patel (IP Mode: first_login)."
+    },
+    {
+      "id": "log_1791953007396_700o1",
+      "timestamp": "2026-10-14T04:43:27.396Z",
+      "action": "admin_login_failed",
+      "status": "rejected_invalid_credentials",
+      "message": "Admin login failed: Invalid username \"admin\"."
+    },
     {
       "id": "log_1791951991925_uni34",
       "timestamp": "2026-10-14T04:26:31.925Z",

@@ -29,8 +29,36 @@ const projectRoot = process.env.VERCEL ? process.cwd() : path.resolve(__dirname,
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Admin authentication sessions (token -> { loginId, createdAt, expiresAt })
+// Stateless & Persistent Admin Session Management (HMAC-SHA256)
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'secure-drm-admin-session-secret-key-2026';
 const adminSessions = new Map();
+
+function createAdminToken(loginId) {
+  const payload = {
+    loginId,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+  };
+  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig = crypto.createHmac('sha256', JWT_SECRET).update(payloadB64).digest('base64url');
+  return `${payloadB64}.${sig}`;
+}
+
+function verifyAdminToken(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [payloadB64, sig] = parts;
+  const expectedSig = crypto.createHmac('sha256', JWT_SECRET).update(payloadB64).digest('base64url');
+  if (sig !== expectedSig) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (Date.now() > payload.expiresAt) return null;
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
 
 function requireAdminAuth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -38,7 +66,7 @@ function requireAdminAuth(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized: Admin authentication required.' });
   }
   const token = authHeader.substring(7).trim();
-  const session = adminSessions.get(token);
+  const session = verifyAdminToken(token) || adminSessions.get(token);
   if (!session || Date.now() > session.expiresAt) {
     if (session) adminSessions.delete(token);
     return res.status(401).json({ error: 'Unauthorized: Session expired or invalid.' });
@@ -156,7 +184,7 @@ app.get('/api/admin/auth/status', (req, res) => {
     return res.json({ authenticated: false });
   }
   const token = authHeader.substring(7).trim();
-  const session = adminSessions.get(token);
+  const session = verifyAdminToken(token) || adminSessions.get(token);
   if (!session || Date.now() > session.expiresAt) {
     if (session) adminSessions.delete(token);
     return res.json({ authenticated: false });
@@ -222,12 +250,12 @@ app.post('/api/admin/auth/login', (req, res) => {
       return res.status(401).json({ error: 'Invalid or expired 6-digit Authenticator Code. Check your Authenticator app.' });
     }
 
-    // Generate Admin Session Token (valid 12 hours)
-    const token = crypto.randomBytes(32).toString('hex');
+    // Generate Admin Session Token (stateless HMAC-SHA256 valid 24 hours)
+    const token = createAdminToken(auth.loginId);
     adminSessions.set(token, {
       loginId: auth.loginId,
       createdAt: Date.now(),
-      expiresAt: Date.now() + 12 * 60 * 60 * 1000
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000
     });
 
     db.addLog({
