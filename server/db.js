@@ -1,11 +1,8 @@
 import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { config } from './config/index.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const SEED_DB_PATH = path.join(__dirname, 'data_store.json');
-const DB_PATH = process.env.VERCEL ? path.join('/tmp', 'data_store.json') : SEED_DB_PATH;
+const DB_PATH = config.dbPath;
+const SEED_DB_PATH = config.seedDbPath;
 
 const defaultData = {
   courses: [],
