@@ -95,18 +95,21 @@ export const clientController = {
       });
     }
 
-    // Reject mobile devices
-    if (isMobileDevice(req)) {
+    // Reject mobile devices and phone desktop site modes
+    const { screenShortSide, isPhoneDevice } = req.body || {};
+    const isClientSidePhone = isPhoneDevice || (typeof screenShortSide === 'number' && screenShortSide > 0 && screenShortSide < 600);
+
+    if (isMobileDevice(req) || isClientSidePhone) {
       db.addLog({
         action: 'activation_attempt',
         status: 'rejected_mobile_device',
         licenseKey: cleanKey,
         ip: `${effectiveIpv4} / ${effectiveIpv6}`,
         hwid,
-        message: `Blocked activation attempt from mobile device (${(req.headers['user-agent'] || '').substring(0, 80)}). Course playback is restricted to Windows PC.`
+        message: `Blocked activation attempt from mobile device / phone desktop site (${(req.headers['user-agent'] || '').substring(0, 80)}, screen short edge: ${screenShortSide || 'N/A'}). Course playback is restricted to Windows PC.`
       });
       return res.status(403).json({
-        error: 'ACCESS RESTRICTED: Course playback is strictly permitted on Windows PC / Desktop. Mobile devices and tablets are not authorized.'
+        error: 'ACCESS RESTRICTED: Course playback is strictly permitted on Windows PC / Desktop. Mobile devices, tablets, and phone desktop site modes are not authorized.'
       });
     }
 

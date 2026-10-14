@@ -183,9 +183,9 @@ export function mobileBlocker(req, res, next) {
       </svg>
     </div>
 
-    <div class="badge">Mobile Access Prohibited</div>
+    <div class="badge">Mobile & Desktop Site Blocked</div>
     <h1>Windows PC Required</h1>
-    <p class="subtitle">Course playback is strictly restricted to Windows desktop computers.</p>
+    <p class="subtitle">Course playback cannot run on mobile phones, even in "Desktop Site" mode.</p>
 
     <div class="info-box">
       <div class="info-row">
@@ -195,7 +195,7 @@ export function mobileBlocker(req, res, next) {
           <line x1="12" y1="16" x2="12.01" y2="16"></line>
         </svg>
         <div>
-          <strong style="color: #f1f5f9;">Mobile Devices Blocked:</strong> Android smartphones, iPhones, iPads, and mobile browsers are not authorized to view or download course curriculum.
+          <strong style="color: #f1f5f9;">Phone & Desktop Site Blocked:</strong> Smartphones, tablets, and mobile browsers using "Desktop Site" / "Desktop View" are strictly prohibited from viewing or downloading course curriculum.
         </div>
       </div>
       <div class="info-row">
@@ -205,7 +205,7 @@ export function mobileBlocker(req, res, next) {
           <line x1="12" y1="17" x2="12" y2="21"></line>
         </svg>
         <div>
-          <strong style="color: #f1f5f9;">Security & DRM:</strong> Hardware-level in-memory stream encryption, screenshot suppression, and single-device locking require a Windows PC.
+          <strong style="color: #f1f5f9;">DRM Protection:</strong> In-memory AES stream decryption, screenshot blocking, and single-device locking require an authorized <strong>Windows PC or Laptop</strong>.
         </div>
       </div>
     </div>
@@ -213,8 +213,8 @@ export function mobileBlocker(req, res, next) {
     <div class="audit-grid">
       <div>Security Status: <span style="color: #f87171;">HTTP 403 Forbidden</span></div>
       <div>Client IP: <span>${escapeHtml(ipv4)} / ${escapeHtml(ipv6)}</span></div>
-      <div>Device Type: <span>Handheld Mobile Device</span></div>
-      <div>Protection: <span>Server Pre-Landing Blocker</span></div>
+      <div>Device Type: <span>Smartphone / Handheld Device</span></div>
+      <div>Policy: <span>Strict Windows PC Desktop Only</span></div>
     </div>
 
     <p class="footer-note">

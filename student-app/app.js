@@ -3,7 +3,7 @@
  * Modularized Architecture
  */
 
-import { SecurityManager } from './js/security.js';
+import { SecurityManager, isPhoneOverall } from './js/security.js';
 import { parseEncryptedHeader, decryptCoursePackage } from './js/crypto.js';
 import { studentApi } from './js/api.js';
 import { studentStore } from './js/state.js';
@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------------------------------------------
   // 1. INITIALIZE SECURITY MANAGERS & CLIENT HARDWARE ID
   // -------------------------------------------------------------
-  const state = studentStore.getState();
   const security = new SecurityManager({
     onTamper: (reason) => {
       const curState = studentStore.getState();
@@ -22,6 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   security.init();
+
+  // If running on phone (including "Desktop site" mode), halt all client setup immediately
+  if (security.checkMobileBlock()) {
+    console.warn('[SECURITY] Course player setup halted: Mobile / Phone Desktop Site prohibited.');
+    return;
+  }
+
+  const state = studentStore.getState();
 
   // Populate client device indicators
   const clientHwidDisplay = document.getElementById('client-hwid-display');
@@ -224,7 +231,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           hwid: curState.hwid,
           keyId: curState.parsedMeta?.keyId,
           clientIpv4: curState.clientIpv4,
-          clientIpv6: curState.clientIpv6
+          clientIpv6: curState.clientIpv6,
+          screenResolution: `${window.screen.width}x${window.screen.height}`,
+          screenShortSide: Math.min(window.screen.width, window.screen.height),
+          isPhoneDevice: isPhoneOverall().blocked
         });
 
         // Decrypt AES-256-GCM package into memory

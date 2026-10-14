@@ -56,9 +56,9 @@ async function runTests() {
     if (!text.includes('studentStore')) throw new Error('studentStore missing');
   });
 
-  // 5b. Pre-landing Mobile Device Blocker
-  await check('Pre-Landing Mobile Blocker', async () => {
-    // 1. iPhone attempt
+  // 5b. Pre-landing Mobile & Phone Desktop Site Blocker
+  await check('Pre-Landing Mobile & Desktop Site Blocker', async () => {
+    // 1. iPhone mobile attempt
     const iphoneRes = await fetch('http://localhost:3000/student', {
       headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148' }
     });
@@ -67,19 +67,38 @@ async function runTests() {
     if (!iphoneText.includes('Windows PC Required')) throw new Error('Missing Windows PC Required block message');
     if (iphoneText.includes('Secure Course Player')) throw new Error('Student portal HTML leaked to mobile device!');
 
-    // 2. Android attempt
+    // 2. Android mobile attempt
     const androidRes = await fetch('http://localhost:3000/student/index.html', {
       headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Mobile Safari/537.36' }
     });
     if (androidRes.status !== 403) throw new Error(`Expected HTTP 403 for Android, got ${androidRes.status}`);
 
-    // 3. Client Hints mobile header
+    // 3. Android "Desktop Site" Mode attempt (Emulating desktop UA with mobile platform hints)
+    const androidDesktopRes = await fetch('http://localhost:3000/student', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Sec-CH-UA-Platform': '"Android"',
+        'Sec-CH-UA-Mobile': '?0'
+      }
+    });
+    if (androidDesktopRes.status !== 403) throw new Error(`Expected HTTP 403 for Android Desktop Site, got ${androidDesktopRes.status}`);
+
+    // 4. Client Hints with Mobile Device Model (e.g. Pixel 8)
+    const modelRes = await fetch('http://localhost:3000/student', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+        'Sec-CH-UA-Model': '"Pixel 8"'
+      }
+    });
+    if (modelRes.status !== 403) throw new Error(`Expected HTTP 403 for Sec-CH-UA-Model, got ${modelRes.status}`);
+
+    // 5. Mobile Client Hint Sec-CH-UA-Mobile: ?1
     const chRes = await fetch('http://localhost:3000/student', {
       headers: { 'Sec-CH-UA-Mobile': '?1' }
     });
     if (chRes.status !== 403) throw new Error(`Expected HTTP 403 for Sec-CH-UA-Mobile, got ${chRes.status}`);
 
-    return 'iPhone, Android, and Client-Hint mobile requests strictly blocked (HTTP 403) before landing';
+    return 'iPhone, Android, Android Desktop Site, and Device-Model requests strictly blocked (HTTP 403)';
   });
 
   // 6. Admin Auth with stateless token
@@ -140,9 +159,10 @@ async function runTests() {
     return `Key: ${generatedKey.substring(0, 10)}... (Length: ${generatedKey.length})`;
   });
 
-  // 9. Mobile User-Agent Rejection (403 Forbidden)
-  await check('Mobile Block 403', async () => {
-    const res = await fetch('http://localhost:3000/api/client/activate', {
+  // 9. Mobile User-Agent & Phone Desktop Site Rejection (403 Forbidden)
+  await check('Mobile & Phone Desktop Site Block 403', async () => {
+    // A. Standard Mobile UA
+    const res1 = await fetch('http://localhost:3000/api/client/activate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -154,8 +174,26 @@ async function runTests() {
         hwid: 'mobile-fake-hwid'
       })
     });
-    if (res.status !== 403) throw new Error(`Expected 403, got ${res.status}`);
-    return '403 Forbidden as expected';
+    if (res1.status !== 403) throw new Error(`Expected 403 for mobile UA, got ${res1.status}`);
+
+    // B. Phone Desktop Site with spoofed desktop UA but mobile hardware telemetry (shortEdge < 600)
+    const res2 = await fetch('http://localhost:3000/api/client/activate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      body: JSON.stringify({
+        courseId: activeCourseId,
+        licenseKey: generatedKey,
+        hwid: 'mobile-desktop-site-hwid',
+        screenShortSide: 390,
+        isPhoneDevice: true
+      })
+    });
+    if (res2.status !== 403) throw new Error(`Expected 403 for Phone Desktop Site telemetry, got ${res2.status}`);
+
+    return 'Mobile UA and Phone Desktop Site telemetry both strictly rejected (403 Forbidden)';
   });
 
   // 10. PC Client Activation (200 OK)
@@ -170,7 +208,9 @@ async function runTests() {
       body: JSON.stringify({
         courseId: activeCourseId,
         licenseKey: generatedKey,
-        hwid: 'test-pc-hwid-998877'
+        hwid: 'test-pc-hwid-998877',
+        screenShortSide: 1080,
+        isPhoneDevice: false
       })
     });
     if (!res.ok) {

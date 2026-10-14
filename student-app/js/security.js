@@ -9,6 +9,81 @@
  * 5. DevTools & network inspection detection trap
  */
 
+/**
+ * Comprehensive Phone & Phone Desktop Site Hardware Detector
+ * Accurately catches smartphones even when "Desktop Site" or "Request Desktop Website" is toggled.
+ * 
+ * @returns {{ blocked: boolean, reason?: string }}
+ */
+export function isPhoneOverall() {
+  const ua = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+
+  // 1. Handheld & Mobile User-Agent signatures
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Opera Mobi|Mobile|mobile|CriOS|FxiOS|EdgA|EdgIOS|Tablet|Silk|Kindle|PlayBook|BB10|Windows Phone/i.test(ua)) {
+    return { blocked: true, reason: 'Mobile User-Agent detected' };
+  }
+
+  // 2. Physical Screen Hardware Dimensions (Immune to "Desktop site" emulation)
+  // When "Desktop site" is enabled on mobile, window.innerWidth is emulated to 980px+,
+  // but window.screen.width and window.screen.height remain the physical CSS hardware pixels.
+  // ALL smartphones have a short edge < 600px (typically 360px - 450px).
+  const screenW = window.screen.width || 0;
+  const screenH = window.screen.height || 0;
+  const shortEdge = Math.min(screenW, screenH);
+  if (shortEdge > 0 && shortEdge < 600) {
+    return { blocked: true, reason: `Physical smartphone display detected (${shortEdge}px short edge)` };
+  }
+
+  // 3. iOS "Request Desktop Website" Trapping
+  // iOS Safari in desktop mode reports platform "MacIntel" / "Macintosh", but physical Macs never have touchscreens!
+  const hasTouch = (navigator.maxTouchPoints > 0) || ('ontouchstart' in window);
+  const isMacIntelOrMacintosh = /MacIntel|Macintosh/i.test(platform) || /Macintosh/i.test(ua);
+  if (isMacIntelOrMacintosh && hasTouch) {
+    return { blocked: true, reason: 'iOS device in Desktop Website mode detected' };
+  }
+
+  // 4. Android Client Hints in JS (Sent even in Desktop site mode)
+  if (navigator.userAgentData) {
+    if (navigator.userAgentData.platform === 'Android' || navigator.userAgentData.mobile === true) {
+      return { blocked: true, reason: 'Android Device Platform detected' };
+    }
+  }
+
+  // 5. Coarse Pointer with No Hover (Pure handheld touchscreen phone)
+  try {
+    if (window.matchMedia) {
+      const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+      const noHover = window.matchMedia('(hover: none)').matches;
+      if (isCoarse && noHover && shortEdge < 768) {
+        return { blocked: true, reason: 'Touchscreen handheld pointer profile detected' };
+      }
+    }
+  } catch (e) {}
+
+  // 6. Mobile GPU chipset on touch devices (Qualcomm Adreno, ARM Mali, Apple GPU, PowerVR)
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (gl) {
+      const ext = gl.getExtension('WEBGL_debug_renderer_info');
+      if (ext) {
+        const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
+        if (/Apple GPU|Adreno|Mali|PowerVR/i.test(renderer) && hasTouch && shortEdge < 768) {
+          return { blocked: true, reason: `Mobile GPU chipset detected (${renderer.substring(0, 30)})` };
+        }
+      }
+    }
+  } catch (e) {}
+
+  // 7. Orientation Sensor
+  if (typeof window.orientation !== 'undefined' && shortEdge < 768) {
+    return { blocked: true, reason: 'Handheld orientation active' };
+  }
+
+  return { blocked: false };
+}
+
 export class SecurityManager {
   constructor(options = {}) {
     this.onTamper = options.onTamper || (() => {});
@@ -26,27 +101,42 @@ export class SecurityManager {
     this.setupScreenShareBlock();
     this.setupScreenshotTrap();
     this.setupAntiInspectTrap();
+
+    // Continuous dynamic checks against runtime desktop site toggles or rotations
+    window.addEventListener('resize', () => this.checkMobileBlock());
+    window.addEventListener('orientationchange', () => this.checkMobileBlock());
+    window.addEventListener('touchstart', () => this.checkMobileBlock(), { passive: true });
   }
 
   /**
-   * Strictly blocks mobile phones and tablets.
+   * Strictly blocks mobile phones and phone desktop site modes.
    */
   checkMobileBlock() {
-    const ua = navigator.userAgent || '';
-    const isMobileUa = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(ua);
-    const hasTouchScreen = (navigator.maxTouchPoints > 1);
-    const isNarrowViewport = (window.innerWidth < 900);
-
-    if (isMobileUa || (hasTouchScreen && isNarrowViewport)) {
+    const check = isPhoneOverall();
+    if (check.blocked) {
       if (this.mobileBlockedScreen) {
         this.mobileBlockedScreen.classList.remove('hidden');
+        this.mobileBlockedScreen.style.display = 'flex';
+        this.mobileBlockedScreen.style.pointerEvents = 'auto';
+        this.mobileBlockedScreen.style.zIndex = '999999';
+
+        // Update detection details in UI
+        const reasonEl = document.getElementById('mobile-block-reason');
+        if (reasonEl) {
+          reasonEl.textContent = check.reason;
+        }
       }
-      // Disable interaction
+
+      // Hide and disable any course UI
+      const activationScreen = document.getElementById('activation-screen');
+      const lmsScreen = document.getElementById('lms-screen');
+      if (activationScreen) activationScreen.style.display = 'none';
+      if (lmsScreen) lmsScreen.style.display = 'none';
+
       document.body.style.overflow = 'hidden';
       document.body.style.pointerEvents = 'none';
-      if (this.mobileBlockedScreen) {
-        this.mobileBlockedScreen.style.pointerEvents = 'auto';
-      }
+
+      this.onTamper(`Mobile / Phone Desktop Site blocked: ${check.reason}`);
       return true;
     }
     return false;
