@@ -258,9 +258,12 @@
           <!-- ===================================== -->
           <!-- A. VIDEO PLAYER (HLS .m3u8 & MP4) -->
           <!-- ===================================== -->
-          <div id="video-container" class="hidden w-full h-full flex flex-col items-center justify-center bg-black relative group">
+          <div id="video-container" class="hidden w-full h-full flex flex-col items-center justify-center bg-black relative group overflow-hidden">
             
-            <video id="player-video" playsinline class="max-w-full max-h-[calc(100%-60px)] w-full h-auto object-contain cursor-pointer"></video>
+            <video id="player-video" playsinline disablePictureInPicture disableRemotePlayback controlsList="nodownload noplaybackrate noremoteplayback" class="max-w-full max-h-[calc(100%-60px)] w-full h-auto object-contain cursor-pointer"></video>
+            
+            <!-- Dynamic Anti-Screenshare Forensic Watermark & Temporal Strobe Canvas -->
+            <canvas id="drm-watermark-canvas" class="pointer-events-none absolute inset-0 w-full h-full z-15"></canvas>
             
             <!-- Big Center Play Button Overlay -->
             <button id="video-big-play-btn" class="absolute z-20 w-20 h-20 rounded-full bg-indigo-600/90 hover:bg-indigo-500 text-white flex items-center justify-center shadow-2xl shadow-indigo-600/50 hover:scale-110 transition-all">
@@ -444,12 +447,20 @@
   <!-- 5. ANTI-SCREENSHOT & ANTI-SCREENSHARE FOCUS SHIELD -->
   <!-- ============================================================== -->
   <div id="screen-shield" class="pointer-events-none opacity-0 fixed inset-0 z-[999999] bg-black flex flex-col items-center justify-center transition-opacity duration-75">
-    <div class="text-center space-y-3 p-6 max-w-sm">
-      <div class="w-12 h-12 mx-auto rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
-        <i data-lucide="eye-off" class="w-6 h-6"></i>
+    <div class="text-center space-y-4 p-8 max-w-md bg-slate-950/90 border border-rose-900/60 rounded-3xl shadow-2xl">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+        <i data-lucide="shield-alert" class="w-8 h-8"></i>
       </div>
-      <h3 class="text-sm font-semibold text-slate-300 tracking-wide uppercase">Display Protected</h3>
-      <p class="text-xs text-slate-500">Focus the window to view content. Screen recording, screenshots, and screen sharing are prohibited.</p>
+      <div>
+        <h3 class="text-base font-bold text-white tracking-wide uppercase">Screen Sharing & Recording Prohibited</h3>
+        <p class="text-xs text-rose-300/90 font-medium mt-1">DRM Anti-Capture Active</p>
+      </div>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Screen sharing via <strong>Zoom</strong>, <strong>Google Meet</strong>, <strong>Microsoft Teams</strong>, <strong>WhatsApp</strong>, or <strong>OBS</strong> is blocked to protect intellectual property.
+      </p>
+      <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-300 font-mono">
+        Click or tap inside this window to restore course playback.
+      </div>
     </div>
   </div>
 

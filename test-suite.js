@@ -56,6 +56,33 @@ async function runTests() {
     if (!text.includes('studentStore')) throw new Error('studentStore missing');
   });
 
+  // 5a. Anti-Screenshare & DRM Watermark Engine Verification
+  await check('Anti-Screenshare DRM Defense & Watermark Engine', async () => {
+    // Check student player HTML features
+    const htmlRes = await fetch('http://localhost:3000/student');
+    const html = await htmlRes.text();
+    if (!html.includes('id="drm-watermark-canvas"')) throw new Error('Missing drm-watermark-canvas in student HTML');
+    if (!html.includes('disablePictureInPicture')) throw new Error('Missing disablePictureInPicture attribute on video');
+    if (!html.includes('disableRemotePlayback')) throw new Error('Missing disableRemotePlayback attribute on video');
+    if (!html.includes('controlsList="nodownload noplaybackrate noremoteplayback"')) throw new Error('Missing hardened controlsList');
+    if (!html.includes('Zoom') || !html.includes('Google Meet')) throw new Error('Missing anti-screenshare notice in screen shield');
+
+    // Check player.js forensic watermark engine
+    const playerRes = await fetch('http://localhost:3000/student/js/player.js');
+    const playerJs = await playerRes.text();
+    if (!playerJs.includes('startWatermarkEngine')) throw new Error('Missing startWatermarkEngine in player.js');
+    if (!playerJs.includes('drawSecurityBadge')) throw new Error('Missing drawSecurityBadge in player.js');
+    if (!playerJs.includes('Anti-Capture Temporal Strobe')) throw new Error('Missing Anti-Capture Temporal Strobe in player.js');
+
+    // Check security.js traps
+    const secRes = await fetch('http://localhost:3000/student/js/security.js');
+    const secJs = await secRes.text();
+    if (!secJs.includes('setupExtendedDisplayCheck')) throw new Error('Missing setupExtendedDisplayCheck in security.js');
+    if (!secJs.includes('setupAudioInterruptionDetector')) throw new Error('Missing setupAudioInterruptionDetector in security.js');
+    if (!secJs.includes('captureStream')) throw new Error('Missing captureStream traps in security.js');
+    return 'DRM Canvas, Temporal Strobe & Screen Shield verified';
+  });
+
   // 5b. Pre-landing Mobile & Phone Desktop Site Blocker
   await check('Pre-Landing Mobile & Desktop Site Blocker', async () => {
     // 1. iPhone standard mobile attempt -> 403
@@ -350,7 +377,7 @@ async function runTests() {
 
   console.log('\n----------------------------------------');
   if (failures === 0) {
-    console.log('--- ALL 17 TESTS PASSED PERFECTLY ---');
+    console.log('--- ALL 18 TESTS PASSED PERFECTLY ---');
     process.exit(0);
   } else {
     console.error(`--- ${failures} TESTS FAILED ---`);

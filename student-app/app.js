@@ -135,6 +135,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (wmStudent) wmStudent.textContent = courseData?.studentInfo?.name || 'Student';
     if (wmIp) wmIp.textContent = `${courseData?.studentInfo?.boundIpv4 || ''} ${courseData?.studentInfo?.boundIpv6 || ''}`.trim() || '127.0.0.1';
 
+    // Synchronize full DRM forensic canvas and anti-capture strobe engine
+    if (player && player.setStudentIdentity) {
+      player.setStudentIdentity(
+        courseData?.studentInfo,
+        state.hwid,
+        courseData?.studentInfo?.boundIpv4 || state.clientIpv4,
+        courseData?.studentInfo?.boundIpv6 || state.clientIpv6,
+        courseData?.licenseKey
+      );
+    }
+
     function moveWatermark() {
       if (!floatingWatermark) return;
       if (wmTime) wmTime.textContent = new Date().toLocaleTimeString();

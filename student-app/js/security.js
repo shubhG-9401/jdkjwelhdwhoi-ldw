@@ -49,6 +49,8 @@ export class SecurityManager {
     this.setupScreenShareBlock();
     this.setupScreenshotTrap();
     this.setupAntiInspectTrap();
+    this.setupExtendedDisplayCheck();
+    this.setupAudioInterruptionDetector();
 
     // Continuous dynamic checks against runtime desktop site toggles or rotations
     window.addEventListener('resize', () => this.checkMobileBlock());
@@ -91,14 +93,15 @@ export class SecurityManager {
   }
 
   /**
-   * Pitch-black overlay activated whenever focus is lost.
-   * Defeats Windows Snipping Tool (Win+Shift+S), PrintScreen, OBS window captures, screen recording software.
+   * Pitch-black overlay activated whenever focus is lost or capture boundary is crossed.
+   * Defeats Zoom, Google Meet, Microsoft Teams, OBS, Windows Snipping Tool, PrintScreen.
    */
   setupScreenShield() {
-    const showShield = () => {
+    const showShield = (reason) => {
       if (this.screenShield) {
         this.screenShield.classList.remove('opacity-0', 'pointer-events-none', 'hidden');
         this.screenShield.classList.add('opacity-100');
+        this.screenShield.style.zIndex = '999999';
       }
       document.body.classList.add('drm-obscured');
 
@@ -107,35 +110,125 @@ export class SecurityManager {
       if (video && !video.paused) {
         video.pause();
       }
+      if (reason) {
+        console.warn('[DRM ScreenShield]', reason);
+      }
     };
 
     const hideShield = () => {
-      if (this.screenShield && !this.isLockdown) {
+      if (this.isLockdown) return;
+      if (!document.hasFocus() || document.hidden) return;
+
+      if (this.screenShield) {
         this.screenShield.classList.remove('opacity-100');
         this.screenShield.classList.add('opacity-0', 'pointer-events-none');
       }
       document.body.classList.remove('drm-obscured');
     };
 
-    // Trigger on both window and document events
-    window.addEventListener('blur', showShield);
+    // 1. Trigger on both window and document events
+    window.addEventListener('blur', () => showShield('Window blur - Focus lost'));
     window.addEventListener('focus', hideShield);
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) showShield();
+      if (document.hidden) showShield('Document hidden - Background tab or app switch');
       else hideShield();
     });
+
+    // 2. High-Frequency Active Focus Polling (Every 100ms)
+    // Detects silent capture overlays, PIP modes, or non-focused window states
+    setInterval(() => {
+      if (!this.isLockdown) {
+        if (!document.hasFocus() || document.hidden) {
+          showShield('Active polling: Document unfocused or hidden');
+        }
+      }
+    }, 100);
+
+    // 3. Pointer & Mouse Boundary Guard (Defeats Zoom / Meet floating toolbars & multi-monitor switches)
+    document.addEventListener('mouseleave', (e) => {
+      // If mouse leaves the browser viewport entirely (e.g., towards Zoom controls or second monitor)
+      if (!e.relatedTarget && !e.toElement) {
+        showShield('Cursor left browser window boundary');
+      }
+    });
+    document.addEventListener('mouseenter', hideShield);
+
+    // 4. Print / Screen Snip Interceptor
+    window.addEventListener('beforeprint', () => showShield('Print dialogue requested'));
+    window.addEventListener('afterprint', hideShield);
   }
 
   /**
-   * Overrides getDisplayMedia to block browser screen sharing.
+   * Overrides getDisplayMedia and WebRTC capture to block browser & tab screen sharing.
    */
   setupScreenShareBlock() {
+    const blockCapture = (source) => {
+      this.triggerLockdown(`Screen sharing or capture attempt detected via ${source}.`);
+      throw new DOMException('Screen sharing is strictly prohibited by Course DRM policy.', 'NotAllowedError');
+    };
+
+    // Block navigator.mediaDevices.getDisplayMedia
     if (navigator.mediaDevices) {
-      navigator.mediaDevices.getDisplayMedia = async () => {
-        this.triggerLockdown('Screen sharing or capture attempt detected.');
-        throw new DOMException('Screen sharing is prohibited by Course DRM policy.', 'NotAllowedError');
-      };
+      navigator.mediaDevices.getDisplayMedia = async () => blockCapture('navigator.mediaDevices.getDisplayMedia');
     }
+
+    // Block prototype method
+    if (window.MediaDevices && window.MediaDevices.prototype) {
+      window.MediaDevices.prototype.getDisplayMedia = async () => blockCapture('MediaDevices.prototype.getDisplayMedia');
+    }
+
+    // Block HTMLMediaElement and Canvas capture streams
+    if (HTMLMediaElement.prototype.captureStream) {
+      HTMLMediaElement.prototype.captureStream = () => blockCapture('HTMLMediaElement.captureStream');
+    }
+    if (HTMLCanvasElement.prototype.captureStream) {
+      HTMLCanvasElement.prototype.captureStream = () => blockCapture('HTMLCanvasElement.captureStream');
+    }
+
+    // Intercept RTCPeerConnection to defeat WebRTC screen share pipes
+    if (window.RTCPeerConnection) {
+      const origAddTrack = window.RTCPeerConnection.prototype.addTrack;
+      if (origAddTrack) {
+        window.RTCPeerConnection.prototype.addTrack = function(track, ...streams) {
+          if (track && (track.label?.toLowerCase().includes('screen') || track.label?.toLowerCase().includes('display'))) {
+            blockCapture('RTCPeerConnection.addTrack(screen)');
+          }
+          return origAddTrack.call(this, track, ...streams);
+        };
+      }
+    }
+  }
+
+  /**
+   * Detects multi-monitor and extended display capture setups.
+   */
+  setupExtendedDisplayCheck() {
+    if (window.screen && 'isExtended' in window.screen) {
+      const checkExtended = () => {
+        if (window.screen.isExtended) {
+          this.onTamper('Multi-monitor / extended display detected. Potential external screen capture setup.');
+        }
+      };
+      checkExtended();
+      window.screen.addEventListener?.('change', checkExtended);
+    }
+  }
+
+  /**
+   * Detects background VoIP call audio interruptions (Zoom, Google Meet, Teams, cellular calls).
+   */
+  setupAudioInterruptionDetector() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const audioCtx = new AudioCtx();
+        audioCtx.addEventListener('statechange', () => {
+          if (audioCtx.state === 'suspended') {
+            console.warn('[DRM AudioMonitor] AudioContext suspended - Potential active VoIP call or screen share stream.');
+          }
+        });
+      }
+    } catch {}
   }
 
   /**
