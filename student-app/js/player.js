@@ -474,6 +474,23 @@ export class VideoPlayerManager {
       ctx.clearRect(0, 0, width, height);
       this.frameCount++;
 
+      // When DRM screen shield is active or window is unfocused: paint 100% solid pitch-black over video
+      if (document.body.classList.contains('drm-obscured') || !document.hasFocus() || document.hidden) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+        ctx.save();
+        ctx.font = '700 15px ui-monospace, SFMono-Regular, monospace';
+        ctx.fillStyle = '#f87171';
+        ctx.textAlign = 'center';
+        ctx.fillText('SCREEN RECORDING & SHARING BLOCKED', width / 2, height / 2 - 8);
+        ctx.font = '11px ui-monospace, SFMono-Regular, monospace';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('Google Meet / Zoom Screen Capture Prohibited by DRM', width / 2, height / 2 + 14);
+        ctx.restore();
+        this.animFrameId = requestAnimationFrame(renderLoop);
+        return;
+      }
+
       // 1. Anti-Capture Temporal Strobe (Defeats Zoom, Meet, OBS 5-15fps Temporal Compression)
       const isPlaying = this.video && !this.video.paused && !this.video.ended;
       if (isPlaying) {

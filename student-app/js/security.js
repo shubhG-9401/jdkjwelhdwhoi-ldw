@@ -96,28 +96,27 @@ export class SecurityManager {
    * or Google Meet / browser screen-sharing infobars are detected.
    */
   setupScreenShield() {
-    let baselineChromeHeight = null;
     let isInfobarCaptureActive = false;
+    let isSuspendedByTabSwitch = false;
+
+    const errorNoticeEl = document.getElementById('shield-error-notice');
+    const resumeBtnEl = document.getElementById('btn-resume-shield');
+    const shieldTitleEl = document.getElementById('shield-title');
+    const shieldStatusEl = document.getElementById('shield-status');
 
     // Detects Chromium screen-sharing infobar ("meet.google.com is sharing your screen and audio")
-    // When Chrome injects this infobar, window.innerHeight decreases by 30px-55px without outerHeight changing.
     const checkInfobarCapture = () => {
       if (window.innerHeight < 200) return false;
       const currentDelta = window.outerHeight - window.innerHeight;
 
-      if (baselineChromeHeight === null) {
-        baselineChromeHeight = currentDelta;
-      } else {
-        const heightShift = currentDelta - baselineChromeHeight;
-        // Screen-sharing infobar in Chromium is typically between 30px and 60px
-        if (heightShift >= 28 && heightShift <= 65) {
-          isInfobarCaptureActive = true;
-          showShield('Google Meet / Browser screen sharing infobar detected. Please stop sharing to resume.');
-          return true;
-        } else if (heightShift <= 5) {
-          isInfobarCaptureActive = false;
-        }
+      // In Chromium on Windows, a browser with an active sharing infobar has a delta >= 115px
+      // or visualViewport height significantly lower than layout viewport
+      const visualDelta = window.visualViewport ? (window.innerHeight - window.visualViewport.height) : 0;
+      if (currentDelta >= 115 || visualDelta >= 28) {
+        isInfobarCaptureActive = true;
+        return true;
       }
+      isInfobarCaptureActive = false;
       return false;
     };
 
@@ -126,6 +125,7 @@ export class SecurityManager {
         this.screenShield.classList.remove('opacity-0', 'pointer-events-none', 'hidden');
         this.screenShield.classList.add('opacity-100');
         this.screenShield.style.zIndex = '999999';
+        this.screenShield.style.pointerEvents = 'auto';
       }
       document.body.classList.add('drm-obscured');
 
@@ -134,50 +134,84 @@ export class SecurityManager {
       if (video && !video.paused) {
         video.pause();
       }
+
+      if (shieldTitleEl) shieldTitleEl.textContent = 'SCREEN SHARING & RECORDING PROHIBITED';
+      if (shieldStatusEl) shieldStatusEl.textContent = 'DRM Anti-Capture Active';
+
       if (reason) {
         console.warn('[DRM ScreenShield]', reason);
       }
     };
 
-    const hideShield = () => {
+    const attemptResume = () => {
       if (this.isLockdown) return;
-      if (!document.hasFocus() || document.hidden) return;
-      if (isInfobarCaptureActive || checkInfobarCapture()) return;
+
+      // 1. Check document focus
+      if (!document.hasFocus()) {
+        if (errorNoticeEl) {
+          errorNoticeEl.textContent = 'Window not focused. Click inside this browser window to verify.';
+          errorNoticeEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // 2. Check if Google Meet or browser screen sharing is active
+      if (checkInfobarCapture()) {
+        if (errorNoticeEl) {
+          errorNoticeEl.innerHTML = '<strong>SCREEN SHARING ACTIVE:</strong> Google Meet or browser screen sharing is currently running. You must click <strong>[Stop sharing]</strong> in the bar below before you can watch this course.';
+          errorNoticeEl.classList.remove('hidden');
+        }
+        showShield('Screen sharing actively running');
+        return;
+      }
+
+      // 3. Check for extended multi-monitor capture setups
+      if (window.screen && window.screen.isExtended) {
+        if (errorNoticeEl) {
+          errorNoticeEl.textContent = 'Multi-monitor / external capture display detected. Please disconnect secondary display to resume.';
+          errorNoticeEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // All security checks passed -> allow playback to resume
+      isSuspendedByTabSwitch = false;
+      if (errorNoticeEl) errorNoticeEl.classList.add('hidden');
 
       if (this.screenShield) {
         this.screenShield.classList.remove('opacity-100');
         this.screenShield.classList.add('opacity-0', 'pointer-events-none');
+        this.screenShield.style.pointerEvents = 'none';
       }
       document.body.classList.remove('drm-obscured');
     };
 
-    // 1. Trigger on both window and document events
-    window.addEventListener('blur', () => showShield('Window blur - Focus lost'));
-    window.addEventListener('focus', () => {
-      if (checkInfobarCapture()) {
-        showShield('Screen sharing infobar active on return');
-      } else {
-        hideShield();
-      }
+    if (resumeBtnEl) {
+      resumeBtnEl.addEventListener('click', attemptResume);
+    }
+
+    // 1. When focus is lost or user switches tabs (to Google Meet, Zoom, WhatsApp):
+    // Blackout immediately and LOCK playback
+    window.addEventListener('blur', () => {
+      isSuspendedByTabSwitch = true;
+      showShield('Window blur - Focus lost / External app switched');
     });
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        showShield('Document hidden - Background tab or app switch');
+        isSuspendedByTabSwitch = true;
+        showShield('Document hidden - Tab switched to Google Meet or other application');
       } else {
-        if (checkInfobarCapture()) {
-          showShield('Screen sharing infobar active on tab switch');
-        } else {
-          hideShield();
-        }
+        // When user returns from Google Meet/Zoom: KEEP SHIELD LOCKED in pitch black!
+        showShield('Playback locked after tab switch. Click Verify & Resume to continue.');
       }
     });
 
-    // 2. High-Frequency Active Focus & Infobar Polling (Every 100ms)
-    // Detects silent capture overlays, PIP modes, or non-focused window states
+    // 2. Active Focus & Infobar Polling (Every 100ms)
     setInterval(() => {
       if (!this.isLockdown) {
         if (!document.hasFocus() || document.hidden) {
+          isSuspendedByTabSwitch = true;
           showShield('Active polling: Document unfocused or hidden');
         } else if (checkInfobarCapture()) {
           showShield('Active polling: Screen sharing infobar active');
@@ -185,20 +219,22 @@ export class SecurityManager {
       }
     }, 100);
 
-    // 3. Pointer & Mouse Boundary Guard (Defeats Zoom / Meet floating toolbars & multi-monitor switches)
+    // 3. Pointer & Mouse Boundary Guard
     document.addEventListener('mouseleave', (e) => {
       if (!e.relatedTarget && !e.toElement) {
         showShield('Cursor left browser window boundary');
       }
     });
-    document.addEventListener('mouseenter', hideShield);
 
     // 4. Resize check for infobar injection
-    window.addEventListener('resize', checkInfobarCapture);
+    window.addEventListener('resize', () => {
+      if (checkInfobarCapture()) {
+        showShield('Screen sharing infobar detected via window resize');
+      }
+    });
 
     // 5. Print / Screen Snip Interceptor
     window.addEventListener('beforeprint', () => showShield('Print dialogue requested'));
-    window.addEventListener('afterprint', hideShield);
   }
 
   /**

@@ -447,20 +447,22 @@
   <!-- 5. ANTI-SCREENSHOT & ANTI-SCREENSHARE FOCUS SHIELD -->
   <!-- ============================================================== -->
   <div id="screen-shield" class="pointer-events-none opacity-0 fixed inset-0 z-[999999] bg-black flex flex-col items-center justify-center transition-opacity duration-75">
-    <div class="text-center space-y-4 p-8 max-w-md bg-slate-950/90 border border-rose-900/60 rounded-3xl shadow-2xl">
+    <div class="text-center space-y-4 p-8 max-w-md bg-slate-950/95 border border-rose-900/60 rounded-3xl shadow-2xl">
       <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
         <i data-lucide="shield-alert" class="w-8 h-8"></i>
       </div>
       <div>
-        <h3 class="text-base font-bold text-white tracking-wide uppercase">Screen Sharing & Recording Prohibited</h3>
-        <p class="text-xs text-rose-300/90 font-medium mt-1">DRM Anti-Capture Active</p>
+        <h3 id="shield-title" class="text-base font-bold text-white tracking-wide uppercase">Screen Sharing & Recording Prohibited</h3>
+        <p id="shield-status" class="text-xs text-rose-300/90 font-medium mt-1">DRM Anti-Capture Active</p>
       </div>
-      <p class="text-xs text-slate-400 leading-relaxed">
-        Screen sharing via <strong>Zoom</strong>, <strong>Google Meet</strong>, <strong>Microsoft Teams</strong>, <strong>WhatsApp</strong>, or <strong>OBS</strong> is blocked to protect intellectual property.
+      <p id="shield-desc" class="text-xs text-slate-400 leading-relaxed">
+        Screen sharing or recording via <strong>Google Meet</strong>, <strong>Zoom</strong>, <strong>Microsoft Teams</strong>, <strong>WhatsApp</strong>, or <strong>OBS</strong> is blocked to protect intellectual property.
       </p>
-      <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-300 font-mono">
-        Click or tap inside this window to restore course playback.
+      <div id="shield-error-notice" class="hidden text-xs text-rose-400 font-medium p-3 rounded-xl bg-rose-950/90 border border-rose-800 text-left leading-relaxed">
       </div>
+      <button id="btn-resume-shield" class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 transition-all cursor-pointer">
+        Verify & Resume Playback
+      </button>
     </div>
   </div>
 
