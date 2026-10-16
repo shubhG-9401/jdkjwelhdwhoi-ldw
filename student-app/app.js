@@ -165,7 +165,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 3. ENCRYPTED FILE SELECTION & DRAG-AND-DROP
   // -------------------------------------------------------------
   if (encDropzone && encFileInput) {
-    encDropzone.addEventListener('click', () => encFileInput.click());
     encDropzone.addEventListener('dragover', (e) => {
       e.preventDefault();
       encDropzone.classList.add('border-indigo-500', 'bg-indigo-950/40');

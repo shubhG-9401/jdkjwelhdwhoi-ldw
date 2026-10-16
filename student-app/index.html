@@ -109,12 +109,12 @@
         <!-- File Upload Zone (.enc file) -->
         <div>
           <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">1. Select Encrypted Course File (.ENC)</label>
-          <div id="enc-dropzone" class="border-2 border-dashed border-slate-700 hover:border-indigo-500/80 rounded-2xl p-4 text-center bg-slate-950/50 cursor-pointer transition-all group">
-            <input type="file" id="enc-file-input" class="hidden" accept=".enc">
+          <input type="file" id="enc-file-input" class="hidden" accept=".enc">
+          <label for="enc-file-input" id="enc-dropzone" class="block border-2 border-dashed border-slate-700 hover:border-indigo-500/80 rounded-2xl p-4 text-center bg-slate-950/50 cursor-pointer transition-all group">
             <i data-lucide="file-lock" class="w-6 h-6 mx-auto text-indigo-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
             <div id="enc-file-label" class="text-xs font-medium text-slate-300">Click to choose <code class="text-indigo-400">.enc</code> course package</div>
             <div class="text-[10px] text-slate-500 mt-0.5">Encrypted with AES-256 (Unreadable outside this app)</div>
-          </div>
+          </label>
         </div>
 
         <!-- 56-Character License Key Input -->

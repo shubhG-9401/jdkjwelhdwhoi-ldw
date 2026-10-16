@@ -304,6 +304,9 @@ export class SecurityManager {
    */
   setupScreenshotTrap() {
     const handleCaptureKey = (e) => {
+      // Only protect during active course playback, never on the activation/login screen
+      if (!this.isContentProtected()) return;
+
       // PrintScreen
       if (e.key === 'PrintScreen' || e.code === 'PrintScreen' || e.keyCode === 44) {
         if (e.cancelable) e.preventDefault();
@@ -363,6 +366,7 @@ export class SecurityManager {
    * Flashes black shield temporarily on screen capture hotkey.
    */
   flashBlackout(message) {
+    if (!this.isContentProtected()) return;
     if (!this.screenShield) return;
     this.screenShield.classList.remove('opacity-0', 'pointer-events-none', 'hidden');
     this.screenShield.classList.add('opacity-100');
@@ -393,6 +397,7 @@ export class SecurityManager {
     // Viewport delta check (DevTools dock detection)
     // Docked DevTools takes >= 280px width or >= 320px height
     const checkViewport = () => {
+      if (!this.isContentProtected()) return;
       const widthDelta = window.outerWidth - window.innerWidth;
       const heightDelta = window.outerHeight - window.innerHeight;
       if ((widthDelta > 280 || heightDelta > 320) && !triggered) {
