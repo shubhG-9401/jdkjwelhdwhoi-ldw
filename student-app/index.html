@@ -181,93 +181,107 @@
   </div>
 
   <!-- ============================================================== -->
-  <!-- 2. LMS COURSE ENVIRONMENT (Like Udemy / Coursera) -->
+  <!-- 2. LMS COURSE ENVIRONMENT (Apna College Minimalist Design) -->
   <!-- ============================================================== -->
-  <div id="lms-screen" class="hidden flex flex-col h-screen">
+  <div id="lms-screen" class="hidden flex h-screen w-screen overflow-hidden bg-black text-slate-100 select-none">
     
-    <!-- Top Navigation Header -->
-    <header class="h-14 border-b border-slate-800 bg-slate-900/90 backdrop-blur px-5 flex items-center justify-between flex-shrink-0 z-30">
+    <!-- Dynamic Subtle Watermark Overlay (Anti-Piracy) -->
+    <div id="floating-watermark" class="pointer-events-none fixed z-40 select-none text-[11px] font-mono text-white/20 tracking-wider transition-all duration-1000 ease-in-out p-1.5 rounded border border-white/5 bg-black/10 backdrop-blur-[1px]">
+      Student: <span id="wm-student">Student</span> • IP: <span id="wm-ip">127.0.0.1</span> • <span id="wm-time">--:--:--</span>
+    </div>
+
+    <!-- Left Sidebar: Full Height (Apna College Design) -->
+    <aside id="lms-sidebar" class="w-80 md:w-88 flex flex-col flex-shrink-0 bg-white border-r border-slate-200 z-30 transition-all duration-200 select-none" style="width: 22rem;">
       
-      <!-- Left: Logo & Course Title -->
-      <div class="flex items-center space-x-3 overflow-hidden">
-        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-indigo-600/20">
-          <i data-lucide="graduation-cap" class="w-4 h-4 text-white"></i>
-        </div>
-        <div class="overflow-hidden">
-          <h2 id="lms-course-title" class="text-sm font-bold text-white truncate max-w-md">Course Title</h2>
-          <div class="flex items-center space-x-2 text-[10px] text-slate-400">
-            <span class="flex items-center space-x-1 text-emerald-400">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Encrypted In-Memory DRM Active</span>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Student Profile & Lock Button -->
-      <div class="flex items-center space-x-4">
-        <div class="text-right hidden sm:block">
-          <div id="lms-student-name" class="text-xs font-semibold text-slate-200">Student</div>
-          <div id="lms-student-ip" class="text-[10px] font-mono text-slate-400">IPv4/IPv6 Single-IP Locked</div>
-        </div>
-        <button id="btn-lock-course" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors" title="Lock & Switch Course">
-          <i data-lucide="lock" class="w-4 h-4"></i>
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Workspace (Sidebar + Viewer) -->
-    <div class="flex flex-1 overflow-hidden relative">
-      
-      <!-- Anti-Piracy Dynamic Watermark Overlay -->
-      <div id="floating-watermark" class="pointer-events-none fixed z-40 select-none text-[11px] font-mono text-white/20 tracking-wider transition-all duration-1000 ease-in-out p-2 rounded border border-white/5 bg-black/10 backdrop-blur-[1px]">
-        Student: <span id="wm-student">Student</span> • IP: <span id="wm-ip">127.0.0.1</span> • <span id="wm-time">--:--:--</span>
-      </div>
-
-      <!-- Left Sidebar: Course Syllabus & Curriculum -->
-      <aside class="w-80 border-r border-slate-800 bg-slate-900/50 flex flex-col flex-shrink-0" style="width: 22rem;">
+      <!-- Dark Navy Sidebar Header -->
+      <div class="bg-[#242a35] px-5 pt-4 pb-4.5 flex flex-col flex-shrink-0 text-white select-none">
         
-        <!-- Progress Bar Card -->
-        <div class="p-4 border-b border-slate-800">
-          <div class="flex items-center justify-between text-xs mb-1.5">
-            <span class="text-slate-400 font-medium">Course Progress</span>
-            <span id="lms-progress-text" class="text-indigo-400 font-semibold font-mono">0%</span>
-          </div>
-          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-            <div id="lms-progress-bar" class="bg-indigo-500 h-full w-0 transition-all duration-300"></div>
-          </div>
-        </div>
+        <!-- Top Row: Back to course page link & Collapse button -->
+        <div class="flex items-center justify-between mb-3">
+          <button id="btn-back-course" class="text-[12.5px] text-[#b0b8c5] hover:text-white flex items-center gap-1.5 transition-colors italic font-normal">
+            <span>&larr;</span>
+            <span>Back to course page</span>
+          </button>
 
-        <!-- Lessons Hierarchy List -->
-        <div id="lms-curriculum-list" class="flex-1 overflow-y-auto p-3 space-y-3">
-          <!-- Dynamically populated lessons -->
-        </div>
-
-      </aside>
-
-      <!-- Center Main Viewing Stage -->
-      <main class="flex-1 bg-slate-950 flex flex-col overflow-hidden relative">
-        
-        <!-- Stage Header: Active Lesson Title & Type -->
-        <div class="h-12 border-b border-slate-800/80 px-6 flex items-center justify-between flex-shrink-0 bg-slate-950/80">
-          <div class="flex items-center space-x-2.5 overflow-hidden">
-            <span id="active-lesson-badge" class="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase font-mono">VIDEO</span>
-            <h3 id="active-lesson-title" class="text-sm font-semibold text-white truncate">Lesson Title</h3>
-          </div>
-          
-          <button id="btn-toggle-complete" class="px-3 py-1 rounded-lg text-xs font-medium border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white flex items-center space-x-1.5 transition-all">
-            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-slate-400"></i>
-            <span id="btn-complete-text">Mark Completed</span>
+          <button id="btn-collapse-sidebar" class="text-[#b0b8c5] hover:text-white text-base font-bold px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors leading-none" title="Collapse sidebar">
+            &laquo;
           </button>
         </div>
 
-        <!-- Content Viewer Container -->
-        <div class="flex-1 relative overflow-hidden bg-slate-950 flex flex-col items-center justify-center">
+        <!-- Course Title -->
+        <h1 id="lms-course-title" class="text-xl font-bold text-white tracking-tight leading-snug truncate">
+          Sigma 12
+        </h1>
+
+        <!-- Progress Bar and Percentage Row -->
+        <div class="flex items-center justify-between mt-3 text-xs">
+          <div class="flex-1 bg-[#374050] h-1 rounded-full overflow-hidden mr-3">
+            <div id="lms-progress-bar" class="h-full bg-[#7b6efa] rounded-full transition-all duration-300" style="width: 24%;"></div>
+          </div>
+          <span id="lms-progress-text" class="text-[12px] font-semibold text-[#b0b8c5] whitespace-nowrap">24 %</span>
+        </div>
+      </div>
+
+      <!-- Curriculum Accordion List -->
+      <div id="lms-curriculum-list" class="flex-1 overflow-y-auto bg-white divide-y divide-slate-100">
+        <!-- Dynamically populated module accordions -->
+      </div>
+    </aside>
+
+    <!-- Center Main Viewing Stage -->
+    <main class="flex-1 bg-black flex flex-col overflow-hidden relative min-w-0">
+      
+      <!-- Sleek Black Top Bar: Expand Toggle, < previous, next >, Lock/Complete buttons -->
+      <header class="h-11 bg-black border-b border-white/10 px-4 flex items-center justify-between flex-shrink-0 z-20">
+        <!-- Left: Expand sidebar button (shown when collapsed) -->
+        <div class="flex items-center">
+          <button id="btn-expand-sidebar" class="hidden p-1.5 text-slate-400 hover:text-white rounded hover:bg-white/10 text-sm font-semibold transition-colors mr-2" title="Show Sidebar">
+            &raquo;
+          </button>
+        </div>
+
+        <!-- Center: < previous and next > buttons -->
+        <div class="flex items-center space-x-12 sm:space-x-16 mx-auto">
+          <button id="btn-prev-lesson" class="text-[13px] sm:text-sm font-normal text-slate-300 hover:text-white transition-colors cursor-pointer select-none">
+            &lt; previous
+          </button>
+          <button id="btn-next-lesson" class="text-[13px] sm:text-sm font-normal text-slate-300 hover:text-white transition-colors cursor-pointer select-none">
+            next &gt;
+          </button>
+        </div>
+
+        <!-- Right: Actions & compatibility placeholders -->
+        <div class="flex items-center space-x-2">
+          <button id="btn-toggle-complete" class="px-2 py-0.5 rounded text-[11px] font-medium border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200 transition-colors hidden sm:flex items-center space-x-1">
+            <span id="btn-complete-text">Mark Complete</span>
+          </button>
+          <button id="btn-lock-course" class="p-1.5 text-slate-500 hover:text-slate-200 rounded hover:bg-white/10 transition-colors" title="Lock & Switch Course">
+            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+          </button>
+
+          <!-- Hidden anchors preserving test-suite / API compatibility -->
+          <span id="active-lesson-badge" class="hidden"></span>
+          <span id="active-lesson-title" class="hidden"></span>
+          <span id="lms-student-name" class="hidden"></span>
+          <span id="lms-student-ip" class="hidden"></span>
+        </div>
+      </header>
+
+      <!-- Content Viewer Container -->
+      <div class="flex-1 relative overflow-hidden bg-black flex flex-col items-center justify-center min-w-0">
+        
+        <!-- ===================================== -->
+        <!-- A. VIDEO PLAYER (HLS .m3u8 & MP4) -->
+        <!-- ===================================== -->
+        <div id="video-container" class="hidden w-full h-full flex flex-col items-center justify-center bg-black relative group select-none">
           
-          <!-- ===================================== -->
-          <!-- A. VIDEO PLAYER (HLS .m3u8 & MP4) -->
-          <!-- ===================================== -->
-          <div id="video-container" class="hidden w-full h-full flex flex-col items-center justify-center bg-black relative group">
+          <!-- Top-Right Apna College Watermark Badge (Matches screenshot exactly) -->
+          <div id="apna-watermark-badge" class="absolute top-4 right-6 z-30 select-none pointer-events-none flex flex-col items-end opacity-40">
+            <span id="wm-apna-email" class="text-[12px] text-white/90 font-medium tracking-wide">rajshubh410@gmail.com</span>
+            <div class="flex items-center text-[12px] font-black tracking-wider leading-none mt-0.5">
+              <span class="text-amber-500 font-bold">APNA</span>&nbsp;<span class="text-white font-bold">COLLEGE</span>
+            </div>
+          </div>
             
             <video id="player-video" playsinline class="max-w-full max-h-[calc(100%-60px)] w-full h-auto object-contain cursor-pointer"></video>
             

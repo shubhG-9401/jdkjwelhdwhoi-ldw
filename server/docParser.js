@@ -32,11 +32,11 @@ export function parseCourseDocumentText(text) {
       continue;
     }
 
-    // Detect Module Header (e.g. "1. welcome to sigma", "2 . Live sessions", "6.Html level 1")
-    const moduleMatch = line.match(/^(\d+)\s*\.?\s*([A-Za-z0-9\s_-]+)$/i);
-    const isUrl = line.startsWith('http://') || line.startsWith('https://');
+    // Detect Module Header (e.g. "1. Welcome to Sigma 12!", "2. Live Sessions", "6. HTML (Level 1) - Part A")
+    const moduleMatch = line.match(/^(\d+)\s*[\.\-:]\s*(.+)$/i);
+    const containsUrl = /https?:\/\//i.test(line);
 
-    if (moduleMatch && !isUrl) {
+    if (moduleMatch && !containsUrl) {
       const moduleNum = moduleMatch[1];
       const moduleTitle = `${moduleNum}. ${moduleMatch[2].trim()}`;
       

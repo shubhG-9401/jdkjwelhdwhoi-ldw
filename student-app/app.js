@@ -85,6 +85,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnToggleComplete = document.getElementById('btn-toggle-complete');
   const btnCompleteText = document.getElementById('btn-complete-text');
 
+  // Apna College LMS navigation elements
+  const btnCollapseSidebar = document.getElementById('btn-collapse-sidebar');
+  const btnExpandSidebar = document.getElementById('btn-expand-sidebar');
+  const lmsSidebar = document.getElementById('lms-sidebar');
+  const btnBackCourse = document.getElementById('btn-back-course');
+  const btnPrevLesson = document.getElementById('btn-prev-lesson');
+  const btnNextLesson = document.getElementById('btn-next-lesson');
+  const wmApnaEmail = document.getElementById('wm-apna-email');
+
   // Resource containers
   const docContainer = document.getElementById('doc-container');
   const docMarkdownTitle = document.getElementById('doc-markdown-title');
@@ -345,22 +354,106 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // -------------------------------------------------------------
-  // 5. LMS LAUNCH & CURRICULUM RENDERING
+  // 5. LMS LAUNCH & APNA COLLEGE CURRICULUM RENDERING
   // -------------------------------------------------------------
+  const expandedModules = new Set();
+
+  window.toggleModule = function(modIdx) {
+    if (expandedModules.has(modIdx)) {
+      expandedModules.delete(modIdx);
+    } else {
+      expandedModules.add(modIdx);
+    }
+    renderCurriculum();
+  };
+
+  function updatePrevNextButtons() {
+    const allLessons = getAllLessons();
+    if (btnPrevLesson) {
+      if (activeLessonIndex <= 0) {
+        btnPrevLesson.classList.add('opacity-30', 'cursor-not-allowed');
+        btnPrevLesson.classList.remove('hover:text-white', 'cursor-pointer');
+      } else {
+        btnPrevLesson.classList.remove('opacity-30', 'cursor-not-allowed');
+        btnPrevLesson.classList.add('hover:text-white', 'cursor-pointer');
+      }
+    }
+    if (btnNextLesson) {
+      if (activeLessonIndex >= allLessons.length - 1) {
+        btnNextLesson.classList.add('opacity-30', 'cursor-not-allowed');
+        btnNextLesson.classList.remove('hover:text-white', 'cursor-pointer');
+      } else {
+        btnNextLesson.classList.remove('opacity-30', 'cursor-not-allowed');
+        btnNextLesson.classList.add('hover:text-white', 'cursor-pointer');
+      }
+    }
+  }
+
+  if (btnPrevLesson) {
+    btnPrevLesson.addEventListener('click', () => {
+      if (activeLessonIndex > 0) {
+        selectLesson(activeLessonIndex - 1);
+      }
+    });
+  }
+
+  if (btnNextLesson) {
+    btnNextLesson.addEventListener('click', () => {
+      const all = getAllLessons();
+      if (activeLessonIndex < all.length - 1) {
+        selectLesson(activeLessonIndex + 1);
+      }
+    });
+  }
+
+  if (btnCollapseSidebar && lmsSidebar) {
+    btnCollapseSidebar.addEventListener('click', () => {
+      lmsSidebar.classList.add('hidden');
+      if (btnExpandSidebar) btnExpandSidebar.classList.remove('hidden');
+    });
+  }
+
+  if (btnExpandSidebar && lmsSidebar) {
+    btnExpandSidebar.addEventListener('click', () => {
+      lmsSidebar.classList.remove('hidden');
+      btnExpandSidebar.classList.add('hidden');
+    });
+  }
+
+  if (btnBackCourse) {
+    btnBackCourse.addEventListener('click', () => {
+      if (confirm('Return to course page?')) {
+        lockCourse();
+      }
+    });
+  }
+
   function launchLmsEnvironment(courseData) {
     if (activationScreen) activationScreen.classList.add('hidden');
     if (lmsScreen) lmsScreen.classList.remove('hidden');
 
-    if (lmsCourseTitle) lmsCourseTitle.textContent = courseData.courseTitle;
-    if (lmsStudentName) lmsStudentName.textContent = courseData.studentInfo.name;
-    if (lmsStudentIp) lmsStudentIp.textContent = `IPv4: ${courseData.studentInfo.boundIpv4 || '127.0.0.1'}`;
+    if (lmsCourseTitle) lmsCourseTitle.textContent = courseData.courseTitle || 'Sigma 12';
+    if (lmsStudentName) lmsStudentName.textContent = courseData.studentInfo?.name || 'Student';
+    if (lmsStudentIp) lmsStudentIp.textContent = `IPv4: ${courseData.studentInfo?.boundIpv4 || '127.0.0.1'}`;
+
+    if (wmApnaEmail) {
+      wmApnaEmail.textContent = courseData?.studentInfo?.email || courseData?.studentInfo?.customerEmail || 'rajshubh410@gmail.com';
+    }
 
     startDynamicWatermark(courseData);
-    renderCurriculum(courseData);
 
     const all = getAllLessons(courseData);
     const firstVideoIdx = all.findIndex(l => l.type === 'video');
-    selectLesson(firstVideoIdx >= 0 ? firstVideoIdx : 0);
+    const startIdx = firstVideoIdx >= 0 ? firstVideoIdx : 0;
+
+    if (all[startIdx] && typeof all[startIdx].modIdx === 'number') {
+      expandedModules.add(all[startIdx].modIdx);
+    } else {
+      expandedModules.add(0);
+    }
+
+    renderCurriculum(courseData);
+    selectLesson(startIdx);
   }
 
   function getAllLessons(courseData) {
@@ -382,46 +475,102 @@ document.addEventListener('DOMContentLoaded', async () => {
     let flatCounter = 0;
     const completedSet = studentStore.getState().completedLessonIds;
 
-    lmsCurriculumList.innerHTML = data.manifest.modules.map(mod => `
-      <div class="border-b border-slate-800/80 last:border-b-0">
-        <div class="px-5 py-3 bg-slate-950/40 text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-          <span>${mod.moduleTitle}</span>
-          <span class="text-[10px] text-slate-500 font-mono">${(mod.lessons || []).length} items</span>
-        </div>
-        <div class="divide-y divide-slate-800/40">
-          ${(mod.lessons || []).map(les => {
-            const thisIdx = flatCounter++;
-            const isActive = (thisIdx === activeLessonIndex);
-            const isCompleted = completedSet.has(thisIdx);
+    if (expandedModules.size === 0) {
+      const allLessons = getAllLessons(data);
+      const activeLesson = allLessons[activeLessonIndex];
+      if (activeLesson && typeof activeLesson.modIdx === 'number') {
+        expandedModules.add(activeLesson.modIdx);
+      } else {
+        expandedModules.add(0);
+      }
+    }
 
-            let iconName = 'file-text';
-            if (les.type === 'video') iconName = 'play-circle';
-            else if (les.type === 'pdf') iconName = 'file';
-            else if (les.type === 'telegram') iconName = 'send';
-            else if (les.type === 'image') iconName = 'image';
+    lmsCurriculumList.innerHTML = data.manifest.modules.map((mod, modIdx) => {
+      const isExpanded = expandedModules.has(modIdx);
+      const lessons = mod.lessons || [];
+      const rawTitle = mod.moduleTitle || `Module ${modIdx + 1}`;
 
-            return `
-              <div onclick="window.selectLesson(${thisIdx})" class="px-5 py-3.5 flex items-center justify-between cursor-pointer transition-all ${
-                isActive
-                  ? 'bg-indigo-600/15 border-l-4 border-indigo-500 text-white font-medium'
-                  : 'hover:bg-slate-800/40 text-slate-400'
-              }">
-                <div class="flex items-center space-x-3 overflow-hidden">
-                  <i data-lucide="${iconName}" class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-indigo-400' : 'text-slate-500'}"></i>
-                  <span class="lesson-title text-xs text-slate-300 truncate max-w-[200px]">${les.title}</span>
-                </div>
-                <div class="flex-shrink-0">
-                  <i data-lucide="${isCompleted ? 'check-circle-2' : 'circle'}" class="w-3.5 h-3.5 ${isCompleted ? 'text-emerald-400' : 'text-slate-600'}"></i>
+      const lessonsHtml = lessons.map(les => {
+        const thisIdx = flatCounter++;
+        const isActive = (thisIdx === activeLessonIndex);
+        const isCompleted = completedSet.has(thisIdx);
+
+        let iconSvg = '';
+        if (les.type === 'video') {
+          iconSvg = `
+            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          `;
+        } else if (les.type === 'telegram' || les.url?.includes('t.me')) {
+          iconSvg = `
+            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+          `;
+        } else {
+          iconSvg = `
+            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          `;
+        }
+
+        const typeLabel = (les.type === 'telegram') ? 'pdf' : (les.type || 'lesson');
+
+        if (isActive) {
+          return `
+            <div onclick="window.selectLesson(${thisIdx})" 
+                 class="bg-[#1e2430] text-white px-5 py-3.5 flex items-center space-x-3 cursor-pointer select-none transition-colors border-none">
+              ${iconSvg}
+              <div class="flex-1 min-w-0">
+                <div class="text-[13px] font-semibold text-white tracking-tight truncate">${les.title}</div>
+                <div class="text-[11px] text-slate-400 flex items-center space-x-1.5 mt-0.5">
+                  <span class="text-white font-bold">✔</span>
+                  <span class="capitalize">${typeLabel}</span>
                 </div>
               </div>
-            `;
-          }).join('')}
+            </div>
+          `;
+        } else {
+          return `
+            <div onclick="window.selectLesson(${thisIdx})" 
+                 class="bg-white hover:bg-slate-50 text-slate-700 px-5 py-3 flex items-center space-x-3 cursor-pointer select-none transition-colors border-b border-slate-100 last:border-b-0">
+              ${iconSvg}
+              <div class="flex-1 min-w-0">
+                <div class="text-[13px] font-normal text-slate-700 truncate">${les.title}</div>
+                <div class="text-[11px] text-slate-400 flex items-center space-x-1.5 mt-0.5">
+                  <span class="${isCompleted ? 'text-emerald-500 font-bold' : 'text-slate-300'}">${isCompleted ? '✔' : '○'}</span>
+                  <span class="capitalize">${typeLabel}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+
+      return `
+        <div class="border-b border-slate-200/80 last:border-b-0">
+          <div onclick="window.toggleModule(${modIdx})" 
+               class="py-3.5 px-5 bg-white hover:bg-slate-50 cursor-pointer flex items-center justify-between select-none transition-colors">
+            <span class="text-[13.5px] font-medium text-slate-800 tracking-tight">${rawTitle}</span>
+            <svg class="w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <div class="${isExpanded ? 'block' : 'hidden'}">
+            ${lessonsHtml}
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     updateProgress();
-    if (window.lucide) lucide.createIcons();
+    updatePrevNextButtons();
   }
 
   function selectLesson(flatIdx) {
@@ -431,6 +580,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     activeLessonIndex = flatIdx;
     const lesson = allLessons[flatIdx];
+
+    if (typeof lesson.modIdx === 'number') {
+      expandedModules.add(lesson.modIdx);
+    }
 
     if (activeLessonTitle) activeLessonTitle.textContent = lesson.title;
     if (activeLessonBadge) activeLessonBadge.textContent = (lesson.type || 'LESSON').toUpperCase();
@@ -442,6 +595,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (isCompleted) btnToggleComplete.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30');
       else btnToggleComplete.classList.remove('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30');
     }
+
+    updatePrevNextButtons();
 
     // Explicitly hide all viewing containers to prevent overlap
     const videoContainer = document.getElementById('video-container');
@@ -485,7 +640,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (allLessons.length === 0) return;
     const completedCount = studentStore.getState().completedLessonIds.size;
     const pct = Math.round((completedCount / allLessons.length) * 100);
-    if (lmsProgressText) lmsProgressText.textContent = `${pct}%`;
+    if (lmsProgressText) lmsProgressText.textContent = `${pct} %`;
     if (lmsProgressBar) lmsProgressBar.style.width = `${pct}%`;
   }
 
