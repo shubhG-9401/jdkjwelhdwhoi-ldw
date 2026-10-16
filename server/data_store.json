@@ -432,6 +432,133 @@
   ],
   "securityLogs": [
     {
+      "id": "log_1792175289055_gqfu8",
+      "timestamp": "2026-10-16T18:28:09.055Z",
+      "action": "license_deleted",
+      "status": "granted",
+      "ip": "127.0.0.1",
+      "message": "Permanently deleted license key SPNTWYD39NZ2DN9FGUE756VBNLCDBJXVQKVE3HV7DBYJ4X7QJ7XYZZL4 (Verification Suite Test Student).",
+      "ipv4": "127.0.0.1",
+      "ipv6": null
+    },
+    {
+      "id": "log_1792175289040_u0mbj",
+      "timestamp": "2026-10-16T18:28:09.040Z",
+      "action": "license_deleted",
+      "status": "granted",
+      "ip": "127.0.0.1",
+      "message": "Permanently deleted license key RB2ALWWTV2D3GCMRX7B3FYHYG6NWW778BDVHXRRZG76HFLQMN92L264X (IPv6 Test Student).",
+      "ipv4": "127.0.0.1",
+      "ipv6": null
+    },
+    {
+      "id": "log_1792175289024_lupj1",
+      "timestamp": "2026-10-16T18:28:09.024Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "RB2ALWWTV2D3GCMRX7B3FYHYG6NWW778BDVHXRRZG76HFLQMN92L264X",
+      "studentName": "IPv6 Test Student",
+      "ip": "182.77.71.147 / 2401:4900:8f5c:2ded:84a3:57d9:899c:7056",
+      "ipv4": "182.77.71.147",
+      "ipv6": "2401:4900:8f5c:2ded:84a3:57d9:899c:7056",
+      "hwid": "hwid-ipv6-student-99",
+      "message": "Granted course access to IPv6 Test Student. Bound IPv4: 182.77.71.147, IPv6: 2401:4900:8f5c:2ded:84a3:57d9:899c:7056, HWID: hwid-ipv6-student-99"
+    },
+    {
+      "id": "log_1792175289009_l4mbu",
+      "timestamp": "2026-10-16T18:28:09.009Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "RB2ALWWTV2D3GCMRX7B3FYHYG6NWW778BDVHXRRZG76HFLQMN92L264X",
+      "studentName": "IPv6 Test Student",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for IPv6 Test Student (IP Mode: first_login).",
+      "ipv4": null,
+      "ipv6": null,
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "log_1792175288824_gqcda",
+      "timestamp": "2026-10-16T18:28:08.824Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "SPNTWYD39NZ2DN9FGUE756VBNLCDBJXVQKVE3HV7DBYJ4X7QJ7XYZZL4",
+      "studentName": "Verification Suite Test Student",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "hwid": "test-pc-hwid-998877",
+      "message": "Granted course access to Verification Suite Test Student. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: test-pc-hwid-998877"
+    },
+    {
+      "id": "log_1792175288807_tbj34",
+      "timestamp": "2026-10-16T18:28:08.807Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "SPNTWYD39NZ2DN9FGUE756VBNLCDBJXVQKVE3HV7DBYJ4X7QJ7XYZZL4",
+      "studentName": "Verification Suite Test Student",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "hwid": "test-pc-hwid-998877",
+      "message": "Granted course access to Verification Suite Test Student. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: test-pc-hwid-998877"
+    },
+    {
+      "id": "log_1792175288789_io0xy",
+      "timestamp": "2026-10-16T18:28:08.789Z",
+      "action": "activation_attempt",
+      "status": "rejected_mobile_device",
+      "licenseKey": "SPNTWYD39NZ2DN9FGUE756VBNLCDBJXVQKVE3HV7DBYJ4X7QJ7XYZZL4",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "hwid": "mobile-fake-hwid",
+      "message": "Blocked activation attempt from standard mobile browser (Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 Mobi). Desktop Site mode required."
+    },
+    {
+      "id": "log_1792175288784_akgb3",
+      "timestamp": "2026-10-16T18:28:08.784Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "SPNTWYD39NZ2DN9FGUE756VBNLCDBJXVQKVE3HV7DBYJ4X7QJ7XYZZL4",
+      "studentName": "Verification Suite Test Student",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for Verification Suite Test Student (IP Mode: first_login).",
+      "ipv4": null,
+      "ipv6": null,
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "log_1792175288700_zctwg",
+      "timestamp": "2026-10-16T18:28:08.700Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "message": "Blocked mobile device before landing on student portal (/student). UA: node"
+    },
+    {
+      "id": "log_1792175288694_egenb",
+      "timestamp": "2026-10-16T18:28:08.694Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "message": "Blocked mobile device before landing on student portal (/student/index.html). UA: Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Mobile Safari/537.36"
+    },
+    {
+      "id": "log_1792175288687_87ghi",
+      "timestamp": "2026-10-16T18:28:08.687Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "message": "Blocked mobile device before landing on student portal (/student). UA: Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148"
+    },
+    {
       "id": "log_1792174943763_g3llk",
       "timestamp": "2026-10-16T18:22:23.763Z",
       "action": "license_deleted",
@@ -5778,115 +5905,6 @@
       "status": "granted",
       "courseId": "crs_sigma12",
       "message": "Course \"Sigma 12\" content updated. Modules: 6, Total Size: 1209 bytes. Re-encrypted with active master key."
-    },
-    {
-      "id": "log_1791920420586_ayl6e",
-      "timestamp": "2026-10-13T19:40:20.586Z",
-      "action": "admin_login_success",
-      "status": "granted",
-      "message": "Admin \"admin\" logged in successfully with 2FA verification."
-    },
-    {
-      "id": "log_1791920407480_6vq7j",
-      "timestamp": "2026-10-13T19:40:07.480Z",
-      "action": "admin_login_success",
-      "status": "granted",
-      "message": "Admin \"admin\" logged in successfully with 2FA verification."
-    },
-    {
-      "id": "log_1791919391501_f6mm1",
-      "timestamp": "2026-10-13T19:23:11.501Z",
-      "action": "activation_success",
-      "status": "granted",
-      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
-      "studentName": "ssd",
-      "ip": "127.0.0.1 / ::1",
-      "hwid": "PC-1D595NLC-WIN64",
-      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
-    },
-    {
-      "id": "log_1791919344522_fiwlr",
-      "timestamp": "2026-10-13T19:22:24.522Z",
-      "action": "activation_success",
-      "status": "granted",
-      "licenseKey": "CUE9SPKMYTJNV9BGNNEERQQD9J2L84364DVXREAVT9R36D2QAKN67S7X",
-      "studentName": "ssd",
-      "ip": "127.0.0.1 / ::1",
-      "hwid": "PC-1D595NLC-WIN64",
-      "message": "Granted course access to ssd. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
-    },
-    {
-      "id": "log_1791919324277_24x54",
-      "timestamp": "2026-10-13T19:22:04.277Z",
-      "action": "activation_success",
-      "status": "granted",
-      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
-      "studentName": "re",
-      "ip": "127.0.0.1 / ::1",
-      "hwid": "PC-1D595NLC-WIN64",
-      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
-    },
-    {
-      "id": "log_1791919236381_lqqmc",
-      "timestamp": "2026-10-13T19:20:36.381Z",
-      "action": "activation_success",
-      "status": "granted",
-      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
-      "studentName": "re",
-      "ip": "127.0.0.1 / ::1",
-      "hwid": "PC-1D595NLC-WIN64",
-      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
-    },
-    {
-      "id": "log_1791919171871_vxjgf",
-      "timestamp": "2026-10-13T19:19:31.871Z",
-      "action": "device_reset",
-      "status": "granted",
-      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
-      "studentName": "re",
-      "message": "Reset device HWID and IPv4/IPv6 binding for re."
-    },
-    {
-      "id": "log_1791919157153_jbhpl",
-      "timestamp": "2026-10-13T19:19:17.153Z",
-      "action": "activation_success",
-      "status": "granted",
-      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
-      "studentName": "re",
-      "ip": "127.0.0.1 / ::1",
-      "hwid": "PC-1D595NLC-WIN64",
-      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
-    },
-    {
-      "id": "log_1791919059716_yu8rt",
-      "timestamp": "2026-10-13T19:17:39.716Z",
-      "action": "device_reset",
-      "status": "granted",
-      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
-      "studentName": "re",
-      "message": "Reset device HWID and IPv4/IPv6 binding for re."
-    },
-    {
-      "id": "log_1791918922440_n2c39",
-      "timestamp": "2026-10-13T19:15:22.440Z",
-      "action": "activation_success",
-      "status": "granted",
-      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
-      "studentName": "re",
-      "ip": "127.0.0.1 / ::1",
-      "hwid": "PC-1D595NLC-WIN64",
-      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
-    },
-    {
-      "id": "log_1791918705221_ear61",
-      "timestamp": "2026-10-13T19:11:45.221Z",
-      "action": "activation_success",
-      "status": "granted",
-      "licenseKey": "RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB",
-      "studentName": "re",
-      "ip": "127.0.0.1 / ::1",
-      "hwid": "PC-1D595NLC-WIN64",
-      "message": "Granted course access to re. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: PC-1D595NLC-WIN64"
     }
   ],
   "adminAuth": {

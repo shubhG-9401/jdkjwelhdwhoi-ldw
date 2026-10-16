@@ -60,11 +60,11 @@ input[type=range]::-webkit-slider-thumb:hover {
 /* Apna College Sidebar & Accordion Styling */
 #lms-sidebar {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: #1c2026;
+  background-color: #f8f8fd;
 }
 
 #lms-curriculum-list {
-  background-color: #1c2026;
+  background-color: #f8f8fd;
 }
 
 #lms-curriculum-list::-webkit-scrollbar {
@@ -72,11 +72,11 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 #lms-curriculum-list::-webkit-scrollbar-track {
-  background: #1c2026;
+  background: #f8f8fd;
 }
 
 #lms-curriculum-list::-webkit-scrollbar-thumb {
-  background: #38404d;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 

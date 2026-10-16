@@ -505,6 +505,14 @@ document.addEventListener('DOMContentLoaded', async () => {
               <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
             </svg>
           `;
+        } else if (les.title?.toLowerCase().includes('resource') || les.title?.toLowerCase().includes('installation')) {
+          // Open book icon matching Image 1 Installation Resources
+          iconSvg = `
+            <svg class="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+          `;
         } else if (les.type === 'telegram' || les.url?.includes('t.me')) {
           iconSvg = `
             <svg class="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -525,8 +533,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const typeLabel = (les.type === 'telegram') ? 'pdf' : (les.type || 'video');
-        const defaultDurations = ['02:04:35', '04:04:35', '01:56:30', '02:58:55', '01:32:15', '02:15:40', '01:45:10'];
+        const defaultDurations = ['02:04:35', '04:04:35', '01:56:30', '02:58:55', '06:02', '01:45:10'];
         const durationText = (les.type === 'video') ? (les.duration || defaultDurations[thisIdx % defaultDurations.length]) : '';
+
+        let subtitleHtml = '';
+        if (les.title?.toLowerCase().includes('installation') || les.title?.toLowerCase().includes('resource')) {
+          subtitleHtml = `<span class="text-white font-bold text-xs">✓</span> <span>Also available in the Telegram channel</span>`;
+        } else if (les.type === 'video') {
+          subtitleHtml = `<span class="inline-block w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald-400' : 'bg-[#888e99]'}"></span> <span class="capitalize">video</span>`;
+        } else {
+          subtitleHtml = `<span class="text-white font-bold text-xs">✓</span> <span class="capitalize">${typeLabel}</span>`;
+        }
 
         if (isActive) {
           // ACTIVE: #2b313b bg, 6px #6674cc left stripe, checkmark ✓ + pdf/video
@@ -538,8 +555,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="min-w-0 flex-1">
                   <div class="text-[13.5px] font-semibold text-white tracking-tight leading-snug truncate">${les.title}</div>
                   <div class="text-[11.5px] text-[#9ca3af] flex items-center space-x-1.5 mt-0.5">
-                    <span class="text-white font-bold text-xs">✓</span>
-                    <span class="capitalize">${typeLabel}</span>
+                    ${subtitleHtml}
                   </div>
                 </div>
               </div>
@@ -556,8 +572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="min-w-0 flex-1">
                   <div class="text-[13.5px] font-medium text-white tracking-tight leading-snug truncate">${les.title}</div>
                   <div class="text-[11.5px] text-[#888e99] flex items-center space-x-1.5 mt-0.5">
-                    <span class="inline-block w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald-400' : 'bg-[#888e99]'}"></span>
-                    <span class="capitalize">${typeLabel}</span>
+                    ${subtitleHtml}
                   </div>
                 </div>
               </div>
@@ -568,18 +583,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       }).join('');
 
       // MODULE HEADER:
-      // When expanded: #6674cc (radiant purple) with pure white text and chevron up ^
-      // When collapsed: #1c2026 with white text and chevron down v
-      const headerBg = isExpanded ? 'bg-[#6674cc] text-white' : 'bg-[#1c2026] hover:bg-[#232832] text-white border-b border-[#262b35]';
-      const chevronSvg = isExpanded
-        ? `<svg class="w-4 h-4 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`
-        : `<svg class="w-4 h-4 text-[#888e99] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+      // Live Sessions or Active Module: #6674cc (radiant purple) with pure white text and chevron up ^
+      // Other Expanded Modules: #f8f8fd with #525866 text and chevron up ^
+      // Collapsed Modules: #f8f8fd with #525866 text and chevron down v
+      const isLiveModule = rawTitle.toLowerCase().includes('live session');
+      const containsActive = lessons.some((_, i) => (flatCounter - lessons.length + i) === activeLessonIndex);
+      const isHighlightedHeader = isExpanded && (isLiveModule || containsActive);
+
+      let headerClasses = 'py-3.5 px-5 cursor-pointer flex items-center justify-between select-none transition-colors border-b border-[#e7e8ed]';
+      let titleClasses = 'text-[14px] tracking-tight';
+      let chevronSvg = '';
+
+      if (isHighlightedHeader) {
+        headerClasses += ' bg-[#6674cc] text-white';
+        titleClasses += ' font-semibold text-white';
+        chevronSvg = `<svg class="w-4 h-4 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+      } else if (isExpanded) {
+        headerClasses += ' bg-[#f8f8fd] hover:bg-[#f0f0f8] text-[#525866]';
+        titleClasses += ' font-medium text-[#525866]';
+        chevronSvg = `<svg class="w-4 h-4 text-[#87888a] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+      } else {
+        headerClasses += ' bg-[#f8f8fd] hover:bg-[#f0f0f8] text-[#525866]';
+        titleClasses += ' font-medium text-[#525866]';
+        chevronSvg = `<svg class="w-4 h-4 text-[#87888a] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+      }
 
       return `
-        <div class="border-b border-[#262b35] last:border-b-0">
+        <div class="border-b border-[#e7e8ed] last:border-b-0">
           <div onclick="window.toggleModule(${modIdx})" 
-               class="py-3.5 px-5 ${headerBg} cursor-pointer flex items-center justify-between select-none transition-colors">
-            <span class="text-[14.5px] font-semibold tracking-tight">${rawTitle}</span>
+               class="${headerClasses}">
+            <span class="${titleClasses}">${rawTitle}</span>
             ${chevronSvg}
           </div>
           <div class="${isExpanded ? 'block' : 'hidden'} bg-[#1c2026]">
