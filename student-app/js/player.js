@@ -206,6 +206,13 @@ export class VideoPlayerManager {
     if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
     if (this.errorBanner) this.errorBanner.classList.add('hidden');
 
+    if (this.video) {
+      this.video.muted = false;
+      this.video.volume = 1.0;
+      if (this.volumeSlider) this.volumeSlider.value = 1.0;
+      this.updateMuteIcon(false);
+    }
+
     const streamUrl = (lesson.url || '').trim();
 
     // Check if this is an HLS stream (Wistia, CloudFront, .m3u8)
@@ -312,6 +319,16 @@ export class VideoPlayerManager {
 
   play() {
     if (!this.video) return Promise.reject();
+
+    // Ensure audio is fully unmuted and volume is maximum
+    this.video.muted = false;
+    const vol = this.volumeSlider ? parseFloat(this.volumeSlider.value) : 1;
+    this.video.volume = (isNaN(vol) || vol <= 0) ? 1.0 : vol;
+    if (this.volumeSlider) {
+      this.volumeSlider.value = this.video.volume;
+    }
+    this.updateMuteIcon(false);
+
     return this.video.play().then(() => {
       if (this.bigPlayBtn) this.bigPlayBtn.classList.add('hidden');
       if (this.spinner) this.spinner.classList.add('hidden');

@@ -50,7 +50,6 @@ export class SecurityManager {
     this.setupScreenshotTrap();
     this.setupAntiInspectTrap();
     this.setupExtendedDisplayCheck();
-    this.setupAudioInterruptionDetector();
 
     // Continuous dynamic checks against runtime desktop site toggles or rotations
     window.addEventListener('resize', () => this.checkMobileBlock());
@@ -93,10 +92,35 @@ export class SecurityManager {
   }
 
   /**
-   * Pitch-black overlay activated whenever focus is lost or capture boundary is crossed.
-   * Defeats Zoom, Google Meet, Microsoft Teams, OBS, Windows Snipping Tool, PrintScreen.
+   * Pitch-black overlay activated whenever focus is lost, capture boundary is crossed,
+   * or Google Meet / browser screen-sharing infobars are detected.
    */
   setupScreenShield() {
+    let baselineChromeHeight = null;
+    let isInfobarCaptureActive = false;
+
+    // Detects Chromium screen-sharing infobar ("meet.google.com is sharing your screen and audio")
+    // When Chrome injects this infobar, window.innerHeight decreases by 30px-55px without outerHeight changing.
+    const checkInfobarCapture = () => {
+      if (window.innerHeight < 200) return false;
+      const currentDelta = window.outerHeight - window.innerHeight;
+
+      if (baselineChromeHeight === null) {
+        baselineChromeHeight = currentDelta;
+      } else {
+        const heightShift = currentDelta - baselineChromeHeight;
+        // Screen-sharing infobar in Chromium is typically between 30px and 60px
+        if (heightShift >= 28 && heightShift <= 65) {
+          isInfobarCaptureActive = true;
+          showShield('Google Meet / Browser screen sharing infobar detected. Please stop sharing to resume.');
+          return true;
+        } else if (heightShift <= 5) {
+          isInfobarCaptureActive = false;
+        }
+      }
+      return false;
+    };
+
     const showShield = (reason) => {
       if (this.screenShield) {
         this.screenShield.classList.remove('opacity-0', 'pointer-events-none', 'hidden');
@@ -118,6 +142,7 @@ export class SecurityManager {
     const hideShield = () => {
       if (this.isLockdown) return;
       if (!document.hasFocus() || document.hidden) return;
+      if (isInfobarCaptureActive || checkInfobarCapture()) return;
 
       if (this.screenShield) {
         this.screenShield.classList.remove('opacity-100');
@@ -128,32 +153,50 @@ export class SecurityManager {
 
     // 1. Trigger on both window and document events
     window.addEventListener('blur', () => showShield('Window blur - Focus lost'));
-    window.addEventListener('focus', hideShield);
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) showShield('Document hidden - Background tab or app switch');
-      else hideShield();
+    window.addEventListener('focus', () => {
+      if (checkInfobarCapture()) {
+        showShield('Screen sharing infobar active on return');
+      } else {
+        hideShield();
+      }
     });
 
-    // 2. High-Frequency Active Focus Polling (Every 100ms)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        showShield('Document hidden - Background tab or app switch');
+      } else {
+        if (checkInfobarCapture()) {
+          showShield('Screen sharing infobar active on tab switch');
+        } else {
+          hideShield();
+        }
+      }
+    });
+
+    // 2. High-Frequency Active Focus & Infobar Polling (Every 100ms)
     // Detects silent capture overlays, PIP modes, or non-focused window states
     setInterval(() => {
       if (!this.isLockdown) {
         if (!document.hasFocus() || document.hidden) {
           showShield('Active polling: Document unfocused or hidden');
+        } else if (checkInfobarCapture()) {
+          showShield('Active polling: Screen sharing infobar active');
         }
       }
     }, 100);
 
     // 3. Pointer & Mouse Boundary Guard (Defeats Zoom / Meet floating toolbars & multi-monitor switches)
     document.addEventListener('mouseleave', (e) => {
-      // If mouse leaves the browser viewport entirely (e.g., towards Zoom controls or second monitor)
       if (!e.relatedTarget && !e.toElement) {
         showShield('Cursor left browser window boundary');
       }
     });
     document.addEventListener('mouseenter', hideShield);
 
-    // 4. Print / Screen Snip Interceptor
+    // 4. Resize check for infobar injection
+    window.addEventListener('resize', checkInfobarCapture);
+
+    // 5. Print / Screen Snip Interceptor
     window.addEventListener('beforeprint', () => showShield('Print dialogue requested'));
     window.addEventListener('afterprint', hideShield);
   }
@@ -214,22 +257,7 @@ export class SecurityManager {
     }
   }
 
-  /**
-   * Detects background VoIP call audio interruptions (Zoom, Google Meet, Teams, cellular calls).
-   */
-  setupAudioInterruptionDetector() {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) {
-        const audioCtx = new AudioCtx();
-        audioCtx.addEventListener('statechange', () => {
-          if (audioCtx.state === 'suspended') {
-            console.warn('[DRM AudioMonitor] AudioContext suspended - Potential active VoIP call or screen share stream.');
-          }
-        });
-      }
-    } catch {}
-  }
+
 
   /**
    * Traps screenshot hotkeys and clears system clipboard.

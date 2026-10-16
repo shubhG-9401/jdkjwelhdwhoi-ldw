@@ -78,9 +78,9 @@ async function runTests() {
     const secRes = await fetch('http://localhost:3000/student/js/security.js');
     const secJs = await secRes.text();
     if (!secJs.includes('setupExtendedDisplayCheck')) throw new Error('Missing setupExtendedDisplayCheck in security.js');
-    if (!secJs.includes('setupAudioInterruptionDetector')) throw new Error('Missing setupAudioInterruptionDetector in security.js');
+    if (!secJs.includes('checkInfobarCapture')) throw new Error('Missing checkInfobarCapture in security.js');
     if (!secJs.includes('captureStream')) throw new Error('Missing captureStream traps in security.js');
-    return 'DRM Canvas, Temporal Strobe & Screen Shield verified';
+    return 'DRM Canvas, Temporal Strobe, Infobar Capture Trap & Screen Shield verified';
   });
 
   // 5b. Pre-landing Mobile & Phone Desktop Site Blocker
