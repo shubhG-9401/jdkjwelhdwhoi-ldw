@@ -26,22 +26,6 @@ export class VideoPlayerManager {
     this.btnFullscreen = domElements.btnVideoFullscreen || document.getElementById('btn-video-fullscreen');
     this.rateSelect = document.getElementById('video-speed') || document.getElementById('video-rate-select');
 
-    // Anti-Screenshare Dynamic Forensic Canvas & Strobe Engine
-    this.watermarkCanvas = document.getElementById('drm-watermark-canvas');
-    this.canvasCtx = this.watermarkCanvas?.getContext('2d');
-    this.animFrameId = null;
-    this.frameCount = 0;
-    this.studentIdentity = {
-      name: 'Authorized Student',
-      phone: '',
-      ip: '127.0.0.1',
-      hwid: 'HWID-SECURE',
-      licenseKey: 'LIC-XXXX'
-    };
-    this.badge1Pos = { x: 40, y: 50, targetX: 40, targetY: 50 };
-    this.badge2Pos = { x: 200, y: 180, targetX: 200, targetY: 180 };
-    this.badgeMoveTimer = null;
-
     this.hlsInstance = null;
     this.currentLesson = null;
     this.currentBlobUrl = null;
@@ -189,29 +173,10 @@ export class VideoPlayerManager {
     this.cleanup();
     this.currentLesson = lesson;
 
-    if (activeCourseData?.studentInfo) {
-      this.setStudentIdentity(
-        activeCourseData.studentInfo,
-        activeCourseData.hwid,
-        activeCourseData.studentInfo.boundIpv4,
-        activeCourseData.studentInfo.boundIpv6,
-        activeCourseData.licenseKey
-      );
-    } else {
-      this.startWatermarkEngine();
-    }
-
     if (this.container) this.container.classList.remove('hidden');
     if (this.spinner) this.spinner.classList.remove('hidden');
     if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
     if (this.errorBanner) this.errorBanner.classList.add('hidden');
-
-    if (this.video) {
-      this.video.muted = false;
-      this.video.volume = 1.0;
-      if (this.volumeSlider) this.volumeSlider.value = 1.0;
-      this.updateMuteIcon(false);
-    }
 
     const streamUrl = (lesson.url || '').trim();
 
@@ -319,16 +284,6 @@ export class VideoPlayerManager {
 
   play() {
     if (!this.video) return Promise.reject();
-
-    // Ensure audio is fully unmuted and volume is maximum
-    this.video.muted = false;
-    const vol = this.volumeSlider ? parseFloat(this.volumeSlider.value) : 1;
-    this.video.volume = (isNaN(vol) || vol <= 0) ? 1.0 : vol;
-    if (this.volumeSlider) {
-      this.volumeSlider.value = this.video.volume;
-    }
-    this.updateMuteIcon(false);
-
     return this.video.play().then(() => {
       if (this.bigPlayBtn) this.bigPlayBtn.classList.add('hidden');
       if (this.spinner) this.spinner.classList.add('hidden');
@@ -417,194 +372,7 @@ export class VideoPlayerManager {
     if (this.errorBanner) this.errorBanner.classList.remove('hidden');
   }
 
-  setStudentIdentity(info, hwid, ipv4, ipv6, licenseKey) {
-    const ipParts = [];
-    if (ipv4) ipParts.push(ipv4);
-    if (ipv6 && ipv6 !== '::1') ipParts.push(ipv6);
-    const ipStr = ipParts.join(' • ') || '127.0.0.1';
-
-    this.studentIdentity = {
-      name: info?.name || 'Authorized Student',
-      phone: info?.phone || '',
-      ip: ipStr,
-      hwid: hwid || 'HWID-SECURE',
-      licenseKey: licenseKey || 'LIC-PROTECTED'
-    };
-    this.startWatermarkEngine();
-  }
-
-  startWatermarkEngine() {
-    if (!this.watermarkCanvas || !this.canvasCtx) return;
-
-    if (this.badgeMoveTimer) clearInterval(this.badgeMoveTimer);
-    this.badgeMoveTimer = setInterval(() => {
-      if (!this.container) return;
-      const rect = this.container.getBoundingClientRect();
-      const maxX = Math.max(20, rect.width - 340);
-      const maxY = Math.max(20, rect.height - 110);
-      this.badge1Pos.targetX = 20 + Math.random() * maxX;
-      this.badge1Pos.targetY = 20 + Math.random() * maxY;
-
-      this.badge2Pos.targetX = 20 + Math.random() * maxX;
-      this.badge2Pos.targetY = 20 + Math.random() * maxY;
-    }, 1800);
-
-    const renderLoop = () => {
-      if (!this.watermarkCanvas || !this.canvasCtx || !this.container) return;
-      const rect = this.container.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) {
-        this.animFrameId = requestAnimationFrame(renderLoop);
-        return;
-      }
-
-      const dpr = window.devicePixelRatio || 1;
-      const targetW = Math.round(rect.width * dpr);
-      const targetH = Math.round(rect.height * dpr);
-      if (this.watermarkCanvas.width !== targetW || this.watermarkCanvas.height !== targetH) {
-        this.watermarkCanvas.width = targetW;
-        this.watermarkCanvas.height = targetH;
-      }
-
-      const ctx = this.canvasCtx;
-      ctx.save();
-      ctx.scale(dpr, dpr);
-      const width = rect.width;
-      const height = rect.height;
-
-      ctx.clearRect(0, 0, width, height);
-      this.frameCount++;
-
-      // When DRM screen shield is active or window is unfocused: paint 100% solid pitch-black over video
-      if (document.body.classList.contains('drm-obscured') || !document.hasFocus() || document.hidden) {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, width, height);
-        ctx.save();
-        ctx.font = '700 15px ui-monospace, SFMono-Regular, monospace';
-        ctx.fillStyle = '#f87171';
-        ctx.textAlign = 'center';
-        ctx.fillText('SCREEN RECORDING & SHARING BLOCKED', width / 2, height / 2 - 8);
-        ctx.font = '11px ui-monospace, SFMono-Regular, monospace';
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('Google Meet / Zoom Screen Capture Prohibited by DRM', width / 2, height / 2 + 14);
-        ctx.restore();
-        this.animFrameId = requestAnimationFrame(renderLoop);
-        return;
-      }
-
-      // 1. Anti-Capture Temporal Strobe (Defeats Zoom, Meet, OBS 5-15fps Temporal Compression)
-      const isPlaying = this.video && !this.video.paused && !this.video.ended;
-      if (isPlaying) {
-        const strobePhase = this.frameCount % 2;
-        if (strobePhase === 1) {
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.035)';
-          ctx.fillRect(0, 0, width, height);
-        }
-      }
-
-      // 2. High-Density Diagonal Forensic Security Lattice
-      ctx.save();
-      ctx.rotate(-0.35); // ~20 degree tilt
-      ctx.font = '700 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
-      ctx.textBaseline = 'middle';
-
-      const latticeText = `DRM SECURE • ${this.studentIdentity.name} • ${this.studentIdentity.ip} • HWID:${this.studentIdentity.hwid.slice(0, 8)} • PROHIBITED TO SCREENSHARE`;
-      const textMetrics = ctx.measureText(latticeText);
-      const textWidth = textMetrics.width + 100;
-      const rowSpacing = 60;
-
-      const startX = -width;
-      const endX = width * 2;
-      const startY = -height;
-      const endY = height * 2;
-
-      for (let y = startY; y < endY; y += rowSpacing) {
-        for (let x = startX; x < endX; x += textWidth) {
-          ctx.fillText(latticeText, x, y);
-        }
-      }
-      ctx.restore();
-
-      // 3. Smooth badge position interpolation
-      this.badge1Pos.x += (this.badge1Pos.targetX - this.badge1Pos.x) * 0.08;
-      this.badge1Pos.y += (this.badge1Pos.targetY - this.badge1Pos.y) * 0.08;
-      this.badge2Pos.x += (this.badge2Pos.targetX - this.badge2Pos.x) * 0.08;
-      this.badge2Pos.y += (this.badge2Pos.targetY - this.badge2Pos.y) * 0.08;
-
-      // 4. Primary Floating High-Contrast Security Badge
-      this.drawSecurityBadge(ctx, this.badge1Pos.x, this.badge1Pos.y, [
-        { text: '● LIVE DRM MONITORED STREAM', color: '#38bdf8', bold: true },
-        { text: `STUDENT: ${this.studentIdentity.name} | ${this.studentIdentity.ip}`, color: '#ffffff' },
-        { text: `HWID: ${this.studentIdentity.hwid} | ${new Date().toLocaleTimeString()} UTC`, color: '#a5b4fc' },
-        { text: 'ZOOM / MEET / OBS SCREEN RECORDING PROHIBITED', color: '#f87171', bold: true }
-      ]);
-
-      // 5. Secondary Floating Security Pill
-      this.drawSecurityBadge(ctx, this.badge2Pos.x, this.badge2Pos.y, [
-        { text: '⚠ LICENSED BROADCAST ONLY', color: '#fbbf24', bold: true },
-        { text: `KEY: ${this.studentIdentity.licenseKey.slice(0, 24)}...`, color: '#cbd5e1' }
-      ]);
-
-      ctx.restore();
-      this.animFrameId = requestAnimationFrame(renderLoop);
-    };
-
-    if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
-    this.animFrameId = requestAnimationFrame(renderLoop);
-  }
-
-  drawSecurityBadge(ctx, x, y, lines) {
-    ctx.save();
-    ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
-    
-    let maxTextWidth = 0;
-    lines.forEach(l => {
-      const w = ctx.measureText(l.text).width;
-      if (w > maxTextWidth) maxTextWidth = w;
-    });
-
-    const padX = 12;
-    const padY = 8;
-    const lineH = 15;
-    const boxW = maxTextWidth + padX * 2;
-    const boxH = lines.length * lineH + padY * 2;
-    const radius = 10;
-
-    // Draw background rounded box
-    ctx.fillStyle = 'rgba(3, 7, 18, 0.82)';
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.45)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    if (ctx.roundRect) {
-      ctx.roundRect(x, y, boxW, boxH, radius);
-    } else {
-      ctx.rect(x, y, boxW, boxH);
-    }
-    ctx.fill();
-    ctx.stroke();
-
-    // Draw text lines
-    lines.forEach((l, idx) => {
-      ctx.font = `${l.bold ? '700' : '500'} 10px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
-      ctx.fillStyle = l.color || '#ffffff';
-      ctx.fillText(l.text, x + padX, y + padY + (idx + 1) * lineH - 3);
-    });
-
-    ctx.restore();
-  }
-
   cleanup() {
-    if (this.animFrameId) {
-      cancelAnimationFrame(this.animFrameId);
-      this.animFrameId = null;
-    }
-    if (this.badgeMoveTimer) {
-      clearInterval(this.badgeMoveTimer);
-      this.badgeMoveTimer = null;
-    }
-    if (this.canvasCtx && this.watermarkCanvas) {
-      this.canvasCtx.clearRect(0, 0, this.watermarkCanvas.width, this.watermarkCanvas.height);
-    }
     if (this.video) {
       this.video.pause();
       this.video.removeAttribute('src');

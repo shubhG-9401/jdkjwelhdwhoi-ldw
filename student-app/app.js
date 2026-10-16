@@ -135,17 +135,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (wmStudent) wmStudent.textContent = courseData?.studentInfo?.name || 'Student';
     if (wmIp) wmIp.textContent = `${courseData?.studentInfo?.boundIpv4 || ''} ${courseData?.studentInfo?.boundIpv6 || ''}`.trim() || '127.0.0.1';
 
-    // Synchronize full DRM forensic canvas and anti-capture strobe engine
-    if (player && player.setStudentIdentity) {
-      player.setStudentIdentity(
-        courseData?.studentInfo,
-        state.hwid,
-        courseData?.studentInfo?.boundIpv4 || state.clientIpv4,
-        courseData?.studentInfo?.boundIpv6 || state.clientIpv6,
-        courseData?.licenseKey
-      );
-    }
-
     function moveWatermark() {
       if (!floatingWatermark) return;
       if (wmTime) wmTime.textContent = new Date().toLocaleTimeString();
@@ -343,7 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnUnlockCourse.disabled = false;
         btnUnlockCourse.innerHTML = `
           <i data-lucide="unlock" class="w-4 h-4"></i>
-          <span>Verify Key & Decrypt Course</span>
+          <span>Verify 56-Char Key & Decrypt Course</span>
         `;
         if (window.lucide) lucide.createIcons();
       }
@@ -359,23 +348,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 5. LMS LAUNCH & CURRICULUM RENDERING
   // -------------------------------------------------------------
   function launchLmsEnvironment(courseData) {
-    if (security && security.hideShield) {
-      security.hideShield();
-    } else {
-      document.body.classList.remove('drm-obscured');
-      const shield = document.getElementById('screen-shield');
-      if (shield) {
-        shield.classList.remove('opacity-100');
-        shield.classList.add('opacity-0', 'pointer-events-none');
-      }
-    }
-
     if (activationScreen) activationScreen.classList.add('hidden');
     if (lmsScreen) lmsScreen.classList.remove('hidden');
 
     if (lmsCourseTitle) lmsCourseTitle.textContent = courseData.courseTitle;
-    if (lmsStudentName) lmsStudentName.textContent = courseData.studentInfo?.name || 'Authorized Student';
-    if (lmsStudentIp) lmsStudentIp.textContent = `IPv4: ${courseData.studentInfo?.boundIpv4 || state.clientIpv4 || '127.0.0.1'}`;
+    if (lmsStudentName) lmsStudentName.textContent = courseData.studentInfo.name;
+    if (lmsStudentIp) lmsStudentIp.textContent = `IPv4: ${courseData.studentInfo.boundIpv4 || '127.0.0.1'}`;
 
     startDynamicWatermark(courseData);
     renderCurriculum(courseData);
