@@ -498,20 +498,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         let iconSvg = '';
         if (les.type === 'video') {
           iconSvg = `
-            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-[#87888a]'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
           `;
         } else if (les.type === 'telegram' || les.url?.includes('t.me')) {
           iconSvg = `
-            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-[#87888a]'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
             </svg>
           `;
         } else {
           iconSvg = `
-            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-[#87888a]'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -525,11 +525,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isActive) {
           return `
             <div onclick="window.selectLesson(${thisIdx})" 
-                 class="bg-[#1e2430] text-white px-5 py-3.5 flex items-center space-x-3 cursor-pointer select-none transition-colors border-none">
+                 class="bg-[#1c2026] text-white px-5 py-3.5 flex items-center space-x-3 cursor-pointer select-none transition-colors border-none">
               ${iconSvg}
               <div class="flex-1 min-w-0">
                 <div class="text-[13px] font-semibold text-white tracking-tight truncate">${les.title}</div>
-                <div class="text-[11px] text-slate-400 flex items-center space-x-1.5 mt-0.5">
+                <div class="text-[11px] text-[#828487] flex items-center space-x-1.5 mt-0.5">
                   <span class="text-white font-bold">✔</span>
                   <span class="capitalize">${typeLabel}</span>
                 </div>
@@ -539,12 +539,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
           return `
             <div onclick="window.selectLesson(${thisIdx})" 
-                 class="bg-white hover:bg-slate-50 text-slate-700 px-5 py-3 flex items-center space-x-3 cursor-pointer select-none transition-colors border-b border-slate-100 last:border-b-0">
+                 class="bg-[#f8f8fd] hover:bg-[#eef0f6] text-[#525866] px-5 py-3 flex items-center space-x-3 cursor-pointer select-none transition-colors border-b border-[#e7e8ed] last:border-b-0">
               ${iconSvg}
               <div class="flex-1 min-w-0">
-                <div class="text-[13px] font-normal text-slate-700 truncate">${les.title}</div>
-                <div class="text-[11px] text-slate-400 flex items-center space-x-1.5 mt-0.5">
-                  <span class="${isCompleted ? 'text-emerald-500 font-bold' : 'text-slate-300'}">${isCompleted ? '✔' : '○'}</span>
+                <div class="text-[13px] font-normal text-[#525866] truncate">${les.title}</div>
+                <div class="text-[11px] text-[#87888a] flex items-center space-x-1.5 mt-0.5">
+                  <span class="${isCompleted ? 'text-emerald-500 font-bold' : 'text-[#87888a]'}">${isCompleted ? '✔' : '○'}</span>
                   <span class="capitalize">${typeLabel}</span>
                 </div>
               </div>
@@ -554,11 +554,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }).join('');
 
       return `
-        <div class="border-b border-slate-200/80 last:border-b-0">
+        <div class="border-b border-[#e7e8ed] last:border-b-0">
           <div onclick="window.toggleModule(${modIdx})" 
-               class="py-3.5 px-5 bg-white hover:bg-slate-50 cursor-pointer flex items-center justify-between select-none transition-colors">
-            <span class="text-[13.5px] font-medium text-slate-800 tracking-tight">${rawTitle}</span>
-            <svg class="w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               class="py-3 px-5 bg-[#f8f8fd] hover:bg-[#f0f0f8] cursor-pointer flex items-center justify-between select-none transition-colors">
+            <span class="text-[13.5px] font-medium text-[#525866] tracking-tight">${rawTitle}</span>
+            <svg class="w-4 h-4 text-[#87888a] transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </div>
