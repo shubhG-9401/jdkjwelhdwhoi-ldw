@@ -58,22 +58,27 @@ async function runTests() {
 
   // 5b. Pre-landing Mobile & Phone Desktop Site Blocker
   await check('Pre-Landing Mobile & Desktop Site Blocker', async () => {
-    // 1. iPhone mobile attempt
+    // 1. iPhone standard mobile attempt -> 403
     const iphoneRes = await fetch('http://localhost:3000/student', {
       headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148' }
     });
-    if (iphoneRes.status !== 403) throw new Error(`Expected HTTP 403 for iPhone, got ${iphoneRes.status}`);
+    if (iphoneRes.status !== 403) throw new Error(`Expected HTTP 403 for iPhone standard mobile, got ${iphoneRes.status}`);
     const iphoneText = await iphoneRes.text();
-    if (!iphoneText.includes('Windows PC Required')) throw new Error('Missing Windows PC Required block message');
-    if (iphoneText.includes('Secure Course Player')) throw new Error('Student portal HTML leaked to mobile device!');
+    if (!iphoneText.includes('Desktop Site Required')) throw new Error('Missing Desktop Site Required block message');
 
-    // 2. Android mobile attempt
+    // 2. Android standard mobile attempt -> 403
     const androidRes = await fetch('http://localhost:3000/student/index.html', {
       headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Mobile Safari/537.36' }
     });
-    if (androidRes.status !== 403) throw new Error(`Expected HTTP 403 for Android, got ${androidRes.status}`);
+    if (androidRes.status !== 403) throw new Error(`Expected HTTP 403 for Android standard mobile, got ${androidRes.status}`);
 
-    // 3. Android "Desktop Site" Mode attempt (Emulating desktop UA with mobile platform hints)
+    // 3. Mobile Client Hint Sec-CH-UA-Mobile: ?1 -> 403
+    const chRes = await fetch('http://localhost:3000/student', {
+      headers: { 'Sec-CH-UA-Mobile': '?1' }
+    });
+    if (chRes.status !== 403) throw new Error(`Expected HTTP 403 for Sec-CH-UA-Mobile: ?1, got ${chRes.status}`);
+
+    // 4. Android "Desktop Site" Mode attempt -> 200 OK (OPENED!)
     const androidDesktopRes = await fetch('http://localhost:3000/student', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -81,24 +86,19 @@ async function runTests() {
         'Sec-CH-UA-Mobile': '?0'
       }
     });
-    if (androidDesktopRes.status !== 403) throw new Error(`Expected HTTP 403 for Android Desktop Site, got ${androidDesktopRes.status}`);
+    if (androidDesktopRes.status !== 200) throw new Error(`Expected HTTP 200 for Android Desktop Site, got ${androidDesktopRes.status}`);
+    const androidDesktopText = await androidDesktopRes.text();
+    if (!androidDesktopText.includes('Secure Course Player')) throw new Error('Expected student player HTML for mobile desktop site');
 
-    // 4. Client Hints with Mobile Device Model (e.g. Pixel 8)
-    const modelRes = await fetch('http://localhost:3000/student', {
+    // 5. iPhone "Request Desktop Website" Mode attempt -> 200 OK (OPENED!)
+    const iphoneDesktopRes = await fetch('http://localhost:3000/student', {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-        'Sec-CH-UA-Model': '"Pixel 8"'
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
       }
     });
-    if (modelRes.status !== 403) throw new Error(`Expected HTTP 403 for Sec-CH-UA-Model, got ${modelRes.status}`);
+    if (iphoneDesktopRes.status !== 200) throw new Error(`Expected HTTP 200 for iPhone Desktop Website mode, got ${iphoneDesktopRes.status}`);
 
-    // 5. Mobile Client Hint Sec-CH-UA-Mobile: ?1
-    const chRes = await fetch('http://localhost:3000/student', {
-      headers: { 'Sec-CH-UA-Mobile': '?1' }
-    });
-    if (chRes.status !== 403) throw new Error(`Expected HTTP 403 for Sec-CH-UA-Mobile, got ${chRes.status}`);
-
-    return 'iPhone, Android, Android Desktop Site, and Device-Model requests strictly blocked (HTTP 403)';
+    return 'Standard mobile blocked (403), Mobile Desktop Site successfully opened (200 OK)';
   });
 
   // 6. Admin Auth with stateless token
@@ -159,9 +159,9 @@ async function runTests() {
     return `Key: ${generatedKey.substring(0, 10)}... (Length: ${generatedKey.length})`;
   });
 
-  // 9. Mobile User-Agent & Phone Desktop Site Rejection (403 Forbidden)
-  await check('Mobile & Phone Desktop Site Block 403', async () => {
-    // A. Standard Mobile UA
+  // 9. Standard Mobile Rejection (403) & Mobile Desktop Site Acceptance (200)
+  await check('Mobile Standard Block 403 & Desktop Site Allowed 200', async () => {
+    // A. Standard Mobile UA -> 403 Forbidden
     const res1 = await fetch('http://localhost:3000/api/client/activate', {
       method: 'POST',
       headers: {
@@ -174,26 +174,31 @@ async function runTests() {
         hwid: 'mobile-fake-hwid'
       })
     });
-    if (res1.status !== 403) throw new Error(`Expected 403 for mobile UA, got ${res1.status}`);
+    if (res1.status !== 403) throw new Error(`Expected 403 for standard mobile UA, got ${res1.status}`);
 
-    // B. Phone Desktop Site with spoofed desktop UA but mobile hardware telemetry (shortEdge < 600)
+    // B. Mobile with Desktop Site Mode Enabled -> 200 OK
     const res2 = await fetch('http://localhost:3000/api/client/activate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Sec-CH-UA-Mobile': '?0',
+        'Sec-CH-UA-Platform': '"Android"'
       },
       body: JSON.stringify({
         courseId: activeCourseId,
         licenseKey: generatedKey,
-        hwid: 'mobile-desktop-site-hwid',
+        hwid: 'test-pc-hwid-998877',
         screenShortSide: 390,
-        isPhoneDevice: true
+        isPhoneDevice: false
       })
     });
-    if (res2.status !== 403) throw new Error(`Expected 403 for Phone Desktop Site telemetry, got ${res2.status}`);
+    if (res2.status !== 200) {
+      const err = await res2.json();
+      throw new Error(`Expected 200 for Mobile Desktop Site activation, got ${res2.status}: ${err.error}`);
+    }
 
-    return 'Mobile UA and Phone Desktop Site telemetry both strictly rejected (403 Forbidden)';
+    return 'Standard mobile blocked (403), Mobile Desktop Site activation accepted (200 OK)';
   });
 
   // 10. PC Client Activation (200 OK)

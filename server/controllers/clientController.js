@@ -104,11 +104,8 @@ export const clientController = {
       });
     }
 
-    // Reject mobile devices and phone desktop site modes
-    const { screenShortSide, isPhoneDevice } = req.body || {};
-    const isClientSidePhone = isPhoneDevice || (typeof screenShortSide === 'number' && screenShortSide > 0 && screenShortSide < 600);
-
-    if (isMobileDevice(req) || isClientSidePhone) {
+    // Reject standard mobile devices (Desktop site mode or PC allowed)
+    if (isMobileDevice(req)) {
       db.addLog({
         action: 'activation_attempt',
         status: 'rejected_mobile_device',
@@ -117,10 +114,10 @@ export const clientController = {
         ipv4: effectiveIpv4 || '127.0.0.1',
         ipv6: effectiveIpv6 || null,
         hwid,
-        message: `Blocked activation attempt from mobile device / phone desktop site (${(req.headers['user-agent'] || '').substring(0, 80)}, screen short edge: ${screenShortSide || 'N/A'}). Course playback is restricted to Windows PC.`
+        message: `Blocked activation attempt from standard mobile browser (${(req.headers['user-agent'] || '').substring(0, 80)}). Desktop Site mode required.`
       });
       return res.status(403).json({
-        error: 'ACCESS RESTRICTED: Course playback is strictly permitted on Windows PC / Desktop. Mobile devices, tablets, and phone desktop site modes are not authorized.'
+        error: 'ACCESS RESTRICTED: Please switch to "Desktop Site" in your mobile browser settings to activate and view this course.'
       });
     }
 

@@ -10,96 +10,40 @@
     (function() {
       function detectPhoneHardware() {
         var ua = navigator.userAgent || '';
-        var platform = navigator.platform || '';
 
-        // 1. Mobile & Handheld User-Agents
-        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Opera Mobi|Mobile|mobile|CriOS|FxiOS|EdgA|EdgIOS|Tablet|Silk|Kindle|PlayBook|BB10|Windows Phone/i.test(ua)) {
-          return { blocked: true, reason: 'Mobile User-Agent detected' };
+        // 1. If Client Hints declare mobile is false (Desktop site mode enabled) -> ALLOW
+        if (navigator.userAgentData && navigator.userAgentData.mobile === false) {
+          return { blocked: false };
         }
 
-        // 2. Physical Screen Hardware Short Edge (Immune to phone "Desktop site" emulation)
-        var w = window.screen.width || 0;
-        var h = window.screen.height || 0;
-        var shortEdge = Math.min(w, h);
-        if (shortEdge > 0 && shortEdge < 600) {
-          return { blocked: true, reason: 'Physical smartphone display detected (' + shortEdge + 'px short edge)' };
+        // 2. If User-Agent is desktop mode (no Mobile/iPhone tokens) -> ALLOW
+        if (!/Mobile|iPhone|iPod|Opera Mini|Opera Mobi|CriOS|FxiOS|EdgA|EdgIOS|Windows Phone/i.test(ua)) {
+          return { blocked: false };
         }
 
-        // 3. iOS "Desktop Website" Mode Trapping (MacIntel / Macintosh with touchscreen)
-        var hasTouch = (navigator.maxTouchPoints > 0) || ('ontouchstart' in window);
-        if ((/MacIntel|Macintosh/i.test(platform) || /Macintosh/i.test(ua)) && hasTouch) {
-          return { blocked: true, reason: 'iOS device in Desktop Website mode detected' };
-        }
-
-        // 4. Android Client Hints in Desktop Mode
-        if (navigator.userAgentData) {
-          if (navigator.userAgentData.platform === 'Android' || navigator.userAgentData.mobile === true) {
-            return { blocked: true, reason: 'Android Device Platform detected' };
-          }
-        }
-
-        // 5. Coarse Pointer with No Hover (Pure handheld touchscreen phone)
-        try {
-          if (window.matchMedia) {
-            if (window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(hover: hover)').matches && shortEdge < 768) {
-              return { blocked: true, reason: 'Handheld touchscreen pointer profile detected' };
-            }
-          }
-        } catch(e) {}
-
-        // 6. Mobile GPU chipset on touch devices (Qualcomm Adreno, ARM Mali, Apple GPU, PowerVR)
-        try {
-          var canvas = document.createElement('canvas');
-          var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-          if (gl) {
-            var ext = gl.getExtension('WEBGL_debug_renderer_info');
-            if (ext) {
-              var rend = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
-              if (/Apple GPU|Adreno|Mali|PowerVR/i.test(rend) && hasTouch && shortEdge < 768) {
-                return { blocked: true, reason: 'Mobile GPU chipset detected (' + rend.substring(0, 30) + ')' };
-              }
-            }
-          }
-        } catch(e) {}
-
-        // 7. Orientation Sensor
-        if (typeof window.orientation !== 'undefined' && shortEdge < 768) {
-          return { blocked: true, reason: 'Handheld orientation active' };
-        }
-
-        return { blocked: false };
+        // 3. Otherwise, standard mobile view is active -> prompt to switch to Desktop site
+        return { blocked: true, reason: 'Standard mobile view active. Please enable "Desktop site".' };
       }
 
       var check = detectPhoneHardware();
       if (check.blocked) {
         try { if (window.stop) window.stop(); } catch(e) {}
-        try {
-          if (navigator.sendBeacon) {
-            navigator.sendBeacon('/api/client/tamper-alert', JSON.stringify({
-              licenseKey: 'UNAUTHENTICATED',
-              alertType: 'phone_desktop_site_blocked',
-              details: check.reason + ' (Screen: ' + window.screen.width + 'x' + window.screen.height + ')'
-            }));
-          }
-        } catch(e) {}
 
         document.documentElement.innerHTML = '<!DOCTYPE html>' +
 '<html lang="en">' +
 '<head>' +
 '  <meta charset="UTF-8">' +
 '  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">' +
-'  <title>Access Denied - Windows PC Required</title>' +
+'  <title>Desktop Site Required - Secure Course Player</title>' +
 '  <style>' +
 '    * { box-sizing: border-box; margin: 0; padding: 0; }' +
 '    body { background-color: #030712; color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.25rem; line-height: 1.5; }' +
 '    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 1.5rem; padding: 2.25rem 1.75rem; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75); }' +
-'    .icon-wrapper { width: 4.5rem; height: 4.5rem; margin: 0 auto 1.25rem auto; border-radius: 1.25rem; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); display: flex; align-items: center; justify-content: center; color: #ef4444; }' +
-'    .badge { display: inline-block; padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); margin-bottom: 0.85rem; }' +
+'    .icon-wrapper { width: 4.5rem; height: 4.5rem; margin: 0 auto 1.25rem auto; border-radius: 1.25rem; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); display: flex; align-items: center; justify-content: center; color: #818cf8; }' +
+'    .badge { display: inline-block; padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 0.85rem; }' +
 '    h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: #ffffff; margin-bottom: 0.35rem; }' +
 '    .subtitle { font-size: 0.82rem; color: #94a3b8; margin-bottom: 1.35rem; }' +
 '    .info-box { background: #030712; border: 1px solid #1e293b; border-radius: 1rem; padding: 1.1rem; text-align: left; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; }' +
-'    .audit-grid { background: #0b0f19; border: 1px dashed #334155; border-radius: 0.75rem; padding: 0.85rem; margin-bottom: 1.35rem; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 0.7rem; text-align: left; color: #64748b; display: flex; flex-direction: column; gap: 0.35rem; }' +
-'    .audit-grid span { color: #94a3b8; }' +
 '    .footer-note { font-size: 0.78rem; color: #64748b; line-height: 1.45; }' +
 '  </style>' +
 '</head>' +
@@ -107,29 +51,23 @@
 '  <div class="card">' +
 '    <div class="icon-wrapper">' +
 '      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-'        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>' +
-'        <line x1="12" y1="18" x2="12.01" y2="18"></line>' +
-'        <line x1="2" y1="2" x2="22" y2="22" stroke="#ef4444" stroke-width="2.5"></line>' +
+'        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>' +
+'        <line x1="8" y1="21" x2="16" y2="21"></line>' +
+'        <line x1="12" y1="17" x2="12" y2="21"></line>' +
 '      </svg>' +
 '    </div>' +
-'    <div class="badge">Phone Desktop Site Blocked</div>' +
-'    <h1>Windows PC Required</h1>' +
-'    <p class="subtitle">Enabling "Desktop Site" on a mobile device is strictly prohibited.</p>' +
+'    <div class="badge">Desktop Site Required</div>' +
+'    <h1>Switch to "Desktop Site"</h1>' +
+'    <p class="subtitle">To view this course on your mobile device, please enable Desktop Site mode.</p>' +
 '    <div class="info-box">' +
-'      <div><strong style="color: #f1f5f9;">Phone Access Prohibited:</strong> Course playback cannot open on mobile phones or tablets in any mode, including "Desktop Site" or "Desktop View".</div>' +
-'      <div><strong style="color: #f1f5f9;">DRM Protection:</strong> Hardware encryption and security controls require an authorized <strong>Windows Desktop PC or Laptop</strong>.</div>' +
+'      <div><strong style="color: #f1f5f9;">Android (Chrome / Edge / Brave):</strong> Tap the 3 dots menu (<strong>⋮</strong>) in the top-right corner and check <strong>"Desktop site"</strong>.</div>' +
+'      <div><strong style="color: #f1f5f9;">iPhone / iPad (Safari):</strong> Tap <strong>aA</strong> in the address bar and select <strong>"Request Desktop Website"</strong>.</div>' +
 '    </div>' +
-'    <div class="audit-grid">' +
-'      <div>Violation: <span style="color: #f87171;">Phone Desktop Site Attempt</span></div>' +
-'      <div>Detection: <span>' + check.reason + '</span></div>' +
-'      <div>Physical Screen: <span>' + window.screen.width + ' x ' + window.screen.height + '</span></div>' +
-'      <div>Action: <span>Course Player Terminated</span></div>' +
-'    </div>' +
-'    <p class="footer-note">Please open this course link on your <strong>Windows PC or Laptop</strong>.</p>' +
+'    <p class="footer-note">Once you check <strong>Desktop site</strong>, this page will reload and open your full course player.</p>' +
 '  </div>' +
 '</body>' +
 '</html>';
-        throw new Error('Course player blocked on mobile / phone desktop site mode.');
+        throw new Error('Please enable Desktop site mode to view course.');
       }
     })();
   </script>
@@ -476,31 +414,28 @@
   <!-- ============================================================== -->
   <div id="mobile-blocked-screen" class="hidden fixed inset-0 z-[999999] flex items-center justify-center bg-slate-950 p-6 text-center">
     <div class="max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-5">
-      <div class="w-16 h-16 mx-auto rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
-        <i data-lucide="smartphone" class="w-8 h-8"></i>
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+        <i data-lucide="monitor" class="w-8 h-8"></i>
       </div>
       <div>
-        <h2 class="text-xl font-bold text-white tracking-tight">Mobile & Desktop Site Blocked</h2>
-        <p class="text-xs text-rose-400 font-medium mt-1">Windows PC Desktop Access Only</p>
+        <h2 class="text-xl font-bold text-white tracking-tight">Desktop Site Required</h2>
+        <p class="text-xs text-indigo-400 font-medium mt-1">Please enable Desktop Site mode</p>
       </div>
       <p class="text-xs text-slate-300 leading-relaxed">
-        This DRM-protected educational environment cannot run on mobile phones or tablets in any mode, including <strong>"Desktop Site" / "Desktop View"</strong>.
+        Standard mobile view is restricted. To access and play courses on your mobile device, please enable <strong>Desktop Site</strong> mode in your browser.
       </p>
-      <div class="text-left text-xs bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 space-y-2 text-slate-400 font-sans">
+      <div class="text-left text-xs bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 space-y-3 text-slate-400 font-sans">
         <div class="flex items-start space-x-2">
-          <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5"></i>
-          <div><strong class="text-slate-300">Device Policy:</strong> Handheld smartphones and tablets are prohibited.</div>
+          <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+          <div><strong class="text-slate-200">Android (Chrome/Edge/Brave):</strong> Tap the 3 dots menu (<strong>⋮</strong>) and check <strong>"Desktop site"</strong>.</div>
         </div>
         <div class="flex items-start space-x-2">
-          <i data-lucide="monitor" class="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5"></i>
-          <div><strong class="text-slate-300">DRM Security:</strong> Stream decryption and anti-tamper controls require a Windows PC.</div>
-        </div>
-        <div class="pt-1 border-t border-slate-800 text-[10px] font-mono text-slate-500">
-          Reason: <span id="mobile-block-reason" class="text-rose-400">Smartphone physical hardware detected</span>
+          <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+          <div><strong class="text-slate-200">iPhone/iPad (Safari):</strong> Tap <strong>aA</strong> in the address bar and select <strong>"Request Desktop Website"</strong>.</div>
         </div>
       </div>
       <p class="text-[11px] text-slate-500">
-        Please copy this URL and open it on your authorized <strong>Windows PC or Laptop</strong>.
+        Once enabled, this page will automatically reload and open your full player.
       </p>
     </div>
   </div>

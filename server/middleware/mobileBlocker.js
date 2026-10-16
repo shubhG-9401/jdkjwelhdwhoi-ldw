@@ -59,7 +59,7 @@ export function mobileBlocker(req, res, next) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Access Denied - Windows PC Required</title>
+  <title>Desktop Site Required - Secure Course Player</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -186,19 +186,20 @@ export function mobileBlocker(req, res, next) {
       </svg>
     </div>
 
-    <div class="badge">Mobile & Desktop Site Blocked</div>
-    <h1>Windows PC Required</h1>
-    <p class="subtitle">Course playback cannot run on mobile phones, even in "Desktop Site" mode.</p>
+    <div class="badge" style="background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.3);">Desktop Site Required</div>
+    <h1>Switch to "Desktop Site"</h1>
+    <p class="subtitle">Standard mobile view is restricted. Please enable Desktop Site mode in your browser to view your course.</p>
 
     <div class="info-box">
       <div class="info-row">
-        <svg class="info-icon text-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="info-icon text-indigo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
         </svg>
         <div>
-          <strong style="color: #f1f5f9;">Phone & Desktop Site Blocked:</strong> Smartphones, tablets, and mobile browsers using "Desktop Site" / "Desktop View" are strictly prohibited from viewing or downloading course curriculum.
+          <strong style="color: #f1f5f9;">Android (Chrome / Edge / Brave / Samsung):</strong>
+          <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem;">Tap the 3 dots menu (<strong>⋮</strong>) in the top-right corner and check <strong>"Desktop site"</strong>.</div>
         </div>
       </div>
       <div class="info-row">
@@ -208,20 +209,20 @@ export function mobileBlocker(req, res, next) {
           <line x1="12" y1="17" x2="12" y2="21"></line>
         </svg>
         <div>
-          <strong style="color: #f1f5f9;">DRM Protection:</strong> In-memory AES stream decryption, screenshot blocking, and single-device locking require an authorized <strong>Windows PC or Laptop</strong>.
+          <strong style="color: #f1f5f9;">iPhone / iPad (Safari):</strong>
+          <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem;">Tap <strong>aA</strong> in the address bar and select <strong>"Request Desktop Website"</strong>.</div>
         </div>
       </div>
     </div>
 
     <div class="audit-grid">
-      <div>Security Status: <span style="color: #f87171;">HTTP 403 Forbidden</span></div>
+      <div>Security Status: <span style="color: #fbbf24;">Desktop Site Mode Required</span></div>
       <div>Client IP: <span id="audit-client-ip">${escapeHtml(ipv4)}${ipv6 && ipv6 !== '::1' ? ' / ' + escapeHtml(ipv6) : ''}</span></div>
-      <div>Device Type: <span>Smartphone / Handheld Device</span></div>
-      <div>Policy: <span>Strict Windows PC Desktop Only</span></div>
+      <div>Requirement: <span>Enable "Desktop site" in browser menu</span></div>
     </div>
 
     <p class="footer-note">
-      Please copy your course URL and access it using Google Chrome, Microsoft Edge, or the Course Player on your <strong>Windows PC or Laptop</strong>.
+      Once you check <strong>Desktop site</strong>, this page will reload and open your full secure course player.
     </p>
   </div>
   <script>

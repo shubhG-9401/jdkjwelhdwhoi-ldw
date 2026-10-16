@@ -17,71 +17,19 @@
  */
 export function isPhoneOverall() {
   const ua = navigator.userAgent || '';
-  const platform = navigator.platform || '';
 
-  // 1. Handheld & Mobile User-Agent signatures
-  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Opera Mobi|Mobile|mobile|CriOS|FxiOS|EdgA|EdgIOS|Tablet|Silk|Kindle|PlayBook|BB10|Windows Phone/i.test(ua)) {
-    return { blocked: true, reason: 'Mobile User-Agent detected' };
+  // 1. If Client Hints declare mobile is false (Desktop site mode enabled) -> ALLOW
+  if (navigator.userAgentData && navigator.userAgentData.mobile === false) {
+    return { blocked: false };
   }
 
-  // 2. Physical Screen Hardware Dimensions (Immune to "Desktop site" emulation)
-  // When "Desktop site" is enabled on mobile, window.innerWidth is emulated to 980px+,
-  // but window.screen.width and window.screen.height remain the physical CSS hardware pixels.
-  // ALL smartphones have a short edge < 600px (typically 360px - 450px).
-  const screenW = window.screen.width || 0;
-  const screenH = window.screen.height || 0;
-  const shortEdge = Math.min(screenW, screenH);
-  if (shortEdge > 0 && shortEdge < 600) {
-    return { blocked: true, reason: `Physical smartphone display detected (${shortEdge}px short edge)` };
+  // 2. If User-Agent is desktop mode (no Mobile/iPhone tokens) -> ALLOW
+  if (!/Mobile|iPhone|iPod|Opera Mini|Opera Mobi|CriOS|FxiOS|EdgA|EdgIOS|Windows Phone/i.test(ua)) {
+    return { blocked: false };
   }
 
-  // 3. iOS "Request Desktop Website" Trapping
-  // iOS Safari in desktop mode reports platform "MacIntel" / "Macintosh", but physical Macs never have touchscreens!
-  const hasTouch = (navigator.maxTouchPoints > 0) || ('ontouchstart' in window);
-  const isMacIntelOrMacintosh = /MacIntel|Macintosh/i.test(platform) || /Macintosh/i.test(ua);
-  if (isMacIntelOrMacintosh && hasTouch) {
-    return { blocked: true, reason: 'iOS device in Desktop Website mode detected' };
-  }
-
-  // 4. Android Client Hints in JS (Sent even in Desktop site mode)
-  if (navigator.userAgentData) {
-    if (navigator.userAgentData.platform === 'Android' || navigator.userAgentData.mobile === true) {
-      return { blocked: true, reason: 'Android Device Platform detected' };
-    }
-  }
-
-  // 5. Coarse Pointer with No Hover (Pure handheld touchscreen phone)
-  try {
-    if (window.matchMedia) {
-      const isCoarse = window.matchMedia('(pointer: coarse)').matches;
-      const noHover = window.matchMedia('(hover: none)').matches;
-      if (isCoarse && noHover && shortEdge < 768) {
-        return { blocked: true, reason: 'Touchscreen handheld pointer profile detected' };
-      }
-    }
-  } catch (e) {}
-
-  // 6. Mobile GPU chipset on touch devices (Qualcomm Adreno, ARM Mali, Apple GPU, PowerVR)
-  try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (gl) {
-      const ext = gl.getExtension('WEBGL_debug_renderer_info');
-      if (ext) {
-        const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
-        if (/Apple GPU|Adreno|Mali|PowerVR/i.test(renderer) && hasTouch && shortEdge < 768) {
-          return { blocked: true, reason: `Mobile GPU chipset detected (${renderer.substring(0, 30)})` };
-        }
-      }
-    }
-  } catch (e) {}
-
-  // 7. Orientation Sensor
-  if (typeof window.orientation !== 'undefined' && shortEdge < 768) {
-    return { blocked: true, reason: 'Handheld orientation active' };
-  }
-
-  return { blocked: false };
+  // 3. Otherwise, standard mobile view is active -> prompt to switch to Desktop site
+  return { blocked: true, reason: 'Standard mobile view active. Please enable "Desktop site".' };
 }
 
 export class SecurityManager {

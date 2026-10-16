@@ -115,8 +115,8 @@ export function getClientIps(req) {
 }
 
 /**
- * Checks whether an incoming HTTP request originated from a mobile or tablet device,
- * including phones running in "Desktop Site" / "Request Desktop Website" mode.
+ * Checks whether an incoming HTTP request originated from a standard mobile view.
+ * If the user has "Desktop Site" / "Request Desktop Website" enabled, this returns false (allowed).
  * 
  * @param {import('express').Request} req
  * @returns {boolean}
@@ -124,20 +124,14 @@ export function getClientIps(req) {
 export function isMobileDevice(req) {
   if (!req || !req.headers) return false;
 
-  // 1. Modern Client Hints (Sent even in Desktop Site mode on Chrome / Edge)
+  // 1. Explicit Client Hint for Mobile (?0 = Desktop site mode enabled by user, ?1 = Standard mobile)
   const chMobile = req.headers['sec-ch-ua-mobile'];
-  if (chMobile === '?1') return true;
+  if (chMobile === '?0') return false; // Allowed: User enabled "Desktop site" mode
+  if (chMobile === '?1') return true;  // Blocked: Standard mobile site mode
 
-  const chPlatform = String(req.headers['sec-ch-ua-platform'] || '').toLowerCase();
-  if (chPlatform.includes('android') || chPlatform.includes('ios')) return true;
-
-  const chModel = String(req.headers['sec-ch-ua-model'] || '').trim().replace(/"/g, '');
-  if (chModel && chModel.length > 0) return true;
-
-  const chFormFactors = String(req.headers['sec-ch-ua-form-factors'] || '').toLowerCase();
-  if (chFormFactors.includes('mobile') || chFormFactors.includes('tablet')) return true;
-
-  // 2. User-Agent evaluation (Includes handheld tokens and phone device models)
+  // 2. User-Agent Evaluation for standard mobile browsers
   const userAgent = String(req.headers['user-agent'] || '');
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Opera Mobi|Mobile|mobile|CriOS|FxiOS|EdgA|EdgIOS|Tablet|Silk|Kindle|PlayBook|BB10|Windows Phone|SM-[A-Z0-9]+|Pixel [0-9]+|Redmi|POCO/i.test(userAgent);
+  
+  // Standard handheld mobile tokens (Chrome Mobile, Safari Mobile, Opera Mobi)
+  return /Mobile|mobile|iPhone|iPad|iPod|Opera Mini|Opera Mobi|CriOS|FxiOS|EdgA|EdgIOS|Windows Phone/i.test(userAgent);
 }
