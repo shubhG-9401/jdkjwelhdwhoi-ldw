@@ -193,11 +193,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (encFileLabel) {
         encFileLabel.innerHTML = `
-          <span class="text-emerald-400 font-semibold">${file.name}</span>
-          <div class="text-[10px] text-slate-400 font-mono mt-0.5">Valid AES-256 Package (${(file.size / (1024 * 1024)).toFixed(2)} MB)</div>
+          <div class="flex items-center justify-center space-x-2 text-emerald-400 font-semibold">
+            <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span class="truncate max-w-[280px]">${file.name}</span>
+          </div>
+          <div class="text-[10px] text-emerald-300 font-mono mt-0.5">AES-256 Package Loaded (${(file.size / (1024 * 1024)).toFixed(2)} MB) • Key ID: ${parsedMeta.keyId.slice(0, 12)}...</div>
+          <div class="mt-2 text-[11px] text-indigo-300 bg-indigo-950/70 py-1.5 px-3 rounded-lg border border-indigo-800/80">
+            ✓ Package ready! Enter your access key below and click <strong>"Verify Key & Decrypt Course"</strong>.
+          </div>
         `;
       }
+      if (encDropzone) {
+        encDropzone.classList.remove('border-slate-700');
+        encDropzone.classList.add('border-emerald-500/80', 'bg-emerald-950/30');
+      }
       if (activationError) activationError.classList.add('hidden');
+
+      if (licenseInput && licenseInput.value.trim().length >= 16 && btnUnlockCourse) {
+        btnUnlockCourse.classList.add('ring-4', 'ring-indigo-500/50');
+      } else if (licenseInput) {
+        licenseInput.focus();
+      }
     } catch (err) {
       showActivationError(err.message);
       studentStore.setState({ encryptedBuffer: null, parsedMeta: null });
@@ -215,13 +231,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     licenseInput.addEventListener('input', (e) => {
-      let val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      let val = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
       if (val.length > 56) val = val.substring(0, 56);
       e.target.value = val;
       if (keyLengthCounter) {
         keyLengthCounter.textContent = `${val.length} / 56`;
         if (val.length === 56) keyLengthCounter.className = 'text-[11px] font-mono text-emerald-400 font-bold';
         else keyLengthCounter.className = 'text-[11px] font-mono text-slate-400';
+      }
+    });
+  }
+
+  // Quick Demo Auto-Loader for Instant Testing
+  const btnLoadDemo = document.getElementById('btn-load-demo');
+  if (btnLoadDemo) {
+    btnLoadDemo.addEventListener('click', async () => {
+      btnLoadDemo.disabled = true;
+      btnLoadDemo.innerHTML = `<span class="animate-pulse">Loading demo course...</span>`;
+
+      try {
+        const demoRes = await fetch('/student/sigma_12_encrypted.enc');
+        if (!demoRes.ok) throw new Error('Demo package not found on server');
+        const blob = await demoRes.blob();
+        const demoFile = new File([blob], 'sigma_12_encrypted.enc', { type: 'application/octet-stream' });
+        await handleEncFile(demoFile);
+
+        const demoKey = 'KLY9MVXQRCKEDUHCAU6SBWLPXNT9D9UZ5R8TDU95B6RVX3KTSHLNF6HG';
+        if (licenseInput) {
+          licenseInput.value = demoKey;
+          if (keyLengthCounter) {
+            keyLengthCounter.textContent = `${demoKey.length} / 56`;
+            keyLengthCounter.className = 'text-[11px] font-mono text-emerald-400 font-bold';
+          }
+        }
+        if (btnUnlockCourse) {
+          btnUnlockCourse.classList.add('ring-4', 'ring-indigo-500/50', 'animate-pulse');
+          setTimeout(() => btnUnlockCourse.classList.remove('animate-pulse'), 2500);
+        }
+        btnLoadDemo.innerHTML = `<span class="text-emerald-400 font-semibold">✓ Demo Loaded</span>`;
+      } catch (err) {
+        console.warn('Demo load error:', err);
+        showActivationError('Could not auto-load demo course: ' + err.message);
+        btnLoadDemo.innerHTML = `<span>Auto-Load Demo (.enc + Key)</span>`;
+        btnLoadDemo.disabled = false;
       }
     });
   }
@@ -236,15 +288,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      if (key.length !== 56) {
-        showActivationError(`License key must be exactly 56 characters long (Currently ${key.length}).`);
+      if (key.length < 16) {
+        showActivationError(`License key must be at least 16 characters long (Currently ${key.length}).`);
         return;
       }
 
       btnUnlockCourse.disabled = true;
       btnUnlockCourse.innerHTML = `
         <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2 inline-block"></div>
-        <span>Verifying 56-Char Key & Decrypting...</span>
+        <span>Verifying Key & Decrypting...</span>
       `;
 
       try {
@@ -292,7 +344,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnUnlockCourse.disabled = false;
         btnUnlockCourse.innerHTML = `
           <i data-lucide="unlock" class="w-4 h-4"></i>
-          <span>Verify 56-Char Key & Decrypt Course</span>
+          <span>Verify Key & Decrypt Course</span>
         `;
         if (window.lucide) lucide.createIcons();
       }
@@ -308,12 +360,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 5. LMS LAUNCH & CURRICULUM RENDERING
   // -------------------------------------------------------------
   function launchLmsEnvironment(courseData) {
+    if (security && security.hideShield) {
+      security.hideShield();
+    } else {
+      document.body.classList.remove('drm-obscured');
+      const shield = document.getElementById('screen-shield');
+      if (shield) {
+        shield.classList.remove('opacity-100');
+        shield.classList.add('opacity-0', 'pointer-events-none');
+      }
+    }
+
     if (activationScreen) activationScreen.classList.add('hidden');
     if (lmsScreen) lmsScreen.classList.remove('hidden');
 
     if (lmsCourseTitle) lmsCourseTitle.textContent = courseData.courseTitle;
-    if (lmsStudentName) lmsStudentName.textContent = courseData.studentInfo.name;
-    if (lmsStudentIp) lmsStudentIp.textContent = `IPv4: ${courseData.studentInfo.boundIpv4 || '127.0.0.1'}`;
+    if (lmsStudentName) lmsStudentName.textContent = courseData.studentInfo?.name || 'Authorized Student';
+    if (lmsStudentIp) lmsStudentIp.textContent = `IPv4: ${courseData.studentInfo?.boundIpv4 || state.clientIpv4 || '127.0.0.1'}`;
 
     startDynamicWatermark(courseData);
     renderCurriculum(courseData);

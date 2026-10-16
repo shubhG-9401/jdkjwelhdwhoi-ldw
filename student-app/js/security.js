@@ -92,35 +92,55 @@ export class SecurityManager {
   }
 
   /**
-   * Pitch-black overlay activated whenever focus is lost, capture boundary is crossed,
-   * or Google Meet / browser screen-sharing infobars are detected.
+   * Returns true only when a protected course is active in the LMS viewer.
+   * On the activation screen (before course unlock), protection is inert so students
+   * can upload .enc files, switch tabs to copy license keys, etc.
+   */
+  isContentProtected() {
+    const lmsScreen = document.getElementById('lms-screen');
+    return !!(lmsScreen && !lmsScreen.classList.contains('hidden') && lmsScreen.style.display !== 'none');
+  }
+
+  /**
+   * Safely dismisses the screen shield and un-obscures the DRM canvas.
+   */
+  hideShield() {
+    if (this.screenShield) {
+      this.screenShield.classList.remove('opacity-100');
+      this.screenShield.classList.add('opacity-0', 'pointer-events-none');
+      this.screenShield.style.pointerEvents = 'none';
+    }
+    document.body.classList.remove('drm-obscured');
+  }
+
+  /**
+   * Detects Chromium screen-sharing infobars without triggering on normal browser bookmarks.
+   */
+  checkInfobarCapture() {
+    if (typeof window === 'undefined' || window.innerHeight < 200) return false;
+    if (window.visualViewport && window.visualViewport.height > 0) {
+      const vDelta = window.innerHeight - window.visualViewport.height;
+      if (vDelta > 65) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Pitch-black overlay activated whenever focus is lost or capture boundary is crossed
+   * while viewing protected course content.
    */
   setupScreenShield() {
-    let isInfobarCaptureActive = false;
-    let isSuspendedByTabSwitch = false;
-
     const errorNoticeEl = document.getElementById('shield-error-notice');
     const resumeBtnEl = document.getElementById('btn-resume-shield');
     const shieldTitleEl = document.getElementById('shield-title');
     const shieldStatusEl = document.getElementById('shield-status');
 
-    // Detects Chromium screen-sharing infobar ("meet.google.com is sharing your screen and audio")
-    const checkInfobarCapture = () => {
-      if (window.innerHeight < 200) return false;
-      const currentDelta = window.outerHeight - window.innerHeight;
-
-      // In Chromium on Windows, a browser with an active sharing infobar has a delta >= 115px
-      // or visualViewport height significantly lower than layout viewport
-      const visualDelta = window.visualViewport ? (window.innerHeight - window.visualViewport.height) : 0;
-      if (currentDelta >= 115 || visualDelta >= 28) {
-        isInfobarCaptureActive = true;
-        return true;
-      }
-      isInfobarCaptureActive = false;
-      return false;
-    };
-
     const showShield = (reason) => {
+      // Never block the activation screen where user uploads files or enters license keys!
+      if (!this.isContentProtected()) {
+        return;
+      }
+
       if (this.screenShield) {
         this.screenShield.classList.remove('opacity-0', 'pointer-events-none', 'hidden');
         this.screenShield.classList.add('opacity-100');
@@ -155,10 +175,10 @@ export class SecurityManager {
         return;
       }
 
-      // 2. Check if Google Meet or browser screen sharing is active
-      if (checkInfobarCapture()) {
+      // 2. Check for active screen sharing infobar
+      if (this.checkInfobarCapture()) {
         if (errorNoticeEl) {
-          errorNoticeEl.innerHTML = '<strong>SCREEN SHARING ACTIVE:</strong> Google Meet or browser screen sharing is currently running. You must click <strong>[Stop sharing]</strong> in the bar below before you can watch this course.';
+          errorNoticeEl.innerHTML = '<strong>SCREEN SHARING ACTIVE:</strong> Screen sharing or capture banner detected. Stop sharing to resume.';
           errorNoticeEl.classList.remove('hidden');
         }
         showShield('Screen sharing actively running');
@@ -175,15 +195,14 @@ export class SecurityManager {
       }
 
       // All security checks passed -> allow playback to resume
-      isSuspendedByTabSwitch = false;
       if (errorNoticeEl) errorNoticeEl.classList.add('hidden');
+      this.hideShield();
 
-      if (this.screenShield) {
-        this.screenShield.classList.remove('opacity-100');
-        this.screenShield.classList.add('opacity-0', 'pointer-events-none');
-        this.screenShield.style.pointerEvents = 'none';
+      // Automatically resume video playback on successful verification
+      const video = document.getElementById('player-video') || document.getElementById('video-element');
+      if (video && video.paused) {
+        video.play().catch(() => {});
       }
-      document.body.classList.remove('drm-obscured');
     };
 
     if (resumeBtnEl) {
@@ -191,50 +210,35 @@ export class SecurityManager {
     }
 
     // 1. When focus is lost or user switches tabs (to Google Meet, Zoom, WhatsApp):
-    // Blackout immediately and LOCK playback
+    // Blackout immediately while course is active
     window.addEventListener('blur', () => {
-      isSuspendedByTabSwitch = true;
+      if (!this.isContentProtected()) return;
       showShield('Window blur - Focus lost / External app switched');
     });
 
     document.addEventListener('visibilitychange', () => {
+      if (!this.isContentProtected()) return;
       if (document.hidden) {
-        isSuspendedByTabSwitch = true;
         showShield('Document hidden - Tab switched to Google Meet or other application');
       } else {
-        // When user returns from Google Meet/Zoom: KEEP SHIELD LOCKED in pitch black!
+        // Prompt student to click Verify & Resume
         showShield('Playback locked after tab switch. Click Verify & Resume to continue.');
       }
     });
 
-    // 2. Active Focus & Infobar Polling (Every 100ms)
+    // 2. Periodic Focus Polling (Every 300ms) only when course is active
     setInterval(() => {
-      if (!this.isLockdown) {
+      if (!this.isLockdown && this.isContentProtected()) {
         if (!document.hasFocus() || document.hidden) {
-          isSuspendedByTabSwitch = true;
           showShield('Active polling: Document unfocused or hidden');
-        } else if (checkInfobarCapture()) {
-          showShield('Active polling: Screen sharing infobar active');
         }
       }
-    }, 100);
+    }, 300);
 
-    // 3. Pointer & Mouse Boundary Guard
-    document.addEventListener('mouseleave', (e) => {
-      if (!e.relatedTarget && !e.toElement) {
-        showShield('Cursor left browser window boundary');
-      }
+    // 3. Print / Screen Snip Interceptor
+    window.addEventListener('beforeprint', () => {
+      if (this.isContentProtected()) showShield('Print dialogue requested');
     });
-
-    // 4. Resize check for infobar injection
-    window.addEventListener('resize', () => {
-      if (checkInfobarCapture()) {
-        showShield('Screen sharing infobar detected via window resize');
-      }
-    });
-
-    // 5. Print / Screen Snip Interceptor
-    window.addEventListener('beforeprint', () => showShield('Print dialogue requested'));
   }
 
   /**
