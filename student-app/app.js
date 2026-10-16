@@ -495,23 +495,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isActive = (thisIdx === activeLessonIndex);
         const isCompleted = completedSet.has(thisIdx);
 
+        // Icon matching close-up screenshot
         let iconSvg = '';
         if (les.type === 'video') {
+          // Circle with play triangle inside (▷)
           iconSvg = `
-            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-[#87888a]'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            <svg class="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
             </svg>
           `;
         } else if (les.type === 'telegram' || les.url?.includes('t.me')) {
           iconSvg = `
-            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-[#87888a]'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
             </svg>
           `;
         } else {
+          // Adobe Acrobat style folded document icon
           iconSvg = `
-            <svg class="w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-[#87888a]'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -520,49 +524,65 @@ document.addEventListener('DOMContentLoaded', async () => {
           `;
         }
 
-        const typeLabel = (les.type === 'telegram') ? 'pdf' : (les.type || 'lesson');
+        const typeLabel = (les.type === 'telegram') ? 'pdf' : (les.type || 'video');
+        const defaultDurations = ['02:04:35', '04:04:35', '01:56:30', '02:58:55', '01:32:15', '02:15:40', '01:45:10'];
+        const durationText = (les.type === 'video') ? (les.duration || defaultDurations[thisIdx % defaultDurations.length]) : '';
 
         if (isActive) {
+          // ACTIVE: #2b313b bg, 6px #6674cc left stripe, checkmark ✓ + pdf/video
           return `
             <div onclick="window.selectLesson(${thisIdx})" 
-                 class="bg-[#1c2026] text-white px-5 py-3.5 flex items-center space-x-3 cursor-pointer select-none transition-colors border-none">
-              ${iconSvg}
-              <div class="flex-1 min-w-0">
-                <div class="text-[13px] font-semibold text-white tracking-tight truncate">${les.title}</div>
-                <div class="text-[11px] text-[#828487] flex items-center space-x-1.5 mt-0.5">
-                  <span class="text-white font-bold">✔</span>
-                  <span class="capitalize">${typeLabel}</span>
+                 class="bg-[#2b313b] border-l-[6px] border-[#6674cc] text-white px-4 py-3.5 flex items-center justify-between cursor-pointer select-none transition-colors">
+              <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2">
+                ${iconSvg}
+                <div class="min-w-0 flex-1">
+                  <div class="text-[13.5px] font-semibold text-white tracking-tight leading-snug truncate">${les.title}</div>
+                  <div class="text-[11.5px] text-[#9ca3af] flex items-center space-x-1.5 mt-0.5">
+                    <span class="text-white font-bold text-xs">✓</span>
+                    <span class="capitalize">${typeLabel}</span>
+                  </div>
                 </div>
               </div>
+              ${durationText ? `<span class="text-[11px] font-mono text-[#888e99] flex-shrink-0">${durationText}</span>` : ''}
             </div>
           `;
         } else {
+          // INACTIVE: #1c2026 bg, bullet dot ● + type, duration on right
           return `
             <div onclick="window.selectLesson(${thisIdx})" 
-                 class="bg-[#f8f8fd] hover:bg-[#eef0f6] text-[#525866] px-5 py-3 flex items-center space-x-3 cursor-pointer select-none transition-colors border-b border-[#e7e8ed] last:border-b-0">
-              ${iconSvg}
-              <div class="flex-1 min-w-0">
-                <div class="text-[13px] font-normal text-[#525866] truncate">${les.title}</div>
-                <div class="text-[11px] text-[#87888a] flex items-center space-x-1.5 mt-0.5">
-                  <span class="${isCompleted ? 'text-emerald-500 font-bold' : 'text-[#87888a]'}">${isCompleted ? '✔' : '○'}</span>
-                  <span class="capitalize">${typeLabel}</span>
+                 class="bg-[#1c2026] hover:bg-[#222731] text-white px-5 py-3.5 flex items-center justify-between cursor-pointer select-none transition-colors border-b border-[#252b35] last:border-b-0">
+              <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2">
+                ${iconSvg}
+                <div class="min-w-0 flex-1">
+                  <div class="text-[13.5px] font-medium text-white tracking-tight leading-snug truncate">${les.title}</div>
+                  <div class="text-[11.5px] text-[#888e99] flex items-center space-x-1.5 mt-0.5">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald-400' : 'bg-[#888e99]'}"></span>
+                    <span class="capitalize">${typeLabel}</span>
+                  </div>
                 </div>
               </div>
+              ${durationText ? `<span class="text-[11px] font-mono text-[#888e99] flex-shrink-0">${durationText}</span>` : ''}
             </div>
           `;
         }
       }).join('');
 
+      // MODULE HEADER:
+      // When expanded: #6674cc (radiant purple) with pure white text and chevron up ^
+      // When collapsed: #1c2026 with white text and chevron down v
+      const headerBg = isExpanded ? 'bg-[#6674cc] text-white' : 'bg-[#1c2026] hover:bg-[#232832] text-white border-b border-[#262b35]';
+      const chevronSvg = isExpanded
+        ? `<svg class="w-4 h-4 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`
+        : `<svg class="w-4 h-4 text-[#888e99] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
       return `
-        <div class="border-b border-[#e7e8ed] last:border-b-0">
+        <div class="border-b border-[#262b35] last:border-b-0">
           <div onclick="window.toggleModule(${modIdx})" 
-               class="py-3 px-5 bg-[#f8f8fd] hover:bg-[#f0f0f8] cursor-pointer flex items-center justify-between select-none transition-colors">
-            <span class="text-[13.5px] font-medium text-[#525866] tracking-tight">${rawTitle}</span>
-            <svg class="w-4 h-4 text-[#87888a] transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+               class="py-3.5 px-5 ${headerBg} cursor-pointer flex items-center justify-between select-none transition-colors">
+            <span class="text-[14.5px] font-semibold tracking-tight">${rawTitle}</span>
+            ${chevronSvg}
           </div>
-          <div class="${isExpanded ? 'block' : 'hidden'}">
+          <div class="${isExpanded ? 'block' : 'hidden'} bg-[#1c2026]">
             ${lessonsHtml}
           </div>
         </div>
