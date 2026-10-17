@@ -9,6 +9,7 @@ import { studentApi } from './js/api.js';
 import { studentStore } from './js/state.js';
 import { VideoPlayerManager } from './js/player.js';
 import { PdfViewerManager } from './js/pdfViewer.js';
+import { StudentToast } from './js/toast.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------------------------------------------
@@ -114,7 +115,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     videoTimeDisplay: document.getElementById('video-time'),
     btnVideoMute: document.getElementById('btn-video-mute'),
     videoVolume: document.getElementById('video-volume'),
-    btnVideoFullscreen: document.getElementById('btn-video-fullscreen')
+    btnVideoFullscreen: document.getElementById('btn-video-fullscreen'),
+    onThresholdComplete: (lesson, cur, dur) => {
+      handleAutoLessonCompletion(lesson);
+    }
   });
 
   const pdfViewer = new PdfViewerManager({
@@ -452,6 +456,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       expandedModules.add(0);
     }
 
+    // Load any previously completed lessons for this course
+    studentStore.loadCompletedLessons(courseData?.courseId);
+
     renderCurriculum(courseData);
     selectLesson(startIdx);
   }
@@ -495,9 +502,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isActive = (thisIdx === activeLessonIndex);
         const isCompleted = completedSet.has(thisIdx);
 
-        // Icon matching close-up screenshot
+        // Icon matching close-up screenshot, turning into checkmark circle when completed
         let iconSvg = '';
-        if (les.type === 'video') {
+        if (isCompleted) {
+          iconSvg = `
+            <svg class="w-5 h-5 flex-shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" fill="rgba(16,185,129,0.18)"></circle>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          `;
+        } else if (les.type === 'video') {
           // Circle with play triangle inside (▷)
           iconSvg = `
             <svg class="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -540,9 +554,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (les.title?.toLowerCase().includes('installation') || les.title?.toLowerCase().includes('resource')) {
           subtitleHtml = `<span class="text-white font-bold text-xs">✓</span> <span>Also available in the Telegram channel</span>`;
         } else if (les.type === 'video') {
-          subtitleHtml = `<span class="inline-block w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald-400' : 'bg-[#888e99]'}"></span> <span class="capitalize">video</span>`;
+          subtitleHtml = isCompleted
+            ? `<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]"></span> <span class="capitalize text-emerald-400 font-medium">completed</span>`
+            : `<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#888e99]"></span> <span class="capitalize">video</span>`;
         } else {
-          subtitleHtml = `<span class="text-white font-bold text-xs">✓</span> <span class="capitalize">${typeLabel}</span>`;
+          subtitleHtml = isCompleted
+            ? `<span class="text-emerald-400 font-bold text-xs">✓</span> <span class="capitalize text-emerald-400 font-medium">completed</span>`
+            : `<span class="text-white font-bold text-xs">✓</span> <span class="capitalize">${typeLabel}</span>`;
         }
 
         if (isActive) {
@@ -643,11 +661,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Toggle complete button status
     const isCompleted = studentStore.isLessonCompleted(flatIdx);
-    if (btnCompleteText) btnCompleteText.textContent = isCompleted ? 'Completed' : 'Mark Completed';
-    if (btnToggleComplete) {
-      if (isCompleted) btnToggleComplete.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30');
-      else btnToggleComplete.classList.remove('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30');
-    }
+    updateCompletionButtonState(isCompleted);
 
     updatePrevNextButtons();
 
@@ -677,14 +691,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCurriculum(courseData);
   }
 
+  function updateCompletionButtonState(isCompleted) {
+    if (btnCompleteText) {
+      btnCompleteText.textContent = isCompleted ? 'Completed' : 'Mark Complete';
+    }
+    if (btnToggleComplete) {
+      if (isCompleted) {
+        btnToggleComplete.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30');
+      } else {
+        btnToggleComplete.classList.remove('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30');
+      }
+    }
+  }
+
+  function handleAutoLessonCompletion(lesson) {
+    const isAlreadyCompleted = studentStore.isLessonCompleted(activeLessonIndex);
+    if (!isAlreadyCompleted) {
+      studentStore.markLessonCompleted(activeLessonIndex, true);
+      updateCompletionButtonState(true);
+      updateProgress();
+      renderCurriculum();
+      StudentToast.show({
+        title: 'Lesson Completed!',
+        message: `Watched 75% (3/4) of "${lesson?.title || 'Video'}"`,
+        type: 'success',
+        duration: 4000
+      });
+    }
+  }
+
   window.selectLesson = selectLesson;
 
   if (btnToggleComplete) {
     btnToggleComplete.addEventListener('click', () => {
       const isCompleted = studentStore.isLessonCompleted(activeLessonIndex);
-      studentStore.markLessonCompleted(activeLessonIndex, !isCompleted);
+      const nextState = !isCompleted;
+      studentStore.markLessonCompleted(activeLessonIndex, nextState);
+      updateCompletionButtonState(nextState);
+      updateProgress();
       renderCurriculum();
-      selectLesson(activeLessonIndex);
+      if (nextState) {
+        StudentToast.show({
+          title: 'Marked Completed!',
+          message: 'Lesson marked as completed in course progress.',
+          type: 'success',
+          duration: 3000
+        });
+      }
     });
   }
 

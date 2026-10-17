@@ -30,6 +30,8 @@ export class VideoPlayerManager {
     this.currentLesson = null;
     this.currentBlobUrl = null;
     this.isSeeking = false;
+    this.onThresholdComplete = domElements.onThresholdComplete || null;
+    this.hasTriggeredCompletion = false;
 
     this.bindControls();
   }
@@ -60,6 +62,7 @@ export class VideoPlayerManager {
       this.video.addEventListener('ended', () => {
         this.updatePlayBtn(false);
         if (this.bigPlayBtn) this.bigPlayBtn.classList.remove('hidden');
+        this.checkWatchThreshold(true);
       });
       this.video.addEventListener('canplay', () => {
         if (this.spinner) this.spinner.classList.add('hidden');
@@ -172,6 +175,7 @@ export class VideoPlayerManager {
   loadLesson(lesson, activeCourseData) {
     this.cleanup();
     this.currentLesson = lesson;
+    this.hasTriggeredCompletion = false;
 
     if (this.container) this.container.classList.remove('hidden');
     if (this.spinner) this.spinner.classList.remove('hidden');
@@ -342,6 +346,22 @@ export class VideoPlayerManager {
     }
     if (this.curTimeDisplay) this.curTimeDisplay.textContent = curFmt;
     if (this.durDisplay) this.durDisplay.textContent = durFmt;
+
+    // Check for 3/4 video completion threshold
+    this.checkWatchThreshold();
+  }
+
+  checkWatchThreshold(force = false) {
+    if (!this.video || !this.video.duration || this.hasTriggeredCompletion) return;
+    const cur = this.video.currentTime || 0;
+    const dur = this.video.duration;
+    // 3/4 (75%) Video Completion Threshold
+    if (dur > 0 && (force || (cur / dur) >= 0.75)) {
+      this.hasTriggeredCompletion = true;
+      if (typeof this.onThresholdComplete === 'function') {
+        this.onThresholdComplete(this.currentLesson, cur, dur);
+      }
+    }
   }
 
   onMetadataLoaded() {
@@ -373,6 +393,7 @@ export class VideoPlayerManager {
   }
 
   cleanup() {
+    this.hasTriggeredCompletion = false;
     if (this.video) {
       this.video.pause();
       this.video.removeAttribute('src');

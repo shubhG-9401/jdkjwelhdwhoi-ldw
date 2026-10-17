@@ -348,9 +348,35 @@ async function runTests() {
     });
   }
 
+  // 16. Auto-Completion at 3/4 Video Watch Threshold Verification
+  await check('Auto-Completion at 3/4 (75%) Video Watch Threshold', async () => {
+    // 1. Verify student toast module is served
+    const toastRes = await fetch('http://localhost:3000/student/js/toast.js');
+    if (!toastRes.ok) throw new Error(`toast.js status ${toastRes.status}`);
+    const toastText = await toastRes.text();
+    if (!toastText.includes('StudentToast')) throw new Error('StudentToast class missing');
+
+    // 2. Verify player.js contains checkWatchThreshold with 0.75 ratio
+    const playerRes = await fetch('http://localhost:3000/student/js/player.js');
+    if (!playerRes.ok) throw new Error(`player.js status ${playerRes.status}`);
+    const playerText = await playerRes.text();
+    if (!playerText.includes('checkWatchThreshold')) throw new Error('checkWatchThreshold method missing in player.js');
+    if (!playerText.includes('0.75')) throw new Error('0.75 threshold missing in player.js');
+
+    // 3. Verify app.js wires onThresholdComplete and updates completion button
+    const appRes = await fetch('http://localhost:3000/student/app.js');
+    if (!appRes.ok) throw new Error(`app.js status ${appRes.status}`);
+    const appText = await appRes.text();
+    if (!appText.includes('onThresholdComplete')) throw new Error('onThresholdComplete not wired in app.js');
+    if (!appText.includes('handleAutoLessonCompletion')) throw new Error('handleAutoLessonCompletion missing in app.js');
+    if (!appText.includes('updateCompletionButtonState')) throw new Error('updateCompletionButtonState missing in app.js');
+
+    return '3/4 (75%) watch threshold validated in player.js, toast.js, and app.js';
+  });
+
   console.log('\n----------------------------------------');
   if (failures === 0) {
-    console.log('--- ALL 17 TESTS PASSED PERFECTLY ---');
+    console.log('--- ALL 18 TESTS PASSED PERFECTLY ---');
     process.exit(0);
   } else {
     console.error(`--- ${failures} TESTS FAILED ---`);

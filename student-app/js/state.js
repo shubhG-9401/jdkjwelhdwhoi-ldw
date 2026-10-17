@@ -71,6 +71,25 @@ class StudentStore {
     if (isCompleted) set.add(lessonId);
     else set.delete(lessonId);
     this.setState({ completedLessonIds: set });
+
+    const courseId = this.state.activeCourseData?.courseId || this.state.parsedMeta?.courseId || 'crs_default';
+    try {
+      localStorage.setItem(`drm_completed_${courseId}`, JSON.stringify(Array.from(set)));
+    } catch {}
+  }
+
+  loadCompletedLessons(courseId) {
+    const cid = courseId || this.state.activeCourseData?.courseId || this.state.parsedMeta?.courseId || 'crs_default';
+    try {
+      const raw = localStorage.getItem(`drm_completed_${cid}`);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        const set = new Set(arr);
+        this.setState({ completedLessonIds: set });
+        return set;
+      }
+    } catch {}
+    return this.state.completedLessonIds;
   }
 
   isLessonCompleted(lessonId) {
