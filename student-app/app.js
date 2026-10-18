@@ -251,11 +251,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnLoadDemo.innerHTML = `<span class="animate-pulse">Loading demo course...</span>`;
 
       try {
-        let demoRes = await fetch('/student/sigma12.enc');
-        if (!demoRes.ok) demoRes = await fetch('/student/sigma_12_encrypted.enc');
+        let demoRes = await fetch('/student/c12.enc');
+        if (!demoRes.ok) demoRes = await fetch('/student/c12_encrypted.enc');
         if (!demoRes.ok) throw new Error('Demo package not found on server');
         const blob = await demoRes.blob();
-        const demoFile = new File([blob], 'sigma12.enc', { type: 'application/octet-stream' });
+        const demoFile = new File([blob], 'c12.enc', { type: 'application/octet-stream' });
         await handleEncFile(demoFile);
 
         const demoKey = 'KLY9MVXQRCKEDUHCAU6SBWLPXNT9D9UZ5R8TDU95B6RVX3KTSHLNF6HG';
@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (activationScreen) activationScreen.classList.add('hidden');
     if (lmsScreen) lmsScreen.classList.remove('hidden');
 
-    if (lmsCourseTitle) lmsCourseTitle.textContent = courseData.courseTitle || 'Sigma 12';
+    if (lmsCourseTitle) lmsCourseTitle.textContent = courseData.courseTitle || 'C12';
     if (lmsStudentName) lmsStudentName.textContent = courseData.studentInfo?.name || 'Student';
     if (lmsStudentIp) lmsStudentIp.textContent = `IPv4: ${courseData.studentInfo?.boundIpv4 || '127.0.0.1'}`;
 

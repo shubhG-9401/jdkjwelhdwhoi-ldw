@@ -342,19 +342,19 @@ The platform is pre-configured for seamless serverless deployment on Vercel:
 - **TOTP Authenticator Secret**: `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP`
   *(Enter this secret into Google Authenticator or Microsoft Authenticator, or scan the QR code displayed on the login page)*
 
-### Pre-Seeded Course: Sigma 12
-- **Course Name**: Sigma 12
+### Pre-Seeded Course: C12
+- **Course Name**: C12
 - **Course Syllabus Files Included**:
-  - `sigma12.docx`: Pre-formatted Word syllabus document ready for the Admin Course Encryptor.
-  - `sigma12.txt`: Plain-text syllabus with Wistia HLS `.m3u8` video streams, PDF handouts, and Telegram channels.
-  - `sigma12.enc` / `sigma_12_encrypted.enc`: Pre-compiled AES-256-GCM encrypted package for offline playback.
+  - `c12.docx`: Pre-formatted Word syllabus document ready for the Admin Course Encryptor.
+  - `c12.txt`: Plain-text syllabus with Wistia HLS `.m3u8` video streams, PDF handouts, and Telegram channels.
+  - `c12.enc` / `c12_encrypted.enc`: Pre-compiled AES-256-GCM encrypted package for offline playback.
 - **Pre-Generated 56-Character License**:
   ```text
   RP88278T3A4UTFBDNYVTL8EYD8BUCCJUX23RYU9DX8BCA22Y4ERD5FFB
   ```
 - **Verification Steps**:
   1. Open [http://localhost:3000/student](http://localhost:3000/student) on a Windows PC.
-  2. Click **"Auto-Load Demo (.enc + Key)"** (or drag & drop `sigma12.enc`).
+  2. Click **"Auto-Load Demo (.enc + Key)"** (or drag & drop `c12.enc`).
   3. Click **"Verify 56-Char Key & Decrypt Course"** to start playback.
 
 ---

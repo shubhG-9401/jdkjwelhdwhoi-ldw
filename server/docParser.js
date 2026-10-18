@@ -3,8 +3,8 @@ import AdmZip from 'adm-zip';
 /**
  * Parses course document text into structured modules, lessons, video streams, and PDFs.
  * Handles structures like:
- * Course name :- Sigma 12
- * 1. welcome to sigma
+ * Course name :- C12
+ * 1. welcome to c12
  * https://www.pdffiller.com/s/k_zyV2H-p
  * 2 . Live sessions
  *    1. https://...m3u8
@@ -25,14 +25,14 @@ export function parseCourseDocumentText(text) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Detect Course Name (e.g. "Course name :- Sigma 12" or "Course: ...")
+    // Detect Course Name (e.g. "Course name :- C12" or "Course: ...")
     const courseNameMatch = line.match(/^Course\s*(?:name)?\s*[:-]+\s*(.+)$/i);
     if (courseNameMatch && !courseName) {
       courseName = courseNameMatch[1].trim();
       continue;
     }
 
-    // Detect Module Header (e.g. "1. Welcome to Sigma 12!", "2. Live Sessions", "6. HTML (Level 1) - Part A")
+    // Detect Module Header (e.g. "1. Welcome to C12!", "2. Live Sessions", "6. HTML (Level 1) - Part A")
     const moduleMatch = line.match(/^(\d+)\s*[\.\-:]\s*(.+)$/i);
     const containsUrl = /https?:\/\//i.test(line);
 
@@ -119,7 +119,7 @@ export function parseCourseDocumentText(text) {
   }
 
   return {
-    courseName: courseName || 'Sigma Course',
+    courseName: courseName || 'C12',
     modules
   };
 }

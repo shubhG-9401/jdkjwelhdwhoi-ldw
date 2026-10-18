@@ -1,7 +1,7 @@
 import { parseCourseDocumentText } from './server/docParser.js';
 
-const sample = `Course name :- Sigma 12
-1.welcome to sigma
+const sample = `Course name :- C12
+1.welcome to c12
 https://www.pdffiller.com/s/k_zyV2H-p
 2 . Live sessions
    1. https://embed-cloudfront.wistia.com/deliveries/45ed8874a993895cdec4c4ab62e03ed3123f94b9.m3u8

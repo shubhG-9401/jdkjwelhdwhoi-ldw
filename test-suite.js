@@ -117,7 +117,7 @@ async function runTests() {
   });
 
   // 7. Courses listing
-  let activeCourseId = 'crs_sigma12';
+  let activeCourseId = 'crs_c12';
   await check('Courses List', async () => {
     const res = await fetch('http://localhost:3000/api/courses', {
       headers: { Authorization: `Bearer ${adminToken}` }

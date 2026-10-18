@@ -138,7 +138,7 @@ export const studentApi = {
   /**
    * Auto-loads a pre-packaged course .enc file from the server.
    */
-  async downloadPrepackagedCourse(courseId = 'crs_sigma12') {
+  async downloadPrepackagedCourse(courseId = 'crs_c12') {
     const res = await fetch(`/api/admin/courses/${courseId}/download`);
     if (!res.ok) throw new Error('Could not fetch pre-packaged course from server.');
     const arrayBuf = await res.arrayBuffer();

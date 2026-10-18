@@ -271,12 +271,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Insert Sigma 12 Sample Syllabus Handler
+  // Insert C12 Sample Syllabus Handler
   const btnInsertSample = document.getElementById('btn-insert-sample');
   if (btnInsertSample && courseDocText) {
     btnInsertSample.addEventListener('click', () => {
-      const sampleText = `Course name :- Sigma 12
-1. welcome to sigma
+      const sampleText = `Course name :- C12
+1. welcome to c12
 https://www.pdffiller.com/s/k_zyV2H-p
 2. Live sessions
    1. https://embed-cloudfront.wistia.com/deliveries/45ed8874a993895cdec4c4ab62e03ed3123f94b9.m3u8
@@ -303,8 +303,8 @@ https://embed-cloudfront.wistia.com/deliveries/7d407c20e919f96ee6e93b023e9b0cc6e
 https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5b357b73.m3u8`;
       courseDocText.value = sampleText;
       const titleInput = document.getElementById('course-title');
-      if (titleInput && !titleInput.value) titleInput.value = 'Sigma 12';
-      Toast.success('Inserted Sigma 12 sample course syllabus!');
+      if (titleInput && !titleInput.value) titleInput.value = 'C12';
+      Toast.success('Inserted C12 sample course syllabus!');
     });
   }
 

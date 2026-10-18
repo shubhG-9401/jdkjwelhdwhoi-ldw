@@ -231,7 +231,7 @@ export const courseController = {
 
     // Update root copy if applicable
     const rootCopy = path.join(config.projectRoot, course.encryptedFileName);
-    if (fs.existsSync(rootCopy) || course.id === 'crs_sigma12') {
+    if (fs.existsSync(rootCopy) || course.id === 'crs_c12') {
       try { fs.writeFileSync(rootCopy, encryptedBuffer); } catch (e) {}
     }
 

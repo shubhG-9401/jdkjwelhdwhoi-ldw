@@ -9,8 +9,8 @@ import { parseCourseDocumentText } from './server/docParser.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const rawSyllabusText = `Course name :- Sigma 12
-1. Welcome to Sigma 12!
+const rawSyllabusText = `Course name :- C12
+1. Welcome to C12!
 https://www.pdffiller.com/s/k_zyV2H-p
 2. Live Sessions
    1. https://embed-cloudfront.wistia.com/deliveries/45ed8874a993895cdec4c4ab62e03ed3123f94b9.m3u8
@@ -38,11 +38,11 @@ https://embed-cloudfront.wistia.com/deliveries/039a17e24e720ea8abf41f8f9f59d28fa
 https://embed-cloudfront.wistia.com/deliveries/7d407c20e919f96ee6e93b023e9b0cc6e535c2ad.m3u8
 https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5b357b73.m3u8`;
 
-async function seedSigmaCourse() {
-  console.log('--- Compiling & Encrypting Sigma 12 Course Package ---');
+async function seedC12Course() {
+  console.log('--- Compiling & Encrypting C12 Course Package ---');
 
   const parsed = parseCourseDocumentText(rawSyllabusText);
-  const courseId = 'crs_sigma12';
+  const courseId = 'crs_c12';
   const existingCourse = db.getCourseById(courseId);
   const encryptionKeyHex = (existingCourse && existingCourse.encryptionKeyHex) 
     ? existingCourse.encryptionKeyHex 
@@ -50,8 +50,8 @@ async function seedSigmaCourse() {
 
   const manifest = {
     courseId,
-    title: parsed.courseName,
-    description: 'Sigma 12 Complete Program with Wistia HD Video Sessions, PDF Handouts, and Community Access.',
+    title: parsed.courseName || 'C12',
+    description: 'C12 Complete Program with Wistia HD Video Sessions, PDF Handouts, and Community Access.',
     createdAt: new Date().toISOString(),
     modules: parsed.modules
   };
@@ -61,25 +61,25 @@ async function seedSigmaCourse() {
   const storageDir = path.join(__dirname, 'server', 'encrypted_storage');
   if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
 
-  const encFileName = 'sigma_12_encrypted.enc';
+  const encFileName = 'c12.enc';
   const encFilePath = path.join(storageDir, encFileName);
   fs.writeFileSync(encFilePath, encryptedBuffer);
-  fs.writeFileSync(path.join(storageDir, 'sigma12.enc'), encryptedBuffer);
+  fs.writeFileSync(path.join(storageDir, 'c12_encrypted.enc'), encryptedBuffer);
 
   // Copy to root directory for easy access
   fs.writeFileSync(path.join(__dirname, encFileName), encryptedBuffer);
-  fs.writeFileSync(path.join(__dirname, 'sigma12.enc'), encryptedBuffer);
+  fs.writeFileSync(path.join(__dirname, 'c12_encrypted.enc'), encryptedBuffer);
 
   // Copy to student-app directory for auto-loading
   const studentDir = path.join(__dirname, 'student-app');
   if (fs.existsSync(studentDir)) {
     fs.writeFileSync(path.join(studentDir, encFileName), encryptedBuffer);
-    fs.writeFileSync(path.join(studentDir, 'sigma12.enc'), encryptedBuffer);
+    fs.writeFileSync(path.join(studentDir, 'c12_encrypted.enc'), encryptedBuffer);
   }
 
   const courseRecord = {
     id: courseId,
-    title: parsed.courseName,
+    title: parsed.courseName || 'C12',
     description: manifest.description,
     encryptedFileName: encFileName,
     encryptedFilePath: encFilePath,
@@ -93,21 +93,20 @@ async function seedSigmaCourse() {
   db.saveCourse(courseRecord);
 
   // Generate an exact 56-character license key
-  // 56 characters:
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const bytes = crypto.randomBytes(56);
-  let sigmaLicenseKey = '';
+  let c12LicenseKey = '';
   for (let i = 0; i < 56; i++) {
-    sigmaLicenseKey += chars[bytes[i] % chars.length];
+    c12LicenseKey += chars[bytes[i] % chars.length];
   }
 
   const licenseRecord = {
-    licenseKey: sigmaLicenseKey,
-    keyLength: sigmaLicenseKey.length, // exactly 56!
+    licenseKey: c12LicenseKey,
+    keyLength: c12LicenseKey.length, // exactly 56!
     courseId,
-    courseTitle: parsed.courseName,
-    customerName: 'Sigma 12 Verified Student',
-    customerEmail: 'student@sigma12.com',
+    courseTitle: parsed.courseName || 'C12',
+    customerName: 'C12 Verified Student',
+    customerEmail: 'student@c12.com',
     ipLockMode: 'first_login',
     allowedIpv4: null,
     allowedIpv6: null,
@@ -122,13 +121,13 @@ async function seedSigmaCourse() {
   db.saveLicense(licenseRecord);
 
   console.log(`\n========================================================================`);
-  console.log(` SIGMA 12 COURSE ENCRYPTED & SEEDED SUCCESSFULLY!`);
-  console.log(` Course Title:   ${parsed.courseName}`);
+  console.log(` C12 COURSE ENCRYPTED & SEEDED SUCCESSFULLY!`);
+  console.log(` Course Title:   ${parsed.courseName || 'C12'}`);
   console.log(` Modules:        ${parsed.modules.length} Modules (19 Lessons total)`);
-  console.log(` Encrypted File: ${encFilePath} & sigma12.enc`);
-  console.log(` 56-Char Key:    ${sigmaLicenseKey} (Length: ${sigmaLicenseKey.length})`);
+  console.log(` Encrypted File: ${encFilePath}`);
+  console.log(` 56-Char Key:    ${c12LicenseKey} (Length: ${c12LicenseKey.length})`);
   console.log(` Protection:     AES-256-GCM + Dual IPv4/IPv6 + HWID Lock`);
   console.log(`========================================================================\n`);
 }
 
-seedSigmaCourse();
+seedC12Course();
