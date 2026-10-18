@@ -251,10 +251,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnLoadDemo.innerHTML = `<span class="animate-pulse">Loading demo course...</span>`;
 
       try {
-        const demoRes = await fetch('/student/sigma_12_encrypted.enc');
+        let demoRes = await fetch('/student/sigma12.enc');
+        if (!demoRes.ok) demoRes = await fetch('/student/sigma_12_encrypted.enc');
         if (!demoRes.ok) throw new Error('Demo package not found on server');
         const blob = await demoRes.blob();
-        const demoFile = new File([blob], 'sigma_12_encrypted.enc', { type: 'application/octet-stream' });
+        const demoFile = new File([blob], 'sigma12.enc', { type: 'application/octet-stream' });
         await handleEncFile(demoFile);
 
         const demoKey = 'KLY9MVXQRCKEDUHCAU6SBWLPXNT9D9UZ5R8TDU95B6RVX3KTSHLNF6HG';

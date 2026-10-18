@@ -64,10 +64,18 @@ async function seedSigmaCourse() {
   const encFileName = 'sigma_12_encrypted.enc';
   const encFilePath = path.join(storageDir, encFileName);
   fs.writeFileSync(encFilePath, encryptedBuffer);
+  fs.writeFileSync(path.join(storageDir, 'sigma12.enc'), encryptedBuffer);
 
   // Copy to root directory for easy access
-  const rootCopy = path.join(__dirname, encFileName);
-  fs.writeFileSync(rootCopy, encryptedBuffer);
+  fs.writeFileSync(path.join(__dirname, encFileName), encryptedBuffer);
+  fs.writeFileSync(path.join(__dirname, 'sigma12.enc'), encryptedBuffer);
+
+  // Copy to student-app directory for auto-loading
+  const studentDir = path.join(__dirname, 'student-app');
+  if (fs.existsSync(studentDir)) {
+    fs.writeFileSync(path.join(studentDir, encFileName), encryptedBuffer);
+    fs.writeFileSync(path.join(studentDir, 'sigma12.enc'), encryptedBuffer);
+  }
 
   const courseRecord = {
     id: courseId,
@@ -117,7 +125,7 @@ async function seedSigmaCourse() {
   console.log(` SIGMA 12 COURSE ENCRYPTED & SEEDED SUCCESSFULLY!`);
   console.log(` Course Title:   ${parsed.courseName}`);
   console.log(` Modules:        ${parsed.modules.length} Modules (19 Lessons total)`);
-  console.log(` Encrypted File: ${rootCopy}`);
+  console.log(` Encrypted File: ${encFilePath} & sigma12.enc`);
   console.log(` 56-Char Key:    ${sigmaLicenseKey} (Length: ${sigmaLicenseKey.length})`);
   console.log(` Protection:     AES-256-GCM + Dual IPv4/IPv6 + HWID Lock`);
   console.log(`========================================================================\n`);

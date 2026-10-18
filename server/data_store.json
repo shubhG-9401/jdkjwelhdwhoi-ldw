@@ -6,19 +6,19 @@
       "description": "Sigma 12 Complete Program with Wistia HD Video Sessions, PDF Handouts, and Community Access.",
       "encryptedFileName": "sigma_12_encrypted.enc",
       "encryptedFilePath": "C:\\Users\\Lenovo\\.gemini\\antigravity\\scratch\\secure-course-drm\\server\\encrypted_storage\\sigma_12_encrypted.enc",
-      "fileSize": 1198,
-      "moduleCount": 6,
+      "fileSize": 1218,
+      "moduleCount": 7,
       "fileCount": 0,
       "encryptionKeyHex": "6a0d83b1e406d5a2ebad64b0197a84e54e5abc66159fc4fc06075fc6a83aa95a",
       "manifest": {
         "courseId": "crs_sigma12",
         "title": "Sigma 12",
         "description": "Sigma 12 Complete Program with Wistia HD Video Sessions, PDF Handouts, and Community Access.",
-        "createdAt": "2026-10-13T19:40:37.630Z",
+        "createdAt": "2026-10-18T18:44:34.838Z",
         "modules": [
           {
             "id": "mod_1",
-            "moduleTitle": "1. welcome to sigma",
+            "moduleTitle": "1. Welcome to Sigma 12!",
             "lessons": [
               {
                 "id": "les_1",
@@ -31,7 +31,7 @@
           },
           {
             "id": "mod_2",
-            "moduleTitle": "2. Live sessions",
+            "moduleTitle": "2. Live Sessions",
             "lessons": [
               {
                 "id": "les_2",
@@ -65,11 +65,11 @@
           },
           {
             "id": "mod_3",
-            "moduleTitle": "3. telegram",
+            "moduleTitle": "3. Important - Join Telegram!",
             "lessons": [
               {
                 "id": "les_6",
-                "title": "Lesson 1",
+                "title": "Telegram Channel Link",
                 "type": "telegram",
                 "url": "https://t.me/+OxL7CIMC5c03MjE9",
                 "isStreamUrl": true
@@ -78,7 +78,7 @@
           },
           {
             "id": "mod_4",
-            "moduleTitle": "4. introduction",
+            "moduleTitle": "4. Introduction",
             "lessons": [
               {
                 "id": "les_7",
@@ -112,7 +112,7 @@
           },
           {
             "id": "mod_5",
-            "moduleTitle": "5. pre requirements",
+            "moduleTitle": "5. Prerequisites",
             "lessons": [
               {
                 "id": "les_11",
@@ -125,14 +125,14 @@
                 "id": "les_12",
                 "title": "Lesson 2",
                 "type": "image",
-                "url": "https://i.ibb.co/Q37SJgrY/Screenshot-2026-10-13-231856.png",
+                "url": "https://ibb.co/8LnvmC6P",
                 "isStreamUrl": true
               }
             ]
           },
           {
             "id": "mod_6",
-            "moduleTitle": "6. Html level 1",
+            "moduleTitle": "6. HTML (Level 1) - Part A",
             "lessons": [
               {
                 "id": "les_13",
@@ -154,31 +154,37 @@
                 "type": "video",
                 "url": "https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5b357b73.m3u8",
                 "isStreamUrl": true
-              },
+              }
+            ]
+          },
+          {
+            "id": "mod_7",
+            "moduleTitle": "7. HTML (Level 1) - Part B",
+            "lessons": [
               {
                 "id": "les_16",
-                "title": "Lesson 4",
+                "title": "Lesson 1",
                 "type": "video",
                 "url": "https://embed-cloudfront.wistia.com/deliveries/efdb4f1fa10c160d92ba1ab6e07197166ab6ae39.m3u8",
                 "isStreamUrl": true
               },
               {
                 "id": "les_17",
-                "title": "Lesson 5",
+                "title": "Lesson 2",
                 "type": "video",
                 "url": "https://embed-cloudfront.wistia.com/deliveries/039a17e24e720ea8abf41f8f9f59d28fabf9f87d.m3u8",
                 "isStreamUrl": true
               },
               {
                 "id": "les_18",
-                "title": "Lesson 6",
+                "title": "Lesson 3",
                 "type": "video",
                 "url": "https://embed-cloudfront.wistia.com/deliveries/7d407c20e919f96ee6e93b023e9b0cc6e535c2ad.m3u8",
                 "isStreamUrl": true
               },
               {
                 "id": "les_19",
-                "title": "Lesson 7",
+                "title": "Lesson 4",
                 "type": "video",
                 "url": "https://embed-cloudfront.wistia.com/deliveries/67bb6f6309c73aa02f705ddb7bb9dc1f5b357b73.m3u8",
                 "isStreamUrl": true
@@ -187,7 +193,7 @@
           }
         ]
       },
-      "createdAt": "2026-10-13T19:40:37.636Z"
+      "createdAt": "2026-10-18T18:44:34.852Z"
     },
     {
       "id": "crs_86904e9bcee1",
@@ -264,6 +270,42 @@
     }
   ],
   "licenses": [
+    {
+      "licenseKey": "HD2BBJHXM8UH47MHRT6Z3R9QWAAH45YVRR5UB8S4HP5ZMMYUPVLY55WP",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "Sigma 12 Verified Student",
+      "customerEmail": "student@sigma12.com",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": null,
+      "boundIpv6": null,
+      "boundHwid": null,
+      "status": "active",
+      "createdAt": "2026-10-18T18:44:34.855Z",
+      "activatedAt": null,
+      "lastAccessAt": null
+    },
+    {
+      "licenseKey": "XGX5G7Y9BEBRPTC2ULQJ9WSRWA86Q7PAJUB48NYLVL6WF5V2L5XHE78A",
+      "keyLength": 56,
+      "courseId": "crs_sigma12",
+      "courseTitle": "Sigma 12",
+      "customerName": "Sigma 12 Verified Student",
+      "customerEmail": "student@sigma12.com",
+      "ipLockMode": "first_login",
+      "allowedIpv4": null,
+      "allowedIpv6": null,
+      "boundIpv4": null,
+      "boundIpv6": null,
+      "boundHwid": null,
+      "status": "active",
+      "createdAt": "2026-10-18T18:44:21.747Z",
+      "activatedAt": null,
+      "lastAccessAt": null
+    },
     {
       "licenseKey": "KLY9MVXQRCKEDUHCAU6SBWLPXNT9D9UZ5R8TDU95B6RVX3KTSHLNF6HG",
       "keyLength": 56,
@@ -431,6 +473,133 @@
     }
   ],
   "securityLogs": [
+    {
+      "id": "log_1792349167817_91kby",
+      "timestamp": "2026-10-18T18:46:07.817Z",
+      "action": "license_deleted",
+      "status": "granted",
+      "ip": "127.0.0.1",
+      "message": "Permanently deleted license key T75HFCPZCFDQEA2DCMGQTARKJJ2JCA975GNQ6WARZ3B8FR87RKVCMF6H (Verification Suite Test Student).",
+      "ipv4": "127.0.0.1",
+      "ipv6": null
+    },
+    {
+      "id": "log_1792349167801_dpmgl",
+      "timestamp": "2026-10-18T18:46:07.801Z",
+      "action": "license_deleted",
+      "status": "granted",
+      "ip": "127.0.0.1",
+      "message": "Permanently deleted license key 7JDMSY48BNDTXP53C8YHP6484L7BE4CMAP93CAL5RREL4GFQEMCFDWR5 (IPv6 Test Student).",
+      "ipv4": "127.0.0.1",
+      "ipv6": null
+    },
+    {
+      "id": "log_1792349167772_fprwk",
+      "timestamp": "2026-10-18T18:46:07.772Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "7JDMSY48BNDTXP53C8YHP6484L7BE4CMAP93CAL5RREL4GFQEMCFDWR5",
+      "studentName": "IPv6 Test Student",
+      "ip": "182.77.71.147 / 2401:4900:8f5c:2ded:84a3:57d9:899c:7056",
+      "ipv4": "182.77.71.147",
+      "ipv6": "2401:4900:8f5c:2ded:84a3:57d9:899c:7056",
+      "hwid": "hwid-ipv6-student-99",
+      "message": "Granted course access to IPv6 Test Student. Bound IPv4: 182.77.71.147, IPv6: 2401:4900:8f5c:2ded:84a3:57d9:899c:7056, HWID: hwid-ipv6-student-99"
+    },
+    {
+      "id": "log_1792349167757_7j6j4",
+      "timestamp": "2026-10-18T18:46:07.757Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "7JDMSY48BNDTXP53C8YHP6484L7BE4CMAP93CAL5RREL4GFQEMCFDWR5",
+      "studentName": "IPv6 Test Student",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for IPv6 Test Student (IP Mode: first_login).",
+      "ipv4": null,
+      "ipv6": null,
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "log_1792349167470_i2542",
+      "timestamp": "2026-10-18T18:46:07.470Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "T75HFCPZCFDQEA2DCMGQTARKJJ2JCA975GNQ6WARZ3B8FR87RKVCMF6H",
+      "studentName": "Verification Suite Test Student",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "hwid": "test-pc-hwid-998877",
+      "message": "Granted course access to Verification Suite Test Student. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: test-pc-hwid-998877"
+    },
+    {
+      "id": "log_1792349167461_6g8sa",
+      "timestamp": "2026-10-18T18:46:07.461Z",
+      "action": "activation_success",
+      "status": "granted",
+      "licenseKey": "T75HFCPZCFDQEA2DCMGQTARKJJ2JCA975GNQ6WARZ3B8FR87RKVCMF6H",
+      "studentName": "Verification Suite Test Student",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "hwid": "test-pc-hwid-998877",
+      "message": "Granted course access to Verification Suite Test Student. Bound IPv4: 127.0.0.1, IPv6: ::1, HWID: test-pc-hwid-998877"
+    },
+    {
+      "id": "log_1792349167444_fdntc",
+      "timestamp": "2026-10-18T18:46:07.444Z",
+      "action": "activation_attempt",
+      "status": "rejected_mobile_device",
+      "licenseKey": "T75HFCPZCFDQEA2DCMGQTARKJJ2JCA975GNQ6WARZ3B8FR87RKVCMF6H",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "hwid": "mobile-fake-hwid",
+      "message": "Blocked activation attempt from standard mobile browser (Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 Mobi). Desktop Site mode required."
+    },
+    {
+      "id": "log_1792349167430_b14zr",
+      "timestamp": "2026-10-18T18:46:07.430Z",
+      "action": "license_generated",
+      "status": "granted",
+      "licenseKey": "T75HFCPZCFDQEA2DCMGQTARKJJ2JCA975GNQ6WARZ3B8FR87RKVCMF6H",
+      "studentName": "Verification Suite Test Student",
+      "courseId": "crs_sigma12",
+      "message": "Generated 56-character license for Verification Suite Test Student (IP Mode: first_login).",
+      "ipv4": null,
+      "ipv6": null,
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "log_1792349166879_e6kxg",
+      "timestamp": "2026-10-18T18:46:06.879Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "message": "Blocked mobile device before landing on student portal (/student). UA: node"
+    },
+    {
+      "id": "log_1792349166863_huuc0",
+      "timestamp": "2026-10-18T18:46:06.863Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "message": "Blocked mobile device before landing on student portal (/student/index.html). UA: Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Mobile Safari/537.36"
+    },
+    {
+      "id": "log_1792349166847_nu4ov",
+      "timestamp": "2026-10-18T18:46:06.847Z",
+      "action": "student_portal_blocked_mobile",
+      "status": "rejected_mobile_device",
+      "ip": "127.0.0.1 / ::1",
+      "ipv4": "127.0.0.1",
+      "ipv6": "::1",
+      "message": "Blocked mobile device before landing on student portal (/student). UA: Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148"
+    },
     {
       "id": "log_1792175289055_gqfu8",
       "timestamp": "2026-10-16T18:28:09.055Z",
@@ -5827,84 +5996,6 @@
       "action": "admin_login_failed",
       "status": "rejected_invalid_credentials",
       "message": "Admin login failed: Invalid username \"shubhg9401\"."
-    },
-    {
-      "id": "log_1791951087633_yjh9u",
-      "timestamp": "2026-10-14T04:11:27.633Z",
-      "action": "admin_login_failed",
-      "status": "rejected_invalid_credentials",
-      "message": "Admin login failed: Invalid username \"shubhg9401\"."
-    },
-    {
-      "id": "log_1791951087002_gll1y",
-      "timestamp": "2026-10-14T04:11:27.002Z",
-      "action": "admin_login_failed",
-      "status": "rejected_invalid_credentials",
-      "message": "Admin login failed: Invalid username \"shubhg9401\"."
-    },
-    {
-      "id": "log_1791951078936_kdtw1",
-      "timestamp": "2026-10-14T04:11:18.936Z",
-      "action": "admin_login_failed",
-      "status": "rejected_invalid_credentials",
-      "message": "Admin login failed: Invalid username \"shubhg9401\"."
-    },
-    {
-      "id": "log_1791951078311_mzdpz",
-      "timestamp": "2026-10-14T04:11:18.311Z",
-      "action": "admin_login_failed",
-      "status": "rejected_invalid_credentials",
-      "message": "Admin login failed: Invalid username \"shubhg9401\"."
-    },
-    {
-      "id": "log_1791951076969_wvdqn",
-      "timestamp": "2026-10-14T04:11:16.970Z",
-      "action": "admin_login_failed",
-      "status": "rejected_invalid_credentials",
-      "message": "Admin login failed: Invalid username \"shubhg9401\"."
-    },
-    {
-      "id": "log_1791950969870_odh8j",
-      "timestamp": "2026-10-14T04:09:29.870Z",
-      "action": "admin_login_success",
-      "status": "granted",
-      "message": "Admin \"admin\" logged in successfully with 2FA verification."
-    },
-    {
-      "id": "log_1791920508389_yj421",
-      "timestamp": "2026-10-13T19:41:48.389Z",
-      "action": "admin_login_failed",
-      "status": "rejected_invalid_totp",
-      "message": "Admin login failed: Invalid or expired 6-digit code (899983)."
-    },
-    {
-      "id": "log_1791920448850_gcl0m",
-      "timestamp": "2026-10-13T19:40:48.850Z",
-      "action": "admin_security_updated",
-      "status": "granted",
-      "message": "Admin security updated: Login ID \"admin\", Password unchanged, TOTP unchanged."
-    },
-    {
-      "id": "log_1791920448841_8jyvc",
-      "timestamp": "2026-10-13T19:40:48.841Z",
-      "action": "admin_security_updated",
-      "status": "granted",
-      "message": "Admin security updated: Login ID \"admin_master\", Password unchanged, TOTP unchanged."
-    },
-    {
-      "id": "log_1791920448826_4auio",
-      "timestamp": "2026-10-13T19:40:48.826Z",
-      "action": "admin_login_success",
-      "status": "granted",
-      "message": "Admin \"admin\" logged in successfully with 2FA verification."
-    },
-    {
-      "id": "log_1791920420626_z2rxx",
-      "timestamp": "2026-10-13T19:40:20.626Z",
-      "action": "course_updated",
-      "status": "granted",
-      "courseId": "crs_sigma12",
-      "message": "Course \"Sigma 12\" content updated. Modules: 6, Total Size: 1209 bytes. Re-encrypted with active master key."
     }
   ],
   "adminAuth": {
